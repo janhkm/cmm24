@@ -134,7 +134,7 @@ export default function AdminLayout({
                     )}
                   />
                 </button>
-                {isExpanded && (
+                {isExpanded && item.children && (
                   <div className="ml-8 mt-1 space-y-1">
                     {item.children.map((child) => (
                       <Link

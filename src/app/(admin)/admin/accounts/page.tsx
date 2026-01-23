@@ -58,9 +58,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { sellers } from '@/data/mock-data';
+import type { Seller } from '@/types';
 
 // Extended account data
-interface Account extends typeof sellers[0] {
+interface Account extends Seller {
   email: string;
   plan: 'free' | 'starter' | 'business';
   status: 'active' | 'suspended';
