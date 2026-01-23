@@ -1,0 +1,927 @@
+import { Manufacturer, Listing, Plan, Seller, Inquiry, Category, GlossaryEntry, Article, FAQCategory, TeamMember } from '@/types';
+
+export const manufacturers: Manufacturer[] = [
+  { id: '1', name: 'Zeiss', slug: 'zeiss', logoUrl: '/manufacturers/zeiss.svg', country: 'Deutschland', listingCount: 45 },
+  { id: '2', name: 'Hexagon', slug: 'hexagon', logoUrl: '/manufacturers/hexagon.svg', country: 'Schweden', listingCount: 38 },
+  { id: '3', name: 'Wenzel', slug: 'wenzel', logoUrl: '/manufacturers/wenzel.svg', country: 'Deutschland', listingCount: 28 },
+  { id: '4', name: 'Mitutoyo', slug: 'mitutoyo', logoUrl: '/manufacturers/mitutoyo.svg', country: 'Japan', listingCount: 22 },
+  { id: '5', name: 'Coord3', slug: 'coord3', logoUrl: '/manufacturers/coord3.svg', country: 'Italien', listingCount: 15 },
+  { id: '6', name: 'LK Metrology', slug: 'lk-metrology', logoUrl: '/manufacturers/lk.svg', country: 'UK', listingCount: 12 },
+  { id: '7', name: 'Aberlink', slug: 'aberlink', logoUrl: '/manufacturers/aberlink.svg', country: 'UK', listingCount: 8 },
+  { id: '8', name: 'Nikon Metrology', slug: 'nikon-metrology', logoUrl: '/manufacturers/nikon.svg', country: 'Japan', listingCount: 10 },
+];
+
+export const sellers: Seller[] = [
+  {
+    id: '1',
+    companyName: 'CMM-Trade GmbH',
+    slug: 'cmm-trade',
+    logoUrl: '/sellers/cmm-trade.png',
+    website: 'https://cmm-trade.de',
+    phone: '+49 89 123456',
+    addressCity: 'München',
+    addressCountry: 'Deutschland',
+    isVerified: true,
+    listingCount: 12,
+    responseTime: 'Antwortet meist in < 24 Stunden',
+    memberSince: '2024-01',
+  },
+  {
+    id: '2',
+    companyName: 'Messtechnik Schmidt AG',
+    slug: 'messtechnik-schmidt',
+    addressCity: 'Stuttgart',
+    addressCountry: 'Deutschland',
+    isVerified: true,
+    listingCount: 8,
+    responseTime: 'Antwortet meist in < 12 Stunden',
+    memberSince: '2024-03',
+  },
+  {
+    id: '3',
+    companyName: 'Precision Measure GmbH',
+    slug: 'precision-measure',
+    addressCity: 'Berlin',
+    addressCountry: 'Deutschland',
+    isVerified: false,
+    listingCount: 3,
+    memberSince: '2025-01',
+  },
+];
+
+export const mockListings: Listing[] = [
+  {
+    id: '1',
+    accountId: '1',
+    manufacturerId: '1',
+    manufacturer: manufacturers[0],
+    title: 'Zeiss Contura 10/12/6',
+    slug: 'zeiss-contura-10-12-6-abc123',
+    description: 'Gut erhaltene Zeiss Contura Koordinatenmessmaschine mit aktueller Calypso Software. Die Maschine wurde regelmäßig gewartet und kalibriert. Letzte Kalibrierung Oktober 2025. Ideal für Qualitätssicherung in der Automobilindustrie.\n\nLieferumfang:\n- Messmaschine komplett\n- Calypso Software Lizenz\n- VAST XXT Tasterkopf\n- Kalibrierkugel\n- Alle Dokumentationen\n- Einweisung vor Ort möglich',
+    price: 4500000,
+    priceNegotiable: true,
+    currency: 'EUR',
+    yearBuilt: 2019,
+    condition: 'like_new',
+    measuringRangeX: 1000,
+    measuringRangeY: 1200,
+    measuringRangeZ: 600,
+    accuracyUm: '1.8 + L/350',
+    software: 'Calypso 6.8',
+    controller: 'C99',
+    probeSystem: 'VAST XXT',
+    locationCountry: 'Deutschland',
+    locationCity: 'München',
+    locationPostalCode: '80331',
+    status: 'active',
+    featured: true,
+    viewsCount: 245,
+    publishedAt: '2025-12-15',
+    createdAt: '2025-12-10',
+    updatedAt: '2026-01-15',
+    seller: sellers[0],
+    media: [
+      { id: '1', listingId: '1', type: 'image', url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800', thumbnailUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=200', filename: 'main.jpg', sortOrder: 0, isPrimary: true },
+      { id: '2', listingId: '1', type: 'image', url: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800', thumbnailUrl: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=200', filename: 'side.jpg', sortOrder: 1, isPrimary: false },
+      { id: '3', listingId: '1', type: 'image', url: 'https://images.unsplash.com/photo-1504222490345-c075b6008014?w=800', thumbnailUrl: 'https://images.unsplash.com/photo-1504222490345-c075b6008014?w=200', filename: 'detail.jpg', sortOrder: 2, isPrimary: false },
+    ],
+  },
+  {
+    id: '2',
+    accountId: '2',
+    manufacturerId: '2',
+    manufacturer: manufacturers[1],
+    title: 'Hexagon Global S 9.15.9',
+    slug: 'hexagon-global-s-9-15-9-def456',
+    description: 'Hexagon Global S Hochgenauigkeits-Koordinatenmessmaschine. Mit PC-DMIS 2021 Software und HP-S-X1 Scanningkopf. Perfekt für anspruchsvolle Messaufgaben.',
+    price: 3800000,
+    priceNegotiable: false,
+    currency: 'EUR',
+    yearBuilt: 2018,
+    condition: 'good',
+    measuringRangeX: 900,
+    measuringRangeY: 1500,
+    measuringRangeZ: 900,
+    accuracyUm: '2.0 + L/300',
+    software: 'PC-DMIS 2021',
+    controller: 'Global S',
+    probeSystem: 'HP-S-X1',
+    locationCountry: 'Österreich',
+    locationCity: 'Wien',
+    locationPostalCode: '1010',
+    status: 'active',
+    featured: true,
+    viewsCount: 189,
+    publishedAt: '2025-11-20',
+    createdAt: '2025-11-15',
+    updatedAt: '2026-01-10',
+    seller: sellers[1],
+    media: [
+      { id: '4', listingId: '2', type: 'image', url: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800', thumbnailUrl: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=200', filename: 'main.jpg', sortOrder: 0, isPrimary: true },
+    ],
+  },
+  {
+    id: '3',
+    accountId: '1',
+    manufacturerId: '3',
+    manufacturer: manufacturers[2],
+    title: 'Wenzel LH 87',
+    slug: 'wenzel-lh-87-ghi789',
+    description: 'Wenzel LH 87 Portalmessmaschine in gutem Zustand. Metrosoft Software inklusive. Komplett mit Renishaw Tastsystem.',
+    price: 2800000,
+    priceNegotiable: true,
+    currency: 'EUR',
+    yearBuilt: 2017,
+    condition: 'good',
+    measuringRangeX: 800,
+    measuringRangeY: 1200,
+    measuringRangeZ: 700,
+    accuracyUm: '2.5 + L/400',
+    software: 'Metrosoft CM',
+    controller: 'WM',
+    probeSystem: 'Renishaw PH10M',
+    locationCountry: 'Deutschland',
+    locationCity: 'Stuttgart',
+    locationPostalCode: '70173',
+    status: 'active',
+    featured: false,
+    viewsCount: 156,
+    publishedAt: '2026-01-05',
+    createdAt: '2026-01-02',
+    updatedAt: '2026-01-18',
+    seller: sellers[0],
+    media: [
+      { id: '5', listingId: '3', type: 'image', url: 'https://images.unsplash.com/photo-1504222490345-c075b6008014?w=800', thumbnailUrl: 'https://images.unsplash.com/photo-1504222490345-c075b6008014?w=200', filename: 'main.jpg', sortOrder: 0, isPrimary: true },
+    ],
+  },
+  {
+    id: '4',
+    accountId: '2',
+    manufacturerId: '4',
+    manufacturer: manufacturers[3],
+    title: 'Mitutoyo Crysta-Apex S 9106',
+    slug: 'mitutoyo-crysta-apex-s-9106-jkl012',
+    description: 'Mitutoyo Crysta-Apex S CNC Koordinatenmessmaschine. Hochpräzise Messungen mit MCOSMOS Software.',
+    price: 3200000,
+    priceNegotiable: true,
+    currency: 'EUR',
+    yearBuilt: 2020,
+    condition: 'like_new',
+    measuringRangeX: 900,
+    measuringRangeY: 1000,
+    measuringRangeZ: 600,
+    accuracyUm: '1.7 + L/350',
+    software: 'MCOSMOS',
+    controller: 'UC-400',
+    probeSystem: 'Renishaw SP25M',
+    locationCountry: 'Schweiz',
+    locationCity: 'Zürich',
+    locationPostalCode: '8001',
+    status: 'active',
+    featured: true,
+    viewsCount: 210,
+    publishedAt: '2025-12-01',
+    createdAt: '2025-11-28',
+    updatedAt: '2026-01-12',
+    seller: sellers[1],
+    media: [
+      { id: '6', listingId: '4', type: 'image', url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800', thumbnailUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=200', filename: 'main.jpg', sortOrder: 0, isPrimary: true },
+    ],
+  },
+  {
+    id: '5',
+    accountId: '3',
+    manufacturerId: '1',
+    manufacturer: manufacturers[0],
+    title: 'Zeiss Accura 12/24/10',
+    slug: 'zeiss-accura-12-24-10-mno345',
+    description: 'Große Zeiss Accura Brückenmessmaschine für Großteilvermessung. Ideal für Aerospace und Automotive.',
+    price: 8500000,
+    priceNegotiable: true,
+    currency: 'EUR',
+    yearBuilt: 2016,
+    condition: 'good',
+    measuringRangeX: 1200,
+    measuringRangeY: 2400,
+    measuringRangeZ: 1000,
+    accuracyUm: '2.2 + L/300',
+    software: 'Calypso 6.4',
+    controller: 'C99',
+    probeSystem: 'VAST XT',
+    locationCountry: 'Deutschland',
+    locationCity: 'Hamburg',
+    locationPostalCode: '20095',
+    status: 'active',
+    featured: false,
+    viewsCount: 98,
+    publishedAt: '2026-01-10',
+    createdAt: '2026-01-08',
+    updatedAt: '2026-01-19',
+    seller: sellers[2],
+    media: [
+      { id: '7', listingId: '5', type: 'image', url: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800', thumbnailUrl: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=200', filename: 'main.jpg', sortOrder: 0, isPrimary: true },
+    ],
+  },
+  {
+    id: '6',
+    accountId: '1',
+    manufacturerId: '2',
+    manufacturer: manufacturers[1],
+    title: 'Hexagon Tigo SF',
+    slug: 'hexagon-tigo-sf-pqr678',
+    description: 'Kompakte Hexagon Tigo SF Werkstattmessmaschine. Ideal für fertigungsnahe Messungen.',
+    price: 1800000,
+    priceNegotiable: false,
+    currency: 'EUR',
+    yearBuilt: 2021,
+    condition: 'like_new',
+    measuringRangeX: 500,
+    measuringRangeY: 600,
+    measuringRangeZ: 400,
+    accuracyUm: '2.5 + L/400',
+    software: 'PC-DMIS',
+    controller: 'Tigo',
+    probeSystem: 'HP-T',
+    locationCountry: 'Deutschland',
+    locationCity: 'Köln',
+    locationPostalCode: '50667',
+    status: 'active',
+    featured: false,
+    viewsCount: 134,
+    publishedAt: '2025-12-20',
+    createdAt: '2025-12-18',
+    updatedAt: '2026-01-14',
+    seller: sellers[0],
+    media: [
+      { id: '8', listingId: '6', type: 'image', url: 'https://images.unsplash.com/photo-1504222490345-c075b6008014?w=800', thumbnailUrl: 'https://images.unsplash.com/photo-1504222490345-c075b6008014?w=200', filename: 'main.jpg', sortOrder: 0, isPrimary: true },
+    ],
+  },
+  {
+    id: '7',
+    accountId: '2',
+    manufacturerId: '5',
+    manufacturer: manufacturers[4],
+    title: 'Coord3 Universal 10.9.7',
+    slug: 'coord3-universal-10-9-7-stu901',
+    description: 'Coord3 Universal Messmaschine aus Italien. TouchDMIS Software.',
+    price: 2200000,
+    priceNegotiable: true,
+    currency: 'EUR',
+    yearBuilt: 2019,
+    condition: 'good',
+    measuringRangeX: 1000,
+    measuringRangeY: 900,
+    measuringRangeZ: 700,
+    accuracyUm: '2.8 + L/350',
+    software: 'TouchDMIS',
+    controller: 'Coord3',
+    probeSystem: 'Renishaw PH20',
+    locationCountry: 'Italien',
+    locationCity: 'Turin',
+    locationPostalCode: '10121',
+    status: 'active',
+    featured: false,
+    viewsCount: 87,
+    publishedAt: '2026-01-08',
+    createdAt: '2026-01-05',
+    updatedAt: '2026-01-16',
+    seller: sellers[1],
+    media: [
+      { id: '9', listingId: '7', type: 'image', url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800', thumbnailUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=200', filename: 'main.jpg', sortOrder: 0, isPrimary: true },
+    ],
+  },
+  {
+    id: '8',
+    accountId: '1',
+    manufacturerId: '1',
+    manufacturer: manufacturers[0],
+    title: 'Zeiss Prismo 7/9/5',
+    slug: 'zeiss-prismo-7-9-5-vwx234',
+    description: 'Zeiss Prismo Hochgenauigkeits-Messmaschine für anspruchsvollste Messaufgaben.',
+    price: 6500000,
+    priceNegotiable: true,
+    currency: 'EUR',
+    yearBuilt: 2018,
+    condition: 'like_new',
+    measuringRangeX: 700,
+    measuringRangeY: 900,
+    measuringRangeZ: 500,
+    accuracyUm: '0.9 + L/400',
+    software: 'Calypso 6.6',
+    controller: 'C99L',
+    probeSystem: 'VAST Gold',
+    locationCountry: 'Deutschland',
+    locationCity: 'Frankfurt',
+    locationPostalCode: '60311',
+    status: 'sold',
+    featured: false,
+    viewsCount: 312,
+    publishedAt: '2025-10-01',
+    soldAt: '2026-01-05',
+    createdAt: '2025-09-28',
+    updatedAt: '2026-01-05',
+    seller: sellers[0],
+    media: [
+      { id: '10', listingId: '8', type: 'image', url: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800', thumbnailUrl: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=200', filename: 'main.jpg', sortOrder: 0, isPrimary: true },
+    ],
+  },
+];
+
+export const plans: Plan[] = [
+  {
+    id: '1',
+    name: 'Free',
+    slug: 'free',
+    listingLimit: 1,
+    priceMonthly: 0,
+    priceYearly: 0,
+    description: 'Perfekt zum Testen',
+    features: [
+      '1 aktives Inserat',
+      'Unbegrenzte Entwürfe',
+      'Anfragen empfangen',
+      'E-Mail-Support',
+    ],
+    featureFlags: {
+      maxListings: 1,
+      maxDrafts: -1,
+      hasStatistics: false,
+      hasStatisticsExport: false,
+      hasLeadManagement: false,
+      hasLeadPipeline: false,
+      hasEmailComposer: false,
+      hasAutoReply: false,
+      hasBulkActions: false,
+      hasFeaturedListings: 0,
+      hasPriorityPlacement: false,
+      hasVerifiedBadge: false,
+      hasPrioritySupport: false,
+      hasApiAccess: false,
+      maxTeamMembers: 1,
+    },
+  },
+  {
+    id: '2',
+    name: 'Starter',
+    slug: 'starter',
+    listingLimit: 5,
+    priceMonthly: 6900, // 69€ regulär
+    priceYearly: 66000, // 55€/Monat = 660€/Jahr (20% Rabatt)
+    launchPriceMonthly: 2900, // 29€ für Early Adopters (-58%)
+    launchPriceYearly: 28800, // 24€/Monat = 288€/Jahr
+    description: 'Für regelmäßige Verkäufer',
+    features: [
+      '5 aktive Inserate',
+      'Statistiken & Export',
+      'Lead-Verwaltung',
+      'E-Mail-Composer',
+      '1 Featured Listing/Monat',
+      'Verifiziert-Badge',
+      'Prioritäts-Support (24h)',
+    ],
+    featureFlags: {
+      maxListings: 5,
+      maxDrafts: -1,
+      hasStatistics: true,
+      hasStatisticsExport: true,
+      hasLeadManagement: true,
+      hasLeadPipeline: false,
+      hasEmailComposer: true,
+      hasAutoReply: false,
+      hasBulkActions: false,
+      hasFeaturedListings: 1,
+      hasPriorityPlacement: false,
+      hasVerifiedBadge: true,
+      hasPrioritySupport: true,
+      hasApiAccess: false,
+      maxTeamMembers: 1,
+    },
+  },
+  {
+    id: '3',
+    name: 'Business',
+    slug: 'business',
+    listingLimit: 25, // 25 Inserate im Basispreis
+    priceMonthly: 17900, // 179€ regulär
+    priceYearly: 171600, // 143€/Monat = 1.716€/Jahr (20% Rabatt)
+    launchPriceMonthly: 8900, // 89€ für Early Adopters (-50%)
+    launchPriceYearly: 94800, // 79€/Monat = 948€/Jahr
+    extraListingPriceMonthly: 700, // 7€ pro Extra-Inserat
+    extraListingPriceYearly: 500, // 5€ pro Extra-Inserat (jährlich)
+    description: 'Für Profi-Händler',
+    highlighted: true,
+    features: [
+      '25 aktive Inserate',
+      '+7€ pro weiteres Inserat',
+      'Vollständige Statistiken',
+      'Lead-Pipeline (Kanban)',
+      'E-Mail-Composer + Auto-Reply',
+      'Bulk-Aktionen',
+      '5 Featured Listings/Monat',
+      'Top-Platzierung in Suche',
+      'API-Zugang',
+      'Premium-Support (4h)',
+    ],
+    featureFlags: {
+      maxListings: 25,
+      maxDrafts: -1,
+      hasStatistics: true,
+      hasStatisticsExport: true,
+      hasLeadManagement: true,
+      hasLeadPipeline: true,
+      hasEmailComposer: true,
+      hasAutoReply: true,
+      hasBulkActions: true,
+      hasFeaturedListings: 5,
+      hasPriorityPlacement: true,
+      hasVerifiedBadge: true,
+      hasPrioritySupport: true,
+      hasApiAccess: true,
+      maxTeamMembers: 10,
+    },
+  },
+];
+
+export const mockInquiries: Inquiry[] = [
+  {
+    id: '1',
+    listingId: '1',
+    listing: mockListings[0],
+    contactName: 'Thomas Meier',
+    contactEmail: 't.meier@automotive-gmbh.de',
+    contactPhone: '+49 123 456789',
+    contactCompany: 'Automotive GmbH',
+    message: 'Guten Tag, wir interessieren uns für Ihre Zeiss Contura. Ist die Maschine noch verfügbar? Können Sie uns weitere Details zum Zustand und zur Wartungshistorie mitteilen? Wir würden gerne einen Besichtigungstermin vereinbaren.',
+    status: 'new',
+    createdAt: '2026-01-20T10:30:00Z',
+    updatedAt: '2026-01-20T10:30:00Z',
+  },
+  {
+    id: '2',
+    listingId: '1',
+    listing: mockListings[0],
+    contactName: 'Maria Schmidt',
+    contactEmail: 'm.schmidt@precision-parts.de',
+    contactPhone: '+49 234 567890',
+    contactCompany: 'Precision Parts AG',
+    message: 'Sehr geehrte Damen und Herren, bezüglich der Zeiss Contura hätte ich einige Fragen zur Software-Lizenz. Ist diese übertragbar? Wie sieht es mit Updates aus?',
+    status: 'contacted',
+    notes: 'Telefonat am 19.01. - Interessent hat weitere Fragen zur Software',
+    createdAt: '2026-01-19T14:15:00Z',
+    updatedAt: '2026-01-19T16:00:00Z',
+  },
+  {
+    id: '3',
+    listingId: '3',
+    listing: mockListings[2],
+    contactName: 'Stefan Weber',
+    contactEmail: 's.weber@weber-kg.de',
+    contactCompany: 'Weber KG',
+    message: 'Anfrage bezüglich der Wenzel LH 87. Preis verhandelbar? Können Sie einen Transportkostenvoranschlag machen?',
+    status: 'offer_sent',
+    notes: 'Angebot über 26.500€ inkl. Transport gesendet',
+    createdAt: '2026-01-15T09:00:00Z',
+    updatedAt: '2026-01-17T11:30:00Z',
+  },
+];
+
+export const countries = [
+  { code: 'DE', name: 'Deutschland' },
+  { code: 'AT', name: 'Österreich' },
+  { code: 'CH', name: 'Schweiz' },
+  { code: 'NL', name: 'Niederlande' },
+  { code: 'BE', name: 'Belgien' },
+  { code: 'FR', name: 'Frankreich' },
+  { code: 'IT', name: 'Italien' },
+  { code: 'ES', name: 'Spanien' },
+  { code: 'PL', name: 'Polen' },
+  { code: 'CZ', name: 'Tschechien' },
+  { code: 'UK', name: 'Vereinigtes Königreich' },
+];
+
+export const categories = [
+  { value: 'portal', label: 'Portal-Messmaschine' },
+  { value: 'cantilever', label: 'Ausleger-Messmaschine' },
+  { value: 'horizontal_arm', label: 'Horizontal-Arm' },
+  { value: 'gantry', label: 'Gantry' },
+  { value: 'optical', label: 'Optisches System' },
+  { value: 'other', label: 'Sonstige' },
+];
+
+export const conditions = [
+  { value: 'new', label: 'Neu' },
+  { value: 'like_new', label: 'Wie neu' },
+  { value: 'good', label: 'Gut' },
+  { value: 'fair', label: 'Akzeptabel' },
+];
+
+export const sortOptions = [
+  { value: 'relevance', label: 'Relevanz' },
+  { value: 'date_desc', label: 'Neueste zuerst' },
+  { value: 'date_asc', label: 'Älteste zuerst' },
+  { value: 'price_asc', label: 'Preis aufsteigend' },
+  { value: 'price_desc', label: 'Preis absteigend' },
+  { value: 'year_desc', label: 'Baujahr neueste' },
+  { value: 'year_asc', label: 'Baujahr älteste' },
+];
+
+// Stats for homepage
+export const stats = [
+  { label: 'Maschinen', value: '245+' },
+  { label: 'Verkäufer', value: '48' },
+  { label: 'Länder', value: '12' },
+  { label: 'Hersteller', value: '8' },
+];
+
+// Extended Categories for SEO Pages
+export const categoryPages: Category[] = [
+  {
+    id: '1',
+    name: 'Portal-Messmaschinen',
+    slug: 'portal-messmaschinen',
+    description: 'Klassische Brückenbauweise mit höchster Präzision für anspruchsvolle Messaufgaben.',
+    longDescription: 'Portal-Messmaschinen (auch Brückenmessmaschinen genannt) sind der am häufigsten verwendete Typ von Koordinatenmessmaschinen. Sie zeichnen sich durch ihre stabile Brückenkonstruktion aus, bei der die Messbrücke auf zwei Säulen ruht und sich entlang der Y-Achse bewegt. Diese Bauweise ermöglicht höchste Genauigkeit und eignet sich ideal für die Qualitätssicherung in der Automobil-, Luft- und Raumfahrtindustrie sowie im Maschinenbau.',
+    icon: 'Building2',
+    listingCount: 145,
+    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800',
+  },
+  {
+    id: '2',
+    name: 'Ausleger-Messmaschinen',
+    slug: 'ausleger-messmaschinen',
+    description: 'Einseitig gelagerte Konstruktion für optimale Zugänglichkeit.',
+    longDescription: 'Ausleger-Messmaschinen (Cantilever CMM) haben eine einseitig gelagerte Messbrücke, die freitragend über den Messtisch ragt. Diese Bauweise bietet hervorragende Zugänglichkeit zum Werkstück von drei Seiten und ist besonders geeignet für die Messung schwerer oder sperriger Teile. Sie sind kompakter als Portal-Maschinen und eignen sich gut für beengte Platzverhältnisse.',
+    icon: 'ArrowRightFromLine',
+    listingCount: 42,
+    image: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800',
+  },
+  {
+    id: '3',
+    name: 'Horizontal-Arm-Messmaschinen',
+    slug: 'horizontal-arm-messmaschinen',
+    description: 'Ideal für große und schwere Werkstücke wie Karosserieteile.',
+    longDescription: 'Horizontal-Arm-Messmaschinen verfügen über einen horizontal ausgerichteten Messarm, der sich ideal für die Vermessung großer, flacher Werkstücke wie Karosserieteile, Bleche oder Formen eignet. Sie bieten einen großen Messbereich bei geringer Bauhöhe und werden häufig in der Automobil- und Luftfahrtindustrie eingesetzt.',
+    icon: 'MoveHorizontal',
+    listingCount: 28,
+    image: 'https://images.unsplash.com/photo-1504222490345-c075b6008014?w=800',
+  },
+  {
+    id: '4',
+    name: 'Gantry-Messmaschinen',
+    slug: 'gantry-messmaschinen',
+    description: 'Großvolumige Messmaschinen für extragroße Werkstücke.',
+    longDescription: 'Gantry-Messmaschinen sind für die Vermessung sehr großer Werkstücke konzipiert. Bei dieser Bauweise ist die Messbrücke auf Schienen montiert, die sich neben dem Werkstück befinden. Dies ermöglicht Messbereiche von mehreren Metern in allen Achsen. Typische Anwendungen sind die Vermessung von Flugzeugkomponenten, Schiffsteilen oder großen Formen.',
+    icon: 'Maximize',
+    listingCount: 15,
+    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800',
+  },
+  {
+    id: '5',
+    name: 'Optische Messsysteme',
+    slug: 'optische-messsysteme',
+    description: 'Berührungslose Messtechnik für empfindliche Oberflächen.',
+    longDescription: 'Optische Koordinatenmessmaschinen nutzen Licht- oder Lasertechnologie zur berührungslosen Vermessung. Sie eignen sich besonders für empfindliche Oberflächen, flexible Materialien oder sehr kleine Features. Moderne Multisensor-Maschinen kombinieren optische und taktile Messtechnik für maximale Flexibilität.',
+    icon: 'Eye',
+    listingCount: 35,
+    image: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800',
+  },
+];
+
+// Glossary Entries
+export const glossaryEntries: GlossaryEntry[] = [
+  {
+    id: '1',
+    term: 'Koordinatenmessmaschine (CMM)',
+    slug: 'koordinatenmessmaschine',
+    shortDefinition: 'Eine Koordinatenmessmaschine (CMM) ist ein Messgerät, das die physischen Geometrien eines Objekts durch Abtasten von Punkten auf der Oberfläche erfasst.',
+    fullDefinition: 'Eine Koordinatenmessmaschine (englisch: Coordinate Measuring Machine, CMM) ist ein hochpräzises Messinstrument zur dreidimensionalen Vermessung von Werkstücken. Sie erfasst die X-, Y- und Z-Koordinaten von Punkten auf der Werkstückoberfläche mittels eines Tasters (taktil) oder Sensors (optisch). Die gewonnenen Daten werden mit CAD-Modellen oder Zeichnungen verglichen, um Maßhaltigkeit und Formtreue zu überprüfen. CMMs sind unverzichtbar in der Qualitätssicherung der Fertigungsindustrie.',
+    relatedTerms: ['mpee', 'tastkopf', 'messbereich'],
+    seeAlso: ['portal-messmaschine', 'calypso'],
+  },
+  {
+    id: '2',
+    term: 'MPEE (Längenmessabweichung)',
+    slug: 'mpee',
+    shortDefinition: 'MPEE steht für Maximum Permissible Error for Length Measurement und gibt die maximal zulässige Längenmessabweichung einer Koordinatenmessmaschine an.',
+    fullDefinition: 'MPEE (Maximum Permissible Error of Length Measurement, deutsch: Maximale Längenmessabweichung) ist die wichtigste Kennzahl für die Genauigkeit einer Koordinatenmessmaschine. Sie wird üblicherweise als Formel angegeben, z.B. "1.8 + L/350 µm", wobei der erste Wert die Basisabweichung in Mikrometern angibt und L/350 den längenabhängigen Anteil (L = Messlänge in mm). Bei einem Messobjekt von 1000 mm wäre die maximale Abweichung also 1.8 + 1000/350 = 4.66 µm. Je kleiner der MPEE-Wert, desto genauer die Maschine.',
+    relatedTerms: ['koordinatenmessmaschine', 'kalibrierung'],
+    seeAlso: ['mpep'],
+  },
+  {
+    id: '3',
+    term: 'Messbereich',
+    slug: 'messbereich',
+    shortDefinition: 'Der Messbereich einer Koordinatenmessmaschine definiert das maximale Volumen, in dem gemessen werden kann, angegeben in X-, Y- und Z-Achse.',
+    fullDefinition: 'Der Messbereich beschreibt das dreidimensionale Volumen, innerhalb dessen eine Koordinatenmessmaschine Messungen durchführen kann. Er wird üblicherweise als X × Y × Z in Millimetern angegeben, z.B. "1000 × 1200 × 600 mm". Bei der Auswahl einer CMM sollte der Messbereich mindestens 10-20% größer sein als das größte zu messende Werkstück, um ausreichend Platz für Tastersysteme und Bewegungen zu haben.',
+    relatedTerms: ['koordinatenmessmaschine'],
+  },
+  {
+    id: '4',
+    term: 'Tastkopf / Taster',
+    slug: 'tastkopf',
+    shortDefinition: 'Der Tastkopf ist das Sensorelement einer Koordinatenmessmaschine, das die Werkstückoberfläche abtastet und die Messdaten erfasst.',
+    fullDefinition: 'Der Tastkopf (auch Messkopf oder Sensor genannt) ist das Herzstück jeder taktilen Koordinatenmessmaschine. Er besteht aus einem Tastkopfkörper und austauschbaren Taststiften mit Rubinkugeln an der Spitze. Beim Berühren der Werkstückoberfläche wird ein Signal ausgelöst und die Position erfasst. Moderne Tastköpfe wie der Zeiss VAST oder Renishaw PH20 ermöglichen nicht nur Einzelpunktmessungen, sondern auch kontinuierliches Scannen für schnellere und detailliertere Messungen.',
+    relatedTerms: ['koordinatenmessmaschine', 'scanning'],
+    seeAlso: ['renishaw', 'vast'],
+  },
+  {
+    id: '5',
+    term: 'Calypso',
+    slug: 'calypso',
+    shortDefinition: 'Calypso ist die führende Mess-Software von Zeiss für Koordinatenmessmaschinen mit grafischer Benutzeroberfläche.',
+    fullDefinition: 'Calypso ist die professionelle Mess-Software von Carl Zeiss für Koordinatenmessmaschinen. Sie bietet eine intuitive grafische Benutzeroberfläche zur Erstellung von Messprogrammen, unterstützt CAD-Import (STEP, IGES, etc.) und ermöglicht die automatische Generierung von Messstrategien. Calypso ist besonders bekannt für seine PMI-Funktionalität (Product Manufacturing Information) und die nahtlose Integration in PLM-Systeme. Die Software wird regelmäßig aktualisiert, aktuelle Version ist Calypso 2024.',
+    relatedTerms: ['koordinatenmessmaschine', 'pc-dmis'],
+    seeAlso: ['zeiss'],
+  },
+  {
+    id: '6',
+    term: 'PC-DMIS',
+    slug: 'pc-dmis',
+    shortDefinition: 'PC-DMIS ist die weltweit am häufigsten eingesetzte Mess-Software für Koordinatenmessmaschinen von Hexagon Manufacturing Intelligence.',
+    fullDefinition: 'PC-DMIS (Dimensional Measurement Interface Standard) ist die führende Mess-Software von Hexagon und die weltweit am weitesten verbreitete CMM-Software. Sie unterstützt eine Vielzahl von Messmaschinen verschiedener Hersteller und bietet umfangreiche Funktionen für Messprogrammierung, CAD-Integration, GD&T-Auswertung und Reporting. PC-DMIS ist in verschiedenen Versionen erhältlich: PC-DMIS NC für Online-Messung, PC-DMIS Vision für optische Systeme und PC-DMIS Pro für erweiterte Funktionen.',
+    relatedTerms: ['koordinatenmessmaschine', 'calypso'],
+    seeAlso: ['hexagon'],
+  },
+  {
+    id: '7',
+    term: 'Kalibrierung',
+    slug: 'kalibrierung',
+    shortDefinition: 'Die Kalibrierung einer Koordinatenmessmaschine ist der Prozess zur Überprüfung und Dokumentation ihrer Messgenauigkeit gemäß ISO-Normen.',
+    fullDefinition: 'Die Kalibrierung (auch Verifizierung genannt) einer Koordinatenmessmaschine dient der Überprüfung und Dokumentation ihrer Messgenauigkeit. Sie wird gemäß ISO 10360 durchgeführt und umfasst Tests wie die Längenmessabweichung (MPEE), Antastabweichung (MPEp) und Wiederholgenauigkeit. Die Kalibrierung sollte jährlich oder nach Umzug/Reparatur durch akkreditierte Prüflabore erfolgen. Das Kalibrierzertifikat ist oft Voraussetzung für die Qualitätssicherung nach ISO 9001 oder IATF 16949.',
+    relatedTerms: ['mpee', 'koordinatenmessmaschine'],
+  },
+  {
+    id: '8',
+    term: 'Portal-Messmaschine',
+    slug: 'portal-messmaschine',
+    shortDefinition: 'Eine Portal-Messmaschine ist der häufigste Typ einer Koordinatenmessmaschine mit einer stabilen Brückenkonstruktion.',
+    fullDefinition: 'Portal-Messmaschinen (auch Brückenmessmaschinen) sind der am weitesten verbreitete Typ von Koordinatenmessmaschinen. Sie verfügen über eine stabile Brückenkonstruktion, bei der die Messbrücke auf zwei vertikalen Säulen ruht und sich entlang der Y-Achse bewegt. Bekannte Beispiele sind die Zeiss Contura und Accura oder die Hexagon Global Serie. Portal-Maschinen bieten die beste Balance aus Genauigkeit, Stabilität und Preis und eignen sich für die meisten industriellen Messaufgaben.',
+    relatedTerms: ['koordinatenmessmaschine', 'ausleger-messmaschine'],
+  },
+];
+
+// Articles/Ratgeber
+export const articles: Article[] = [
+  {
+    id: '1',
+    title: 'Koordinatenmessmaschine kaufen: Der ultimative Ratgeber 2026',
+    slug: 'koordinatenmessmaschine-kaufen-ratgeber',
+    excerpt: 'Alles, was Sie beim Kauf einer neuen oder gebrauchten Koordinatenmessmaschine beachten müssen. Von der Bedarfsanalyse über die Herstellerwahl bis zur Inbetriebnahme.',
+    content: `
+# Koordinatenmessmaschine kaufen: Der ultimative Ratgeber
+
+Der Kauf einer Koordinatenmessmaschine ist eine bedeutende Investition. Dieser Ratgeber hilft Ihnen, die richtige Entscheidung zu treffen.
+
+## 1. Bedarfsanalyse: Welche Anforderungen haben Sie?
+
+Bevor Sie sich auf die Suche nach einer CMM begeben, sollten Sie Ihre Anforderungen klar definieren:
+
+- **Messbereich**: Wie groß sind Ihre typischen Werkstücke?
+- **Genauigkeit**: Welche Toleranzen müssen Sie einhalten?
+- **Durchsatz**: Wie viele Teile müssen pro Schicht gemessen werden?
+- **Umgebung**: Messraum oder fertigungsnahe Messung?
+
+## 2. Neu oder gebraucht?
+
+### Vorteile einer neuen Maschine:
+- Aktuelle Technologie
+- Volle Garantie
+- Maßgeschneiderte Konfiguration
+
+### Vorteile einer gebrauchten Maschine:
+- Erhebliche Kostenersparnis (40-70%)
+- Schnelle Verfügbarkeit
+- Bewährte Technologie
+
+## 3. Die wichtigsten Hersteller
+
+| Hersteller | Stärken | Preissegment |
+|------------|---------|--------------|
+| Zeiss | Höchste Präzision, Calypso Software | Premium |
+| Hexagon | Breites Portfolio, PC-DMIS | Premium-Mittel |
+| Wenzel | Gutes Preis-Leistungs-Verhältnis | Mittel |
+| Mitutoyo | Kompakte Maschinen, Japan-Qualität | Mittel |
+
+## 4. Worauf beim Gebrauchtkauf achten?
+
+1. **Kalibrierzertifikat**: Aktuell (max. 12 Monate alt)?
+2. **Wartungshistorie**: Regelmäßige Wartung dokumentiert?
+3. **Software-Lizenz**: Übertragbar?
+4. **Besichtigung**: Maschine unter Last testen
+5. **Transport**: Professioneller Spezialtransport eingeplant?
+
+## Fazit
+
+Der Kauf einer Koordinatenmessmaschine erfordert sorgfältige Planung. Auf CMM24 finden Sie geprüfte Angebote von verifizierten Händlern.
+    `,
+    category: 'kaufratgeber',
+    author: {
+      name: 'Jan Hemkemeier',
+      role: 'Gründer CMM24',
+    },
+    publishedAt: '2026-01-15',
+    updatedAt: '2026-01-20',
+    readingTime: 8,
+    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800',
+    tags: ['Kaufratgeber', 'CMM', 'Investition'],
+  },
+  {
+    id: '2',
+    title: 'Zeiss vs. Hexagon: Welcher Hersteller passt zu Ihnen?',
+    slug: 'zeiss-vs-hexagon-vergleich',
+    excerpt: 'Ein detaillierter Vergleich der beiden führenden CMM-Hersteller Zeiss und Hexagon. Technik, Software, Service und Preise im direkten Vergleich.',
+    content: `
+# Zeiss vs. Hexagon: Der große Vergleich
+
+Zeiss und Hexagon sind die beiden größten Hersteller von Koordinatenmessmaschinen weltweit. Beide bieten exzellente Qualität, unterscheiden sich aber in wichtigen Aspekten.
+
+## Hardware-Vergleich
+
+### Zeiss
+- Deutsche Ingenieurskunst
+- Eigene Fertigung von Optik und Mechanik
+- Bekannt für höchste Langzeitstabilität
+
+### Hexagon
+- Schwedisches Unternehmen mit globaler Präsenz
+- Breites Portfolio durch Akquisitionen
+- Innovation bei Scanning-Technologie
+
+## Software
+
+| Kriterium | Zeiss (Calypso) | Hexagon (PC-DMIS) |
+|-----------|-----------------|-------------------|
+| Benutzerfreundlichkeit | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| CAD-Integration | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| Marktverbreitung | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| Offline-Programmierung | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+
+## Preise auf dem Gebrauchtmarkt
+
+Basierend auf CMM24-Daten (Stand Januar 2026):
+
+- **Zeiss Contura**: Ø 35.000 - 55.000 €
+- **Hexagon Global**: Ø 28.000 - 48.000 €
+
+## Fazit
+
+Beide Hersteller bieten hervorragende Maschinen. Zeiss punktet bei Präzision und Software-Komfort, Hexagon bei Preis-Leistung und Flexibilität.
+    `,
+    category: 'vergleich',
+    author: {
+      name: 'Jan Hemkemeier',
+      role: 'Gründer CMM24',
+    },
+    publishedAt: '2026-01-10',
+    updatedAt: '2026-01-10',
+    readingTime: 6,
+    image: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800',
+    tags: ['Vergleich', 'Zeiss', 'Hexagon'],
+  },
+  {
+    id: '3',
+    title: 'CMM-Genauigkeit verstehen: MPEE, MPEp und mehr',
+    slug: 'cmm-genauigkeit-mpee-erklaert',
+    excerpt: 'Was bedeuten die Genauigkeitsangaben einer Koordinatenmessmaschine? Wir erklären MPEE, MPEp und wie Sie die richtige Genauigkeit für Ihre Anforderungen wählen.',
+    content: `
+# CMM-Genauigkeit verstehen
+
+Die Genauigkeit ist das wichtigste Kriterium einer Koordinatenmessmaschine. Doch was bedeuten die Angaben wie "1.8 + L/350 µm"?
+
+## MPEE - Längenmessabweichung
+
+MPEE steht für "Maximum Permissible Error of Length Measurement". Die Formel besteht aus zwei Teilen:
+
+- **Konstanter Anteil** (z.B. 1.8 µm): Basisabweichung
+- **Längenabhängiger Anteil** (z.B. L/350): Zusätzliche Abweichung pro Messlänge
+
+### Beispielrechnung
+
+Bei MPEE = 1.8 + L/350 µm und einer Messlänge von 500 mm:
+- 1.8 + 500/350 = 1.8 + 1.43 = **3.23 µm maximale Abweichung**
+
+## Genauigkeitsklassen
+
+| Klasse | MPEE | Anwendung |
+|--------|------|-----------|
+| Ultrapräzision | < 1 µm | Optik, Uhren |
+| Hochgenau | 1-2 µm | Automotive A-Teile |
+| Standard | 2-4 µm | Allgemeine QS |
+| Werkstatt | > 4 µm | Fertigungsnah |
+
+## Einflussfaktoren
+
+1. **Temperatur**: 1°C Abweichung = mehrere µm Fehler
+2. **Schwingungen**: Fundament und Umgebung
+3. **Luftfeuchtigkeit**: Besonders bei optischen Systemen
+4. **Wartungszustand**: Regelmäßige Kalibrierung wichtig
+    `,
+    category: 'technik',
+    author: {
+      name: 'Jan Hemkemeier',
+      role: 'Gründer CMM24',
+    },
+    publishedAt: '2025-12-20',
+    updatedAt: '2026-01-05',
+    readingTime: 5,
+    image: 'https://images.unsplash.com/photo-1504222490345-c075b6008014?w=800',
+    tags: ['Technik', 'Genauigkeit', 'MPEE'],
+  },
+];
+
+// FAQ Data
+export const faqCategories: FAQCategory[] = [
+  {
+    title: 'Allgemeine Fragen zu CMM24',
+    items: [
+      {
+        question: 'Was ist CMM24?',
+        answer: 'CMM24 ist der führende B2B-Marktplatz für gebrauchte Koordinatenmessmaschinen in Europa. Wir verbinden Käufer und Verkäufer von Messtechnik und bieten geprüfte Inserate von verifizierten Händlern.',
+      },
+      {
+        question: 'Ist CMM24 kostenlos?',
+        answer: 'Die Suche und das Ansehen von Inseraten ist für Käufer komplett kostenlos. Verkäufer können mit dem Free-Plan ein Inserat kostenlos einstellen. Für mehr Inserate und erweiterte Funktionen bieten wir kostenpflichtige Pläne ab 99€/Monat.',
+      },
+      {
+        question: 'Wie werden die Inserate geprüft?',
+        answer: 'Jedes Inserat wird vor der Veröffentlichung von unserem Team geprüft. Wir kontrollieren die Vollständigkeit der Angaben, die Plausibilität der technischen Daten und die Qualität der Bilder. Bei Unstimmigkeiten kontaktieren wir den Verkäufer.',
+      },
+    ],
+  },
+  {
+    title: 'Für Käufer',
+    items: [
+      {
+        question: 'Wie kann ich eine Anfrage stellen?',
+        answer: 'Auf jeder Inseratsseite finden Sie ein Anfrageformular. Geben Sie Ihre Kontaktdaten und Ihre Fragen ein, und wir leiten die Anfrage direkt an den Verkäufer weiter. Ihre Daten werden vertraulich behandelt.',
+      },
+      {
+        question: 'Kann ich Maschinen besichtigen?',
+        answer: 'Ja, wir empfehlen dringend eine Besichtigung vor dem Kauf. Vereinbaren Sie über das Anfrageformular oder telefonisch einen Termin beim Verkäufer. Viele Verkäufer bieten auch Testmessungen an.',
+      },
+      {
+        question: 'Wer kümmert sich um den Transport?',
+        answer: 'Der Transport wird direkt zwischen Käufer und Verkäufer vereinbart. Viele Verkäufer können den Transport organisieren oder Spediteure empfehlen, die auf Messtechnik spezialisiert sind.',
+      },
+    ],
+  },
+  {
+    title: 'Für Verkäufer',
+    items: [
+      {
+        question: 'Wie erstelle ich ein Inserat?',
+        answer: 'Registrieren Sie sich kostenlos, wählen Sie Ihren Plan und folgen Sie unserem 5-Schritte-Wizard. Sie benötigen: Angaben zur Maschine, technische Daten, Standort, Beschreibung und mindestens 3 Fotos.',
+      },
+      {
+        question: 'Welche Gebühren fallen an?',
+        answer: 'CMM24 berechnet keine Verkaufsprovision. Sie zahlen nur die monatliche Gebühr Ihres gewählten Plans. Mit dem Free-Plan ist ein Inserat dauerhaft kostenlos.',
+      },
+      {
+        question: 'Wie werde ich verifizierter Verkäufer?',
+        answer: 'Zur Verifizierung benötigen wir einen Gewerbenachweis und eine kurze Prüfung Ihres Unternehmens. Verifizierte Verkäufer erhalten ein Vertrauens-Badge und erscheinen bevorzugt in den Suchergebnissen.',
+      },
+    ],
+  },
+  {
+    title: 'Technische Fragen',
+    items: [
+      {
+        question: 'Was bedeutet MPEE bei der Genauigkeit?',
+        answer: 'MPEE (Maximum Permissible Error of Length Measurement) gibt die maximale Längenmessabweichung an. Die Formel (z.B. "1.8 + L/350 µm") besteht aus einer Basisabweichung und einem längenabhängigen Anteil.',
+      },
+      {
+        question: 'Ist die Software im Preis enthalten?',
+        answer: 'Das hängt vom Angebot ab. Bei den meisten Inseraten ist die Software (Lizenz) enthalten. Achten Sie auf die Beschreibung und fragen Sie nach, ob die Lizenz übertragbar ist und ob Updates verfügbar sind.',
+      },
+      {
+        question: 'Wie wichtig ist das Kalibrierzertifikat?',
+        answer: 'Sehr wichtig! Ein aktuelles Kalibrierzertifikat (max. 12 Monate alt) bestätigt die Genauigkeit der Maschine und ist oft Voraussetzung für ISO-zertifizierte Qualitätssicherung. Achten Sie darauf, dass es von einem akkreditierten Labor stammt.',
+      },
+    ],
+  },
+];
+
+// Team Members for About Page
+export const teamMembers: TeamMember[] = [
+  {
+    name: 'Jan Hemkemeier',
+    role: 'Gründer & Geschäftsführer',
+    bio: 'Jan hat CMM24 mit der Vision gegründet, den Gebrauchtmaschinenmarkt für Messtechnik transparenter und effizienter zu gestalten. Mit über 10 Jahren Erfahrung in der Messtechnik-Branche kennt er die Herausforderungen von Käufern und Verkäufern aus erster Hand.',
+    linkedin: 'https://linkedin.com/in/janhemkemeier',
+  },
+];
+
+// Company Info for Legal Pages
+export const companyInfo = {
+  name: 'CMM24 GmbH',
+  street: 'Musterstraße 1',
+  postalCode: '80331',
+  city: 'München',
+  country: 'Deutschland',
+  email: 'kontakt@cmm24.de',
+  phone: '+49 89 123456',
+  managingDirector: 'Jan Hemkemeier',
+  registerCourt: 'Amtsgericht München',
+  registerNumber: 'HRB 123456',
+  vatId: 'DE123456789',
+};

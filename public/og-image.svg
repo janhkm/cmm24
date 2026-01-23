@@ -1,0 +1,33 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Gradient -->
+  <rect width="1200" height="630" fill="url(#bg-gradient)"/>
+  
+  <!-- Decorative circles -->
+  <circle cx="100" cy="100" r="200" fill="#1E90E6" fill-opacity="0.1"/>
+  <circle cx="1100" cy="530" r="250" fill="#1E90E6" fill-opacity="0.08"/>
+  
+  <!-- Logo -->
+  <rect x="520" y="150" width="80" height="80" rx="16" fill="#1E90E6"/>
+  <text x="560" y="208" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">C</text>
+  <text x="620" y="205" font-family="system-ui, -apple-system, sans-serif" font-size="56" font-weight="bold" fill="#1F2937">MM24</text>
+  
+  <!-- Main Title -->
+  <text x="600" y="320" font-family="system-ui, -apple-system, sans-serif" font-size="42" font-weight="bold" fill="#1F2937" text-anchor="middle">Marktplatz für gebrauchte</text>
+  <text x="600" y="380" font-family="system-ui, -apple-system, sans-serif" font-size="42" font-weight="bold" fill="#1E90E6" text-anchor="middle">Koordinatenmessmaschinen</text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="450" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#6B7280" text-anchor="middle">Der führende B2B-Marktplatz für CMM in Europa</text>
+  
+  <!-- Trust Badges -->
+  <text x="400" y="530" font-family="system-ui, -apple-system, sans-serif" font-size="18" fill="#10B981" text-anchor="middle">✓ Geprüfte Inserate</text>
+  <text x="600" y="530" font-family="system-ui, -apple-system, sans-serif" font-size="18" fill="#10B981" text-anchor="middle">✓ Seriöse Händler</text>
+  <text x="800" y="530" font-family="system-ui, -apple-system, sans-serif" font-size="18" fill="#10B981" text-anchor="middle">✓ Faire Preise</text>
+  
+  <defs>
+    <linearGradient id="bg-gradient" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F9FAFB"/>
+      <stop offset="50%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#EFF6FF"/>
+    </linearGradient>
+  </defs>
+</svg>
