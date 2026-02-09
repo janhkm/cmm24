@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Phone, MessageSquare, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface StickyMobileCTAProps {
   /** Phone number to call */
@@ -20,13 +21,17 @@ interface StickyMobileCTAProps {
 
 export function StickyMobileCTA({
   phone = '+49 123 456789',
-  primaryLabel = 'Anfrage senden',
+  primaryLabel,
   onPrimaryClick,
   showPhone = true,
   showScrollTop = true,
 }: StickyMobileCTAProps) {
+  const tListing = useTranslations('listing');
+  const tCommon = useTranslations('common');
   const [isVisible, setIsVisible] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
+
+  const label = primaryLabel ?? tListing('sendInquiry');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -62,7 +67,7 @@ export function StickyMobileCTA({
             className="shrink-0"
             asChild
           >
-            <a href={`tel:${phone.replace(/\s/g, '')}`} aria-label="Anrufen">
+            <a href={`tel:${phone.replace(/\s/g, '')}`} aria-label={tCommon('call')}>
               <Phone className="h-5 w-5" />
             </a>
           </Button>
@@ -74,7 +79,7 @@ export function StickyMobileCTA({
           onClick={onPrimaryClick}
         >
           <MessageSquare className="mr-2 h-4 w-4" />
-          {primaryLabel}
+          {label}
         </Button>
 
         {/* Scroll to Top */}
@@ -84,7 +89,7 @@ export function StickyMobileCTA({
             size="icon"
             className="shrink-0"
             onClick={scrollToTop}
-            aria-label="Nach oben scrollen"
+            aria-label={tCommon('scrollToTop')}
           >
             <ArrowUp className="h-5 w-5" />
           </Button>

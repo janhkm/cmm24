@@ -3,10 +3,11 @@ import { persist } from 'zustand/middleware';
 
 interface CompareState {
   items: string[];
+  titles: Record<string, string>;
   maxItems: number;
-  addItem: (id: string) => boolean;
+  addItem: (id: string, title?: string) => boolean;
   removeItem: (id: string) => void;
-  toggleItem: (id: string) => boolean;
+  toggleItem: (id: string, title?: string) => boolean;
   clearItems: () => void;
   isInCompare: (id: string) => boolean;
 }
@@ -15,35 +16,41 @@ export const useCompareStore = create<CompareState>()(
   persist(
     (set, get) => ({
       items: [],
+      titles: {},
       maxItems: 5,
 
-      addItem: (id: string) => {
-        const { items, maxItems } = get();
+      addItem: (id: string, title?: string) => {
+        const { items, maxItems, titles } = get();
         if (items.length >= maxItems) {
           return false;
         }
         if (!items.includes(id)) {
-          set({ items: [...items, id] });
+          set({
+            items: [...items, id],
+            titles: title ? { ...titles, [id]: title } : titles,
+          });
         }
         return true;
       },
 
       removeItem: (id: string) => {
-        const { items } = get();
-        set({ items: items.filter((item) => item !== id) });
+        const { items, titles } = get();
+        const newTitles = { ...titles };
+        delete newTitles[id];
+        set({ items: items.filter((item) => item !== id), titles: newTitles });
       },
 
-      toggleItem: (id: string) => {
+      toggleItem: (id: string, title?: string) => {
         const { items, addItem, removeItem } = get();
         if (items.includes(id)) {
           removeItem(id);
           return false;
         }
-        return addItem(id);
+        return addItem(id, title);
       },
 
       clearItems: () => {
-        set({ items: [] });
+        set({ items: [], titles: {} });
       },
 
       isInCompare: (id: string) => {

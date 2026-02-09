@@ -1,13 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { MapPin, Calendar, Ruler } from 'lucide-react';
 import { ListingCard } from './listing-card';
 import { useCompareStore } from '@/stores/compare-store';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { Listing } from '@/types';
+import { useTranslations } from 'next-intl';
 
 interface ListingGridProps {
   listings: Listing[];
@@ -17,6 +18,8 @@ interface ListingGridProps {
 
 export function ListingGrid({ listings, showCompare = true, viewMode = 'grid' }: ListingGridProps) {
   const { toggleItem, isInCompare } = useCompareStore();
+  const t = useTranslations('listingGrid');
+  const tMachines = useTranslations('machines');
 
   if (listings.length === 0) {
     return (
@@ -36,9 +39,9 @@ export function ListingGrid({ listings, showCompare = true, viewMode = 'grid' }:
             />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold">Keine Maschinen gefunden</h3>
+        <h3 className="text-lg font-semibold">{t('noMachinesFound')}</h3>
         <p className="mt-2 text-sm text-muted-foreground max-w-md">
-          Versuchen Sie, Ihre Filter anzupassen oder die Suche zu erweitern.
+          {t('adjustFilters')}
         </p>
       </div>
     );
@@ -89,6 +92,9 @@ function ListingListItem({
   isCompared: boolean;
   onCompareToggle: (id: string) => void;
 }) {
+  const t = useTranslations('listingGrid');
+  const tMachines = useTranslations('machines');
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('de-DE', {
       style: 'currency',
@@ -114,17 +120,17 @@ function ListingListItem({
             />
           ) : (
             <div className="flex h-full items-center justify-center text-muted-foreground">
-              Kein Bild
+              {t('noImage')}
             </div>
           )}
           {isSold && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-              <Badge variant="secondary">VERKAUFT</Badge>
+              <Badge variant="secondary">{t('sold')}</Badge>
             </div>
           )}
           {listing.featured && !isSold && (
             <Badge className="absolute left-2 top-2" variant="default">
-              Featured
+              {tMachines('featured')}
             </Badge>
           )}
         </div>
@@ -147,7 +153,7 @@ function ListingListItem({
             <div className="text-right shrink-0">
               <p className="text-lg font-bold text-primary">{formatPrice(listing.price)}</p>
               <p className="text-xs text-muted-foreground">
-                zzgl. MwSt. {listing.priceNegotiable && '· VB'}
+                {tMachines('vatExcl')} {listing.priceNegotiable && `· ${tMachines('negotiable')}`}
               </p>
             </div>
           </div>
@@ -156,7 +162,7 @@ function ListingListItem({
           <div className="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" />
-              <span>Bj. {listing.yearBuilt}</span>
+              <span>{tMachines('yearBuilt', { year: listing.yearBuilt })}</span>
             </div>
             <div className="flex items-center gap-1">
               <Ruler className="h-3.5 w-3.5" />
@@ -176,7 +182,7 @@ function ListingListItem({
         {/* Actions */}
         <div className="mt-3 flex items-center gap-2">
           <Button asChild size="sm" disabled={isSold}>
-            <Link href={`/maschinen/${listing.slug}`}>Details ansehen</Link>
+            <Link href={`/maschinen/${listing.slug}`}>{t('viewDetails')}</Link>
           </Button>
           {showCompare && !isSold && (
             <Button
@@ -184,7 +190,7 @@ function ListingListItem({
               size="sm"
               onClick={() => onCompareToggle(listing.id)}
             >
-              {isCompared ? 'Im Vergleich' : 'Vergleichen'}
+              {isCompared ? t('inComparison') : t('compare')}
             </Button>
           )}
         </div>

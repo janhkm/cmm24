@@ -1,7 +1,13 @@
 'use client';
 
-import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
+import { useRouter, usePathname } from '@/i18n/navigation';
+import { useLocale } from 'next-intl';
+import { routing, localeNames, localeFlags } from '@/i18n/routing';
+import type { Locale } from '@/i18n/routing';
 import {
   Search,
   Menu,
@@ -13,6 +19,7 @@ import {
   MessageSquare,
   Settings,
   LogOut,
+  Globe,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,22 +39,6 @@ import {
 } from '@/components/ui/sheet';
 import { SearchCommand } from '@/components/shared/search-command';
 
-const navigation = [
-  { name: 'Alle Maschinen', href: '/maschinen' },
-];
-
-const mobileNavigation = [
-  { name: 'Alle Maschinen', href: '/maschinen' },
-  { name: 'Hersteller', href: '/hersteller' },
-  { name: 'Kategorien', href: '/kategorien' },
-  { name: 'Ratgeber', href: '/ratgeber' },
-];
-
-const languages = [
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-];
-
 // Simulate auth state - in real app this would come from auth context
 const isLoggedIn = false;
 const currentUser = {
@@ -57,20 +48,52 @@ const currentUser = {
 };
 
 export function Header() {
+  const t = useTranslations('nav');
+  const tc = useTranslations('common');
+  const th = useTranslations('header');
+  const locale = useLocale() as Locale;
+  const router = useRouter();
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState('de'); // Keep for mobile menu
+
+  const navigation = [
+    { name: t('allMachines'), href: '/maschinen' as const },
+  ];
+
+  const mobileNavigation = [
+    { name: t('allMachines'), href: '/maschinen' as const },
+    { name: t('manufacturers'), href: '/hersteller' as const },
+    { name: t('categories'), href: '/kategorien' as const },
+    { name: t('guides'), href: '/ratgeber' as const },
+  ];
+
+  function switchLocale(newLocale: string) {
+    router.replace(pathname, { locale: newLocale as Locale });
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container-page">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <span className="text-lg font-bold text-primary-foreground">C</span>
-            </div>
-            <span className="text-xl font-bold">CMM24</span>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/logo.png"
+              alt="CMM24"
+              width={120}
+              height={32}
+              className="h-8 w-auto dark:hidden"
+              priority
+            />
+            <Image
+              src="/logo-dark.png"
+              alt="CMM24"
+              width={120}
+              height={32}
+              className="h-8 w-auto hidden dark:block"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -103,6 +126,28 @@ export function Header() {
               <Search className="h-5 w-5" />
             </Button>
 
+            {/* Language Switcher - Desktop */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="hidden sm:flex gap-1.5">
+                  <Globe className="h-4 w-4" />
+                  <span className="text-xs uppercase">{locale}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 max-h-80 overflow-y-auto">
+                {routing.locales.map((loc) => (
+                  <DropdownMenuItem
+                    key={loc}
+                    onClick={() => switchLocale(loc)}
+                    className={locale === loc ? 'bg-accent' : ''}
+                  >
+                    <span className="mr-2">{localeFlags[loc]}</span>
+                    {localeNames[loc]}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {/* Auth Buttons / User Menu */}
             {isLoggedIn ? (
               <DropdownMenu>
@@ -124,31 +169,31 @@ export function Header() {
                   <DropdownMenuItem asChild>
                     <Link href="/seller/dashboard" className="cursor-pointer">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
+                      {t('dashboard')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/seller/inserate" className="cursor-pointer">
                       <FileText className="mr-2 h-4 w-4" />
-                      Meine Inserate
+                      {t('myListings')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/seller/anfragen" className="cursor-pointer">
                       <MessageSquare className="mr-2 h-4 w-4" />
-                      Anfragen
+                      {t('inquiries')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/seller/konto" className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
-                      Einstellungen
+                      {t('settings')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Abmelden
+                    {tc('logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -157,11 +202,11 @@ export function Header() {
                 <Button variant="ghost" size="sm" asChild>
                   <Link href="/login">
                     <LogIn className="mr-2 h-4 w-4" />
-                    Einloggen
+                    {tc('login')}
                   </Link>
                 </Button>
                 <Button size="sm" asChild>
-                  <Link href="/registrieren">Jetzt inserieren</Link>
+                  <Link href="/registrieren">{tc('register')}</Link>
                 </Button>
               </div>
             )}
@@ -175,7 +220,7 @@ export function Header() {
               </SheetTrigger>
               <SheetContent side="right" className="w-80">
                 <SheetHeader>
-                  <SheetTitle className="text-left">Menü</SheetTitle>
+                  <SheetTitle className="text-left">{t('menu')}</SheetTitle>
                 </SheetHeader>
                 <div className="mt-6 flex flex-col gap-4">
                   {/* Mobile Search */}
@@ -183,7 +228,7 @@ export function Header() {
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       type="search"
-                      placeholder="Suchen..."
+                      placeholder={th('searchPlaceholder')}
                       className="w-full pl-10"
                     />
                   </div>
@@ -206,17 +251,17 @@ export function Header() {
                     {/* Language Selector Mobile */}
                     <div className="mb-4">
                       <p className="mb-2 text-sm font-medium text-muted-foreground">
-                        Sprache
+                        {t('language')}
                       </p>
-                      <div className="flex gap-2">
-                        {languages.map((lang) => (
+                      <div className="flex flex-wrap gap-2">
+                        {routing.locales.map((loc) => (
                           <Button
-                            key={lang.code}
-                            variant={currentLang === lang.code ? 'default' : 'outline'}
+                            key={loc}
+                            variant={locale === loc ? 'default' : 'outline'}
                             size="sm"
-                            onClick={() => setCurrentLang(lang.code)}
+                            onClick={() => switchLocale(loc)}
                           >
-                            {lang.flag} {lang.name}
+                            {localeFlags[loc]} {localeNames[loc]}
                           </Button>
                         ))}
                       </div>
@@ -227,12 +272,12 @@ export function Header() {
                       <div className="flex flex-col gap-2">
                         <Button variant="outline" asChild>
                           <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                            Einloggen
+                            {tc('login')}
                           </Link>
                         </Button>
                         <Button asChild>
                           <Link href="/registrieren" onClick={() => setMobileMenuOpen(false)}>
-                            Kostenlos inserieren
+                            {tc('registerFree')}
                           </Link>
                         </Button>
                       </div>
@@ -251,7 +296,7 @@ export function Header() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Hersteller, Modell oder Stichwort..."
+                placeholder={th('searchPlaceholderFull')}
                 className="w-full pl-10"
                 autoFocus
               />

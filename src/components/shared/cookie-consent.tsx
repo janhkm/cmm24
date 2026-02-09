@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { X, Cookie, Settings2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
+import { Cookie, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -24,19 +25,19 @@ type CookiePreferences = {
 const COOKIE_CONSENT_KEY = 'cmm24-cookie-consent';
 
 export function CookieConsent() {
+  const t = useTranslations('cookie');
+  const tc = useTranslations('common');
   const [showBanner, setShowBanner] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>({
-    necessary: true, // Always true, can't be changed
+    necessary: true,
     functional: false,
     analytics: false,
   });
 
   useEffect(() => {
-    // Check if user has already consented
     const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!consent) {
-      // Small delay for better UX
       const timer = setTimeout(() => setShowBanner(true), 1000);
       return () => clearTimeout(timer);
     } else {
@@ -57,19 +58,11 @@ export function CookieConsent() {
   };
 
   const acceptAll = () => {
-    savePreferences({
-      necessary: true,
-      functional: true,
-      analytics: true,
-    });
+    savePreferences({ necessary: true, functional: true, analytics: true });
   };
 
   const acceptNecessary = () => {
-    savePreferences({
-      necessary: true,
-      functional: false,
-      analytics: false,
-    });
+    savePreferences({ necessary: true, functional: false, analytics: false });
   };
 
   const saveCustomPreferences = () => {
@@ -96,32 +89,30 @@ export function CookieConsent() {
               <div className="flex-1 space-y-4">
                 <div>
                   <h2 id="cookie-banner-title" className="text-lg font-semibold">
-                    🍪 Wir verwenden Cookies
+                    {t('title')}
                   </h2>
                   <p id="cookie-banner-description" className="mt-1 text-sm text-muted-foreground">
-                    Wir nutzen Cookies, um Ihnen die bestmögliche Erfahrung auf unserer Website zu bieten. 
-                    Einige sind für den Betrieb der Website notwendig, andere helfen uns, die Website zu verbessern.
-                    Mehr dazu in unserer{' '}
+                    {t('description')}{' '}
                     <Link href="/datenschutz" className="text-primary hover:underline">
-                      Datenschutzerklärung
+                      {t('privacyPolicy')}
                     </Link>{' '}
-                    und{' '}
+                    &amp;{' '}
                     <Link href="/cookie-richtlinie" className="text-primary hover:underline">
-                      Cookie-Richtlinie
+                      {t('cookiePolicy')}
                     </Link>
                     .
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button onClick={acceptAll} className="flex-1 sm:flex-none">
-                    Alle akzeptieren
+                    {t('acceptAll')}
                   </Button>
                   <Button
                     variant="outline"
                     onClick={acceptNecessary}
                     className="flex-1 sm:flex-none"
                   >
-                    Nur notwendige
+                    {t('acceptNecessary')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -129,7 +120,7 @@ export function CookieConsent() {
                     className="flex-1 sm:flex-none"
                   >
                     <Settings2 className="mr-2 h-4 w-4" />
-                    Einstellungen
+                    {t('settings')}
                   </Button>
                 </div>
               </div>
@@ -142,9 +133,9 @@ export function CookieConsent() {
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Cookie-Einstellungen</DialogTitle>
+            <DialogTitle>{t('settingsTitle')}</DialogTitle>
             <DialogDescription>
-              Wählen Sie aus, welche Arten von Cookies Sie akzeptieren möchten.
+              {t('settingsDesc')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6 py-4">
@@ -152,30 +143,23 @@ export function CookieConsent() {
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
                 <Label htmlFor="necessary" className="text-base font-medium">
-                  Notwendige Cookies
+                  {t('necessary')}
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Diese Cookies sind für den Betrieb der Website unbedingt erforderlich 
-                  (z.B. Session, Authentifizierung).
+                  {t('necessaryDesc')}
                 </p>
               </div>
-              <Switch
-                id="necessary"
-                checked={true}
-                disabled
-                aria-describedby="necessary-description"
-              />
+              <Switch id="necessary" checked={true} disabled />
             </div>
 
             {/* Functional Cookies */}
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
                 <Label htmlFor="functional" className="text-base font-medium">
-                  Funktionale Cookies
+                  {t('functional')}
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Ermöglichen erweiterte Funktionen wie Spracheinstellungen 
-                  und Vergleichsliste.
+                  {t('functionalDesc')}
                 </p>
               </div>
               <Switch
@@ -191,11 +175,10 @@ export function CookieConsent() {
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
                 <Label htmlFor="analytics" className="text-base font-medium">
-                  Analyse-Cookies
+                  {t('analytics')}
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Helfen uns zu verstehen, wie Besucher die Website nutzen 
-                  (anonymisierte Statistiken).
+                  {t('analyticsDesc')}
                 </p>
               </div>
               <Switch
@@ -209,10 +192,10 @@ export function CookieConsent() {
           </div>
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => setShowSettings(false)}>
-              Abbrechen
+              {tc('cancel')}
             </Button>
             <Button onClick={saveCustomPreferences}>
-              Einstellungen speichern
+              {t('saveSettings')}
             </Button>
           </div>
         </DialogContent>

@@ -1,41 +1,49 @@
-import Link from 'next/link';
+'use client';
+
+import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { Separator } from '@/components/ui/separator';
 
-const footerLinks = {
-  marktplatz: [
-    { name: 'Alle Maschinen', href: '/maschinen' },
-    { name: 'Hersteller', href: '/hersteller' },
-    { name: 'Kategorien', href: '/kategorien' },
-    { name: 'Vergleichen', href: '/vergleich' },
-    { name: 'So funktioniert\'s', href: '/so-funktionierts' },
-    { name: 'Für Verkäufer', href: '/verkaufen' },
-  ],
-  wissen: [
-    { name: 'Ratgeber', href: '/ratgeber' },
-    { name: 'Glossar', href: '/glossar' },
-    { name: 'FAQ', href: '/faq' },
-  ],
-  unternehmen: [
-    { name: 'Über uns', href: '/ueber-uns' },
-    { name: 'Kontakt', href: '/kontakt' },
-  ],
-  rechtliches: [
-    { name: 'Impressum', href: '/impressum' },
-    { name: 'Datenschutz', href: '/datenschutz' },
-    { name: 'AGB', href: '/agb' },
-    { name: 'Widerrufsbelehrung', href: '/widerrufsbelehrung' },
-    { name: 'Cookie-Richtlinie', href: '/cookie-richtlinie' },
-  ],
-};
-
 const manufacturers = [
-  { name: 'Zeiss', href: '/hersteller/zeiss' },
-  { name: 'Hexagon', href: '/hersteller/hexagon' },
-  { name: 'Wenzel', href: '/hersteller/wenzel' },
-  { name: 'Mitutoyo', href: '/hersteller/mitutoyo' },
+  { name: 'Zeiss', href: '/hersteller/zeiss' as const },
+  { name: 'Hexagon', href: '/hersteller/hexagon' as const },
+  { name: 'Wenzel', href: '/hersteller/wenzel' as const },
+  { name: 'Mitutoyo', href: '/hersteller/mitutoyo' as const },
 ];
 
 export function Footer() {
+  const t = useTranslations('footer');
+  const tn = useTranslations('nav');
+  const tc = useTranslations('common');
+
+  const footerLinks = {
+    marktplatz: [
+      { name: tn('allMachines'), href: '/maschinen' as const },
+      { name: tn('manufacturers'), href: '/hersteller' as const },
+      { name: tn('categories'), href: '/kategorien' as const },
+      { name: tn('compare'), href: '/vergleich' as const },
+      { name: tn('howItWorks'), href: '/so-funktionierts' as const },
+      { name: t('forSellers'), href: '/verkaufen' as const },
+    ],
+    wissen: [
+      { name: tn('guides'), href: '/ratgeber' as const },
+      { name: tn('glossary'), href: '/glossar' as const },
+      { name: tn('faq'), href: '/faq' as const },
+    ],
+    unternehmen: [
+      { name: tn('about'), href: '/ueber-uns' as const },
+      { name: tn('contact'), href: '/kontakt' as const },
+    ],
+    rechtliches: [
+      { name: t('impressum'), href: '/impressum' as const },
+      { name: t('privacy'), href: '/datenschutz' as const },
+      { name: t('terms'), href: '/agb' as const },
+      { name: t('cancellation'), href: '/widerrufsbelehrung' as const },
+      { name: t('cookiePolicy'), href: '/cookie-richtlinie' as const },
+    ],
+  };
+
   return (
     <footer className="border-t bg-muted/30">
       <div className="container-page py-12 md:py-16">
@@ -43,14 +51,11 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <span className="text-lg font-bold text-primary-foreground">C</span>
-              </div>
-              <span className="text-xl font-bold">CMM24</span>
+              <Image src="/logo.png" alt="CMM24" width={120} height={32} className="h-8 w-auto dark:hidden" />
+              <Image src="/logo-dark.png" alt="CMM24" width={120} height={32} className="h-8 w-auto hidden dark:block" />
             </Link>
             <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-              Der führende B2B-Marktplatz für gebrauchte Koordinatenmessmaschinen in Europa. 
-              Geprüfte Inserate, seriöse Händler.
+              {t('description')}
             </p>
             {/* Trust Badges */}
             <div className="mt-6 flex flex-wrap gap-4">
@@ -58,20 +63,20 @@ export function Footer() {
                 <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                <span>Geprüfte Inserate</span>
+                <span>{t('verifiedListings')}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                <span>DSGVO-konform</span>
+                <span>{t('gdprCompliant')}</span>
               </div>
             </div>
           </div>
 
           {/* Links Columns */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold">Marktplatz</h3>
+            <h3 className="mb-4 text-sm font-semibold">{t('marketplace')}</h3>
             <ul className="space-y-3">
               {footerLinks.marktplatz.map((link) => (
                 <li key={link.name}>
@@ -87,7 +92,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-4 text-sm font-semibold">Wissen</h3>
+            <h3 className="mb-4 text-sm font-semibold">{t('knowledge')}</h3>
             <ul className="space-y-3">
               {footerLinks.wissen.map((link) => (
                 <li key={link.name}>
@@ -101,7 +106,7 @@ export function Footer() {
               ))}
             </ul>
             
-            <h3 className="mb-4 mt-6 text-sm font-semibold">Unternehmen</h3>
+            <h3 className="mb-4 mt-6 text-sm font-semibold">{t('company')}</h3>
             <ul className="space-y-3">
               {footerLinks.unternehmen.map((link) => (
                 <li key={link.name}>
@@ -117,7 +122,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-4 text-sm font-semibold">Beliebte Hersteller</h3>
+            <h3 className="mb-4 text-sm font-semibold">{t('popularManufacturers')}</h3>
             <ul className="space-y-3">
               {manufacturers.map((link) => (
                 <li key={link.name}>
@@ -138,7 +143,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} CMM24. Alle Rechte vorbehalten.
+            © {new Date().getFullYear()} CMM24. {tc('allRightsReserved')}
           </p>
           <div className="flex flex-wrap gap-4">
             {footerLinks.rechtliches.map((link) => (

@@ -1,0 +1,24 @@
+# CMM24 Cursor Rules
+
+## Datenbank-Sicherheit (KRITISCH)
+
+**NIEMALS folgende Operationen ausführen:**
+
+- `DROP DATABASE`
+- `DROP TABLE`
+- `DROP SCHEMA`
+- `TRUNCATE TABLE`
+- `DELETE FROM` ohne WHERE-Klausel
+- `supabase db reset`
+- `supabase db push --force` (ohne explizite User-Bestätigung)
+
+**Bei Migrationen:**
+- Nur additive Änderungen (CREATE, ALTER ADD)
+- Keine destruktiven Änderungen ohne explizite Bestätigung
+- Soft-Delete verwenden statt Hard-Delete
+
+## Allgemeine Regeln
+
+- Immer deutsche Sprache in Kommentaren und Commit-Messages verwenden
+- TypeScript strict mode beachten
+- Supabase RLS-Policies niemals deaktivieren

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { Globe, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,12 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
-
-const subNavigation = [
-  { name: 'Hersteller', href: '/hersteller' },
-  { name: 'Kategorien', href: '/kategorien' },
-  { name: 'Ratgeber', href: '/ratgeber' },
-];
+import { useTranslations } from 'next-intl';
 
 const languages = [
   { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
@@ -26,6 +21,13 @@ const languages = [
 
 export function Subheader() {
   const [currentLang, setCurrentLang] = useState('de');
+  const t = useTranslations('nav');
+
+  const subNavigation = [
+    { name: t('manufacturers'), href: '/hersteller' },
+    { name: t('categories'), href: '/kategorien' },
+    { name: t('guides'), href: '/ratgeber' },
+  ];
 
   return (
     <div className="w-full border-b bg-muted/30">

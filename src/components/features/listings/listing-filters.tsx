@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { ChevronDown, X, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,20 +25,26 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { manufacturers, categories, conditions, countries } from '@/data/mock-data';
+import { categories, conditions, countries } from '@/data/constants';
 import type { ListingFilters } from '@/types';
 
 interface ListingFiltersProps {
   filters: ListingFilters;
   onFiltersChange: (filters: ListingFilters) => void;
   totalResults: number;
+  manufacturers?: Array<{ id: string; name: string; slug: string; listingCount?: number }>;
 }
 
 export function ListingFiltersSidebar({
   filters,
   onFiltersChange,
   totalResults,
+  manufacturers = [],
 }: ListingFiltersProps) {
+  const t = useTranslations('filters');
+  const tc = useTranslations('common');
+  const locale = useLocale();
+
   const [priceRange, setPriceRange] = useState<[number, number]>([
     filters.priceMin ? filters.priceMin / 100 : 0,
     filters.priceMax ? filters.priceMax / 100 : 200000,
@@ -123,7 +130,7 @@ export function ListingFiltersSidebar({
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('de-DE', {
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'EUR',
       minimumFractionDigits: 0,
@@ -137,7 +144,7 @@ export function ListingFiltersSidebar({
         {/* Manufacturer Filter */}
         <AccordionItem value="manufacturer">
           <AccordionTrigger className="text-sm font-medium">
-            Hersteller
+            {t('manufacturer')}
             {filters.manufacturers && filters.manufacturers.length > 0 && (
               <Badge variant="secondary" className="ml-2">
                 {filters.manufacturers.length}
@@ -147,7 +154,7 @@ export function ListingFiltersSidebar({
           <AccordionContent>
             <div className="space-y-2">
               <Input
-                placeholder="Hersteller suchen..."
+                placeholder={t('searchManufacturer')}
                 className="mb-2"
               />
               <ScrollArea className="h-48">
@@ -182,13 +189,13 @@ export function ListingFiltersSidebar({
         {/* Price Filter */}
         <AccordionItem value="price">
           <AccordionTrigger className="text-sm font-medium">
-            Preis
+            {t('price')}
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-4">
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <Label className="text-xs">Min</Label>
+                  <Label className="text-xs">{tc('min')}</Label>
                   <Input
                     type="number"
                     placeholder="0"
@@ -200,7 +207,7 @@ export function ListingFiltersSidebar({
                   />
                 </div>
                 <div className="flex-1">
-                  <Label className="text-xs">Max</Label>
+                  <Label className="text-xs">{tc('max')}</Label>
                   <Input
                     type="number"
                     placeholder="200.000"
@@ -231,13 +238,13 @@ export function ListingFiltersSidebar({
         {/* Year Filter */}
         <AccordionItem value="year">
           <AccordionTrigger className="text-sm font-medium">
-            Baujahr
+            {t('yearBuilt')}
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-4">
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <Label className="text-xs">Von</Label>
+                  <Label className="text-xs">{tc('from')}</Label>
                   <Input
                     type="number"
                     placeholder="2010"
@@ -249,7 +256,7 @@ export function ListingFiltersSidebar({
                   />
                 </div>
                 <div className="flex-1">
-                  <Label className="text-xs">Bis</Label>
+                  <Label className="text-xs">{tc('to')}</Label>
                   <Input
                     type="number"
                     placeholder={String(new Date().getFullYear())}
@@ -280,7 +287,7 @@ export function ListingFiltersSidebar({
         {/* Condition Filter */}
         <AccordionItem value="condition">
           <AccordionTrigger className="text-sm font-medium">
-            Zustand
+            {t('condition')}
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-2">
@@ -309,13 +316,13 @@ export function ListingFiltersSidebar({
         {/* Measuring Range Filter */}
         <AccordionItem value="measuringRange">
           <AccordionTrigger className="text-sm font-medium">
-            Messbereich (X-Achse)
+            {t('measuringRange')}
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-4">
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <Label className="text-xs">Min (mm)</Label>
+                  <Label className="text-xs">{t('minMm')}</Label>
                   <Input
                     type="number"
                     placeholder="0"
@@ -327,7 +334,7 @@ export function ListingFiltersSidebar({
                   />
                 </div>
                 <div className="flex-1">
-                  <Label className="text-xs">Max (mm)</Label>
+                  <Label className="text-xs">{t('maxMm')}</Label>
                   <Input
                     type="number"
                     placeholder="3000"
@@ -357,7 +364,7 @@ export function ListingFiltersSidebar({
         {/* Location Filter */}
         <AccordionItem value="location">
           <AccordionTrigger className="text-sm font-medium">
-            Standort
+            {t('location')}
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-2">
@@ -396,7 +403,7 @@ export function ListingFiltersSidebar({
       <aside className="hidden lg:block w-72 shrink-0">
         <div className="sticky top-20 rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold">Filter</h2>
+            <h2 className="text-sm font-semibold">{t('title')}</h2>
             {activeFiltersCount > 0 && (
               <Button
                 variant="ghost"
@@ -404,7 +411,7 @@ export function ListingFiltersSidebar({
                 onClick={clearFilters}
                 className="h-auto py-1 px-2 text-xs"
               >
-                Zurücksetzen
+                {t('reset')}
               </Button>
             )}
           </div>
@@ -418,7 +425,7 @@ export function ListingFiltersSidebar({
           <SheetTrigger asChild>
             <Button variant="outline" className="gap-2">
               <SlidersHorizontal className="h-4 w-4" />
-              Filter
+              {t('title')}
               {activeFiltersCount > 0 && (
                 <Badge variant="secondary">{activeFiltersCount}</Badge>
               )}
@@ -427,14 +434,14 @@ export function ListingFiltersSidebar({
           <SheetContent side="bottom" className="h-[90vh] rounded-t-xl">
             <SheetHeader>
               <SheetTitle className="flex items-center justify-between">
-                <span>Filter</span>
+                <span>{t('title')}</span>
                 {activeFiltersCount > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={clearFilters}
                   >
-                    Zurücksetzen
+                    {t('reset')}
                   </Button>
                 )}
               </SheetTitle>
@@ -444,7 +451,7 @@ export function ListingFiltersSidebar({
             </ScrollArea>
             <SheetFooter className="mt-4">
               <Button className="w-full">
-                {totalResults} Ergebnisse anzeigen
+                {t('showResults', { count: totalResults })}
               </Button>
             </SheetFooter>
           </SheetContent>
@@ -458,10 +465,14 @@ export function ListingFiltersSidebar({
 export function ActiveFilters({
   filters,
   onFiltersChange,
+  manufacturers = [],
 }: {
   filters: ListingFilters;
   onFiltersChange: (filters: ListingFilters) => void;
+  manufacturers?: Array<{ id: string; name: string; slug: string }>;
 }) {
+  const locale = useLocale();
+
   const activeFilters: { key: string; label: string; onRemove: () => void }[] = [];
 
   // Add manufacturer filters
@@ -500,8 +511,8 @@ export function ActiveFilters({
 
   // Add price filter
   if (filters.priceMin || filters.priceMax) {
-    const min = filters.priceMin ? (filters.priceMin / 100).toLocaleString('de-DE') : '0';
-    const max = filters.priceMax ? (filters.priceMax / 100).toLocaleString('de-DE') : '∞';
+    const min = filters.priceMin ? (filters.priceMin / 100).toLocaleString(locale) : '0';
+    const max = filters.priceMax ? (filters.priceMax / 100).toLocaleString(locale) : '∞';
     activeFilters.push({
       key: 'price',
       label: `${min} € - ${max} €`,

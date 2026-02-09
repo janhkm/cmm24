@@ -46,16 +46,16 @@ export interface Listing {
   currency: string;
   yearBuilt: number;
   condition: ListingCondition;
-  measuringRangeX: number;
-  measuringRangeY: number;
-  measuringRangeZ: number;
+  measuringRangeX?: number;
+  measuringRangeY?: number;
+  measuringRangeZ?: number;
   accuracyUm?: string;
   software?: string;
   controller?: string;
   probeSystem?: string;
   locationCountry: string;
   locationCity: string;
-  locationPostalCode: string;
+  locationPostalCode?: string;
   status: ListingStatus;
   featured: boolean;
   viewsCount: number;
@@ -75,12 +75,12 @@ export interface Seller {
   logoUrl?: string;
   website?: string;
   phone?: string;
-  addressCity: string;
-  addressCountry: string;
+  addressCity?: string;
+  addressCountry?: string;
   isVerified: boolean;
   listingCount: number;
   responseTime?: string;
-  memberSince: string;
+  memberSince?: string;
 }
 
 // Inquiry Types

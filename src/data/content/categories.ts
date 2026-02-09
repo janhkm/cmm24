@@ -1,0 +1,55 @@
+import type { Category } from '@/types';
+
+// Erweiterte Kategorien fuer SEO-Seiten
+export const categoryPages: Category[] = [
+  {
+    id: '1',
+    name: 'Portal-Messmaschinen',
+    slug: 'portal-messmaschinen',
+    description: 'Klassische Brückenbauweise mit höchster Präzision für anspruchsvolle Messaufgaben.',
+    longDescription: 'Portal-Messmaschinen (auch Brückenmessmaschinen genannt) sind der am häufigsten verwendete Typ von Koordinatenmessmaschinen. Sie zeichnen sich durch ihre stabile Brückenkonstruktion aus, bei der die Messbrücke auf zwei Säulen ruht und sich entlang der Y-Achse bewegt. Diese Bauweise ermöglicht höchste Genauigkeit und eignet sich ideal für die Qualitätssicherung in der Automobil-, Luft- und Raumfahrtindustrie sowie im Maschinenbau.',
+    icon: 'Building2',
+    listingCount: 145,
+    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800',
+  },
+  {
+    id: '2',
+    name: 'Ausleger-Messmaschinen',
+    slug: 'ausleger-messmaschinen',
+    description: 'Einseitig gelagerte Konstruktion für optimale Zugänglichkeit.',
+    longDescription: 'Ausleger-Messmaschinen (Cantilever CMM) haben eine einseitig gelagerte Messbrücke, die freitragend über den Messtisch ragt. Diese Bauweise bietet hervorragende Zugänglichkeit zum Werkstück von drei Seiten und ist besonders geeignet für die Messung schwerer oder sperriger Teile. Sie sind kompakter als Portal-Maschinen und eignen sich gut für beengte Platzverhältnisse.',
+    icon: 'ArrowRightFromLine',
+    listingCount: 42,
+    image: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800',
+  },
+  {
+    id: '3',
+    name: 'Horizontal-Arm-Messmaschinen',
+    slug: 'horizontal-arm-messmaschinen',
+    description: 'Ideal für große und schwere Werkstücke wie Karosserieteile.',
+    longDescription: 'Horizontal-Arm-Messmaschinen verfügen über einen horizontal ausgerichteten Messarm, der sich ideal für die Vermessung großer, flacher Werkstücke wie Karosserieteile, Bleche oder Formen eignet. Sie bieten einen großen Messbereich bei geringer Bauhöhe und werden häufig in der Automobil- und Luftfahrtindustrie eingesetzt.',
+    icon: 'MoveHorizontal',
+    listingCount: 28,
+    image: 'https://images.unsplash.com/photo-1504222490345-c075b6008014?w=800',
+  },
+  {
+    id: '4',
+    name: 'Gantry-Messmaschinen',
+    slug: 'gantry-messmaschinen',
+    description: 'Großvolumige Messmaschinen für extragroße Werkstücke.',
+    longDescription: 'Gantry-Messmaschinen sind für die Vermessung sehr großer Werkstücke konzipiert. Bei dieser Bauweise ist die Messbrücke auf Schienen montiert, die sich neben dem Werkstück befinden. Dies ermöglicht Messbereiche von mehreren Metern in allen Achsen. Typische Anwendungen sind die Vermessung von Flugzeugkomponenten, Schiffsteilen oder großen Formen.',
+    icon: 'Maximize',
+    listingCount: 15,
+    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800',
+  },
+  {
+    id: '5',
+    name: 'Optische Messsysteme',
+    slug: 'optische-messsysteme',
+    description: 'Berührungslose Messtechnik für empfindliche Oberflächen.',
+    longDescription: 'Optische Koordinatenmessmaschinen nutzen Licht- oder Lasertechnologie zur berührungslosen Vermessung. Sie eignen sich besonders für empfindliche Oberflächen, flexible Materialien oder sehr kleine Features. Moderne Multisensor-Maschinen kombinieren optische und taktile Messtechnik für maximale Flexibilität.',
+    icon: 'Eye',
+    listingCount: 35,
+    image: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800',
+  },
+];

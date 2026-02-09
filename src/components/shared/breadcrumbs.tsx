@@ -1,8 +1,9 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { ChevronRight, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface BreadcrumbItem {
   label: string;
@@ -24,6 +25,8 @@ export function Breadcrumbs({
   baseUrl = 'https://cmm24.de',
   includeSchema = true 
 }: BreadcrumbsProps) {
+  const t = useTranslations('breadcrumb');
+
   // Generate BreadcrumbList JSON-LD Schema
   const breadcrumbSchema = includeSchema ? {
     '@context': 'https://schema.org',
@@ -32,7 +35,7 @@ export function Breadcrumbs({
       {
         '@type': 'ListItem',
         position: 1,
-        name: 'Startseite',
+        name: t('home'),
         item: baseUrl,
       },
       ...items.map((item, index) => ({
@@ -66,7 +69,7 @@ export function Breadcrumbs({
               className="hover:text-foreground transition-colors flex items-center gap-1"
             >
               <Home className="h-4 w-4" />
-              <span className="sr-only">Startseite</span>
+              <span className="sr-only">{t('home')}</span>
             </Link>
           </li>
 

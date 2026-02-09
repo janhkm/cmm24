@@ -1,6 +1,9 @@
+'use client';
+
 import { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface EmptyStateProps {
   icon?: LucideIcon;
@@ -153,33 +156,36 @@ export function NoSearchResults({
 }: {
   onReset?: () => void;
 }) {
+  const t = useTranslations('emptyState');
   return (
     <EmptyState
       illustration="search"
-      title="Keine Maschinen gefunden"
-      description="Versuchen Sie, Ihre Filter anzupassen oder die Suche zu erweitern."
-      action={onReset ? { label: 'Filter zurücksetzen', onClick: onReset } : undefined}
+      title={t('noMachinesFound')}
+      description={t('noMachinesFoundDesc')}
+      action={onReset ? { label: t('resetFilters'), onClick: onReset } : undefined}
     />
   );
 }
 
 export function NoListings() {
+  const t = useTranslations('emptyState');
   return (
     <EmptyState
       illustration="listing"
-      title="Noch keine Inserate"
-      description="Erstellen Sie Ihr erstes Inserat und erreichen Sie Käufer in ganz Europa."
-      action={{ label: 'Inserat erstellen', href: '/seller/inserate/neu' }}
+      title={t('noListings')}
+      description={t('noListingsDesc')}
+      action={{ label: t('createListing'), href: '/seller/inserate/neu' }}
     />
   );
 }
 
 export function NoInquiries() {
+  const t = useTranslations('emptyState');
   return (
     <EmptyState
       illustration="inbox"
-      title="Noch keine Anfragen"
-      description="Sobald Interessenten Ihre Maschinen anfragen, erscheinen diese hier."
+      title={t('noInquiries')}
+      description={t('noInquiriesDesc')}
     />
   );
 }

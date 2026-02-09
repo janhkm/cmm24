@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import {
   CheckCircle2,
   Circle,
@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface OnboardingStep {
   id: string;
@@ -32,36 +33,37 @@ interface OnboardingChecklistProps {
 }
 
 export function OnboardingChecklist({ onDismiss }: OnboardingChecklistProps) {
+  const t = useTranslations('onboarding');
   const [isVisible, setIsVisible] = useState(true);
   const [steps, setSteps] = useState<OnboardingStep[]>([
     {
       id: 'company',
-      title: 'Firmendaten vervollständigen',
-      description: 'Fügen Sie Ihre Firmeninformationen hinzu',
+      title: t('completeCompanyData'),
+      description: t('completeCompanyDataDesc'),
       href: '/seller/konto?tab=company',
       icon: Building2,
       completed: false,
     },
     {
       id: 'listing',
-      title: 'Erstes Inserat erstellen',
-      description: 'Veröffentlichen Sie Ihre erste Maschine',
+      title: t('createFirstListing'),
+      description: t('createFirstListingDesc'),
       href: '/seller/inserate/neu',
       icon: FileText,
       completed: false,
     },
     {
       id: 'inquiry',
-      title: 'Anfrage beantworten',
-      description: 'Reagieren Sie auf Interessenten',
+      title: t('answerInquiry'),
+      description: t('answerInquiryDesc'),
       href: '/seller/anfragen',
       icon: MessageSquare,
       completed: false,
     },
     {
       id: 'statistics',
-      title: 'Statistiken ansehen',
-      description: 'Verstehen Sie Ihre Performance',
+      title: t('viewStatistics'),
+      description: t('viewStatisticsDesc'),
       href: '/seller/statistiken',
       icon: BarChart3,
       completed: false,
@@ -131,11 +133,11 @@ export function OnboardingChecklist({ onDismiss }: OnboardingChecklistProps) {
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-lg">Willkommen bei CMM24!</CardTitle>
+              <CardTitle className="text-lg">{t('welcomeTitle')}</CardTitle>
               <p className="text-sm text-muted-foreground mt-0.5">
                 {allCompleted
-                  ? '🎉 Alle Schritte abgeschlossen!'
-                  : `${completedCount} von ${steps.length} Schritten erledigt`}
+                  ? `🎉 ${t('allStepsCompleted')}`
+                  : t('stepsProgress', { completed: completedCount, total: steps.length })}
               </p>
             </div>
           </div>
@@ -188,7 +190,7 @@ export function OnboardingChecklist({ onDismiss }: OnboardingChecklistProps) {
               {!step.completed && (
                 <Button variant="ghost" size="sm" asChild>
                   <Link href={step.href}>
-                    <span className="sr-only">Starten</span>
+                    <span className="sr-only">{t('start')}</span>
                     <ChevronRight className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -200,10 +202,10 @@ export function OnboardingChecklist({ onDismiss }: OnboardingChecklistProps) {
         {allCompleted && (
           <div className="mt-4 text-center">
             <p className="text-sm text-muted-foreground mb-2">
-              Super gemacht! Sie sind bereit für den Erfolg.
+              {t('allDone')}
             </p>
             <Button variant="outline" size="sm" onClick={handleDismiss}>
-              Checklist ausblenden
+              {t('hideChecklist')}
             </Button>
           </div>
         )}

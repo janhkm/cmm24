@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useTranslations } from 'next-intl';
 
 type ShortcutGroup = {
   title: string;
@@ -17,38 +18,39 @@ type ShortcutGroup = {
   }[];
 };
 
-const shortcutGroups: ShortcutGroup[] = [
-  {
-    title: 'Navigation',
-    shortcuts: [
-      { keys: ['/'], description: 'Suche fokussieren' },
-      { keys: ['g', 'h'], description: 'Zur Startseite' },
-      { keys: ['g', 's'], description: 'Zur Suche' },
-      { keys: ['g', 'd'], description: 'Zum Dashboard' },
-    ],
-  },
-  {
-    title: 'Listen',
-    shortcuts: [
-      { keys: ['j', '↓'], description: 'Nächstes Element' },
-      { keys: ['k', '↑'], description: 'Vorheriges Element' },
-      { keys: ['Enter'], description: 'Element öffnen' },
-      { keys: ['c'], description: 'Zum Vergleich hinzufügen' },
-    ],
-  },
-  {
-    title: 'Allgemein',
-    shortcuts: [
-      { keys: ['Escape'], description: 'Schließen' },
-      { keys: ['?'], description: 'Diese Hilfe anzeigen' },
-    ],
-  },
-];
-
 export function KeyboardShortcuts() {
   const [showHelp, setShowHelp] = useState(false);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const router = useRouter();
+  const t = useTranslations('shortcuts');
+
+  const shortcutGroups: ShortcutGroup[] = [
+    {
+      title: t('navigation'),
+      shortcuts: [
+        { keys: ['/'], description: t('focusSearch') },
+        { keys: ['g', 'h'], description: t('toHomepage') },
+        { keys: ['g', 's'], description: t('toSearch') },
+        { keys: ['g', 'd'], description: t('toDashboard') },
+      ],
+    },
+    {
+      title: t('lists'),
+      shortcuts: [
+        { keys: ['j', '↓'], description: t('nextItem') },
+        { keys: ['k', '↑'], description: t('previousItem') },
+        { keys: ['Enter'], description: t('openItem') },
+        { keys: ['c'], description: t('addToCompare') },
+      ],
+    },
+    {
+      title: t('general'),
+      shortcuts: [
+        { keys: ['Escape'], description: t('close') },
+        { keys: ['?'], description: t('showHelp') },
+      ],
+    },
+  ];
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -120,7 +122,7 @@ export function KeyboardShortcuts() {
     <Dialog open={showHelp} onOpenChange={setShowHelp}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Tastenkombinationen</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-6 py-4">
           {shortcutGroups.map((group) => (
@@ -154,7 +156,7 @@ export function KeyboardShortcuts() {
           ))}
         </div>
         <p className="text-xs text-muted-foreground text-center">
-          Drücken Sie <kbd className="inline-flex h-5 min-w-5 items-center justify-center rounded border bg-muted px-1 text-xs">?</kbd> um diese Hilfe erneut anzuzeigen
+          {t('helpHint', { key: '?' })}
         </p>
       </DialogContent>
     </Dialog>

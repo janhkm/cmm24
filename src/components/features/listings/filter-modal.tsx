@@ -22,19 +22,21 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { manufacturers, categories, conditions, countries } from '@/data/mock-data';
+import { categories, conditions, countries } from '@/data/constants';
 import type { ListingFilters } from '@/types';
 
 interface FilterModalProps {
   filters: ListingFilters;
   onFiltersChange: (filters: ListingFilters) => void;
   resultCount: number;
+  manufacturers?: Array<{ id: string; name: string; slug: string; listingCount?: number }>;
 }
 
 export function FilterModal({ 
   filters, 
   onFiltersChange, 
-  resultCount 
+  resultCount,
+  manufacturers = [],
 }: FilterModalProps) {
   const [open, setOpen] = useState(false);
   const [localFilters, setLocalFilters] = useState<ListingFilters>(filters);

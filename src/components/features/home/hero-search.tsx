@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Search, ArrowRight, Factory, Gauge, Clock } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
+import { Link } from '@/i18n/navigation';
+import { useRouter } from '@/i18n/navigation';
+import { Search, ArrowRight, Factory, Gauge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { manufacturers } from '@/data/mock-data';
 import type { Manufacturer, Listing } from '@/types';
 
 interface SearchSuggestion {
@@ -24,6 +24,10 @@ interface HeroSearchProps {
 }
 
 export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroSearchProps) {
+  const t = useTranslations('search');
+  const tn = useTranslations('nav');
+  const tc = useTranslations('common');
+  const locale = useLocale();
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -35,18 +39,15 @@ export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroS
   const suggestions: SearchSuggestion[] = [];
   
   if (query.length >= 2) {
-    // Query suggestions
     const queryLower = query.toLowerCase();
     
-    // Add search suggestion
     suggestions.push({
       type: 'query',
       text: query,
       href: `/maschinen?q=${encodeURIComponent(query)}`,
     });
 
-    // Matching manufacturers
-    const matchingManufacturers = manufacturers
+    const matchingManufacturers = featuredManufacturers
       .filter(m => m.name.toLowerCase().includes(queryLower))
       .slice(0, 3);
     
@@ -59,7 +60,6 @@ export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroS
       });
     });
 
-    // Matching listings (from recent)
     const matchingListings = recentListings
       .filter(l => 
         l.title.toLowerCase().includes(queryLower) ||
@@ -72,12 +72,11 @@ export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroS
         type: 'listing',
         text: l.title,
         href: `/maschinen/${l.slug}`,
-        subtext: `${l.locationCity} · ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(l.price / 100)}`,
+        subtext: `${l.locationCity} · ${new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(l.price / 100)}`,
       });
     });
   }
 
-  // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isOpen || suggestions.length === 0) {
       if (e.key === 'Enter' && query) {
@@ -89,15 +88,11 @@ export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroS
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < suggestions.length - 1 ? prev + 1 : 0
-        );
+        setSelectedIndex(prev => prev < suggestions.length - 1 ? prev + 1 : 0);
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setSelectedIndex(prev => 
-          prev > 0 ? prev - 1 : suggestions.length - 1
-        );
+        setSelectedIndex(prev => prev > 0 ? prev - 1 : suggestions.length - 1);
         break;
       case 'Enter':
         e.preventDefault();
@@ -115,7 +110,6 @@ export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroS
     }
   };
 
-  // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -158,7 +152,7 @@ export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroS
               }}
               onFocus={() => query.length >= 2 && setIsOpen(true)}
               onKeyDown={handleKeyDown}
-              placeholder="Hersteller, Modell oder Stichwort..."
+              placeholder={t('fullPlaceholder')}
               className="h-12 pl-12 pr-4 text-base"
               role="combobox"
               aria-expanded={isOpen}
@@ -190,7 +184,7 @@ export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroS
                     onClick={() => setIsOpen(false)}
                   >
                     <Search className="h-4 w-4 text-muted-foreground" />
-                    <span>Suchen nach &quot;{suggestion.text}&quot;</span>
+                    <span>{t('searchFor', { query: suggestion.text })}</span>
                   </Link>
                 ))}
 
@@ -198,7 +192,7 @@ export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroS
                 {suggestions.filter(s => s.type === 'manufacturer').length > 0 && (
                   <>
                     <div className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
-                      Hersteller
+                      {tn('manufacturers')}
                     </div>
                     {suggestions.filter(s => s.type === 'manufacturer').map((suggestion, index) => (
                       <Link
@@ -218,7 +212,7 @@ export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroS
                           <span>{suggestion.text}</span>
                         </div>
                         <span className="text-sm text-muted-foreground">
-                          {suggestion.count} Maschinen
+                          {t('machineCount', { count: suggestion.count || 0 })}
                         </span>
                       </Link>
                     ))}
@@ -229,7 +223,7 @@ export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroS
                 {suggestions.filter(s => s.type === 'listing').length > 0 && (
                   <>
                     <div className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
-                      Maschinen
+                      {tn('allMachines')}
                     </div>
                     {suggestions.filter(s => s.type === 'listing').map((suggestion, index) => (
                       <Link
@@ -260,14 +254,14 @@ export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroS
                   className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-primary hover:bg-accent transition-colors border-t"
                   onClick={() => setIsOpen(false)}
                 >
-                  Alle Ergebnisse anzeigen
+                  {t('showAllResults')}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             )}
           </div>
           <Button size="lg" type="submit" className="h-12 px-8">
-            Suchen
+            {tc('search')}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
@@ -275,7 +269,7 @@ export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroS
 
       {/* Popular Manufacturers */}
       <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-        <span className="text-sm text-muted-foreground">Beliebte Hersteller:</span>
+        <span className="text-sm text-muted-foreground">{t('popularManufacturers')}</span>
         {featuredManufacturers.slice(0, 4).map((manufacturer) => (
           <Button key={manufacturer.id} variant="outline" size="sm" asChild>
             <Link href={`/hersteller/${manufacturer.slug}`}>

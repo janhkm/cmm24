@@ -1,10 +1,10 @@
 'use client';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { ChevronLeft, ChevronRight, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 export interface BreadcrumbItem {
   label: string;
@@ -18,6 +18,8 @@ interface MobileBreadcrumbsProps {
 
 export function MobileBreadcrumbs({ items, className }: MobileBreadcrumbsProps) {
   const router = useRouter();
+  const t = useTranslations('breadcrumbNav');
+  const tBreadcrumb = useTranslations('breadcrumb');
 
   // Get the previous item (for "back" navigation on mobile)
   const previousItem = items.length > 1 ? items[items.length - 2] : null;
@@ -34,7 +36,7 @@ export function MobileBreadcrumbs({ items, className }: MobileBreadcrumbsProps) 
               className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
-              Zurück zu {previousItem.label}
+              {t('backTo', { label: previousItem.label })}
             </button>
           ) : (
             <Link
@@ -42,7 +44,7 @@ export function MobileBreadcrumbs({ items, className }: MobileBreadcrumbsProps) 
               className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
-              Startseite
+              {tBreadcrumb('home')}
             </Link>
           )}
         </div>
@@ -51,7 +53,7 @@ export function MobileBreadcrumbs({ items, className }: MobileBreadcrumbsProps) 
         <nav className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
           <Link href="/" className="hover:text-foreground transition-colors flex items-center gap-1">
             <Home className="h-3.5 w-3.5" />
-            <span className="sr-only">Startseite</span>
+            <span className="sr-only">{tBreadcrumb('home')}</span>
           </Link>
 
           {items.map((item, index) => (
@@ -94,10 +96,11 @@ export function ListingBreadcrumbs({
   manufacturerSlug: string;
   title: string;
 }) {
+  const t = useTranslations('breadcrumb');
   return (
     <MobileBreadcrumbs
       items={[
-        { label: 'Maschinen', href: '/maschinen' },
+        { label: t('machines'), href: '/maschinen' },
         { label: manufacturer, href: `/hersteller/${manufacturerSlug}` },
         { label: title },
       ]}
@@ -110,10 +113,11 @@ export function CategoryBreadcrumbs({
 }: {
   categoryName: string;
 }) {
+  const t = useTranslations('breadcrumb');
   return (
     <MobileBreadcrumbs
       items={[
-        { label: 'Kategorien', href: '/kategorien' },
+        { label: t('categories'), href: '/kategorien' },
         { label: categoryName },
       ]}
     />
@@ -129,10 +133,11 @@ export function ArticleBreadcrumbs({
   categorySlug?: string;
   title: string;
 }) {
+  const t = useTranslations('breadcrumb');
   return (
     <MobileBreadcrumbs
       items={[
-        { label: 'Ratgeber', href: '/ratgeber' },
+        { label: t('guides'), href: '/ratgeber' },
         ...(categorySlug ? [{ label: category, href: `/ratgeber/kategorie/${categorySlug}` }] : []),
         { label: title },
       ]}

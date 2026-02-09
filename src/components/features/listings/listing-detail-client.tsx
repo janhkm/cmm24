@@ -1,27 +1,31 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { useTrackView } from '@/hooks/use-track-view';
+import { useTranslations, useLocale } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
 import {
   ChevronRight,
   ChevronLeft,
   MapPin,
   CheckCircle,
-  Share2,
   Heart,
   FileText,
   Download,
   Building2,
   Clock,
-  Zap,
   X,
+  Globe,
+  Phone,
+  Eye,
+  Calendar,
+  Ruler,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +44,7 @@ import { VideoEmbed } from '@/components/shared/video-embed';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { Listing } from '@/types';
+import { createInquiry } from '@/lib/actions/inquiries';
 
 interface ListingDetailClientProps {
   listing: Listing;
@@ -47,12 +52,86 @@ interface ListingDetailClientProps {
 }
 
 export function ListingDetailClient({ listing, similarListings }: ListingDetailClientProps) {
+  const t = useTranslations('listing');
+  const ti = useTranslations('inquiry');
+  const tc = useTranslations('common');
+  const tm = useTranslations('machines');
+  const tCond = useTranslations('conditions');
+  const locale = useLocale();
+
+  // View-Tracking: einmal pro Mount, dedupliziert serverseitig
+  useTrackView(listing.id);
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [inquiryDialogOpen, setInquiryDialogOpen] = useState(false);
 
+  // Inquiry form state
+  const [inquiryForm, setInquiryForm] = useState({
+    name: '',
+    company: '',
+    email: '',
+    phone: '',
+    message: ti('defaultMessageAvailability', { listing: listing.title }),
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [inquirySuccess, setInquirySuccess] = useState(false);
+
+  const handleInquirySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!inquiryForm.name.trim()) {
+      toast.error(ti('enterName'));
+      return;
+    }
+    if (!inquiryForm.email.trim() || !inquiryForm.email.includes('@')) {
+      toast.error(ti('enterValidEmail'));
+      return;
+    }
+    if (!inquiryForm.message.trim()) {
+      toast.error(ti('enterMessage'));
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await createInquiry({
+        listingId: listing.id,
+        contactName: inquiryForm.name.trim(),
+        contactEmail: inquiryForm.email.trim(),
+        contactPhone: inquiryForm.phone.trim() || undefined,
+        contactCompany: inquiryForm.company.trim() || undefined,
+        message: inquiryForm.message.trim(),
+      });
+
+      if (result.success) {
+        setInquirySuccess(true);
+        toast.success(ti('sent'));
+      } else {
+        toast.error(result.error || ti('sentError'));
+      }
+    } catch (error) {
+      console.error('Inquiry submit error:', error);
+      toast.error(ti('tryAgain'));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const resetInquiryForm = () => {
+    setInquiryForm({
+      name: '',
+      company: '',
+      email: '',
+      phone: '',
+      message: ti('defaultMessageAvailability', { listing: listing.title }),
+    });
+    setInquirySuccess(false);
+  };
+
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('de-DE', {
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: listing.currency,
       minimumFractionDigits: 0,
@@ -61,59 +140,113 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
   };
 
   const conditionLabels: Record<string, string> = {
-    new: 'Neu',
-    like_new: 'Wie neu',
-    good: 'Gut',
-    fair: 'Akzeptabel',
+    new: tCond('new'),
+    like_new: tCond('like_new'),
+    good: tCond('good'),
+    fair: tCond('fair'),
   };
 
-  const keyFacts = [
-    { label: 'Baujahr', value: listing.yearBuilt },
-    { label: 'Zustand', value: conditionLabels[listing.condition] || listing.condition },
+  const conditionColors: Record<string, string> = {
+    new: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    like_new: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
+    good: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    fair: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
+  };
+
+  // Bilder und Dokumente trennen
+  const images = listing.media.filter((m) => m.type === 'image');
+  const documents = listing.media.filter((m) => m.type === 'document');
+
+  // Technische Daten fuer die Tabelle - nur Werte die vorhanden sind
+  const technicalSpecs = [
+    { label: t('specs.manufacturer'), value: listing.manufacturer.name },
+    { label: t('specs.model'), value: listing.title },
+    { label: t('specs.yearBuilt'), value: listing.yearBuilt.toString() },
+    { label: t('specs.condition'), value: conditionLabels[listing.condition] || listing.condition },
     {
-      label: 'Messbereich',
-      value: `${listing.measuringRangeX} × ${listing.measuringRangeY} × ${listing.measuringRangeZ} mm`,
+      label: t('specs.measuringRange'),
+      value: listing.measuringRangeX
+        ? `${listing.measuringRangeX} × ${listing.measuringRangeY} × ${listing.measuringRangeZ} mm`
+        : null,
     },
-    { label: 'Genauigkeit', value: listing.accuracyUm ? `MPEE: ${listing.accuracyUm} µm` : '-' },
-    { label: 'Software', value: listing.software || '-' },
-    { label: 'Steuerung', value: listing.controller || '-' },
-    { label: 'Tastsystem', value: listing.probeSystem || '-' },
-    { label: 'Standort', value: `${listing.locationCity}, ${listing.locationCountry}` },
-  ];
+    { label: t('specs.accuracy'), value: listing.accuracyUm ? `${listing.accuracyUm} µm` : null },
+    { label: t('specs.software'), value: listing.software || null },
+    { label: t('specs.controller'), value: listing.controller || null },
+    { label: t('specs.probeSystem'), value: listing.probeSystem || null },
+    { label: t('specs.location'), value: `${listing.locationCity}, ${listing.locationCountry}` },
+  ].filter((spec): spec is { label: string; value: string } => spec.value !== null);
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === listing.media.length - 1 ? 0 : prev + 1
-    );
+    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === 0 ? listing.media.length - 1 : prev - 1
-    );
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
-  // Generate optimized alt text for images
+  // Optimierte Alt-Texte fuer Bilder (SEO)
   const getImageAlt = (index: number) => {
-    const perspectives = ['Frontansicht', 'Seitenansicht', 'Detailansicht', 'Messbereich', 'Steuerung'];
-    const perspective = perspectives[index] || `Bild ${index + 1}`;
-    return `${listing.manufacturer.name} ${listing.title} Koordinatenmessmaschine - ${perspective}`;
+    const perspectives = [
+      t('perspectives.front'),
+      t('perspectives.side'),
+      t('perspectives.detail'),
+      t('perspectives.measuringRange'),
+      t('perspectives.controller'),
+    ];
+    const perspective = perspectives[index] || t('showImage', { index: index + 1 });
+    return `${listing.manufacturer.name} ${listing.title} - ${perspective}`;
   };
 
   return (
     <div className="min-h-screen pb-16">
-      <div className="container-page py-8">
+      <div className="container-page py-6 lg:py-8">
         <div className="grid gap-8 lg:grid-cols-3">
-          {/* Left Column - Gallery & Details */}
+          {/* ===== LINKE SPALTE: Galerie + Inhalt ===== */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Image Gallery */}
-            <div className="space-y-4">
-              {/* Main Image */}
-              <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-muted">
-                {listing.media.length > 0 ? (
+
+            {/* Mobil: Titel + Preis ueber der Galerie */}
+            <div className="lg:hidden">
+              <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                <Link
+                  href={`/hersteller/${listing.manufacturer.slug}`}
+                  className="hover:text-foreground transition-colors"
+                >
+                  {listing.manufacturer.name}
+                </Link>
+              </p>
+              <h1 className="mt-1 text-2xl font-bold">{listing.title}</h1>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="text-2xl font-bold">{formatPrice(listing.price)}</span>
+                <span className="text-sm text-muted-foreground">
+                  {tm('vatExcl')}{listing.priceNegotiable && ` · ${tm('negotiable')}`}
+                </span>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Badge className={cn('font-medium', conditionColors[listing.condition])}>
+                  {conditionLabels[listing.condition]}
+                </Badge>
+                <Badge variant="outline">{tm('yearBuilt', { year: listing.yearBuilt })}</Badge>
+                {listing.featured && (
+                  <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                    {tm('premium')}
+                  </Badge>
+                )}
+                {listing.status === 'sold' && (
+                  <Badge variant="secondary" className="bg-neutral-800 text-white">
+                    {tm('sold')}
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Bildergalerie */}
+            <div className="space-y-3">
+              {/* Hauptbild */}
+              <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted">
+                {images.length > 0 ? (
                   <>
                     <Image
-                      src={listing.media[currentImageIndex].url}
+                      src={images[currentImageIndex].url}
                       alt={getImageAlt(currentImageIndex)}
                       fill
                       className="object-cover cursor-pointer"
@@ -122,61 +255,61 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
                     />
 
-                    {/* Navigation Arrows */}
-                    {listing.media.length > 1 && (
+                    {/* Navigationspfeile */}
+                    {images.length > 1 && (
                       <>
                         <button
                           onClick={prevImage}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors"
-                          aria-label="Vorheriges Bild"
+                          className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 text-neutral-700 shadow-md hover:bg-white transition-colors"
+                          aria-label={t('prevImage')}
                         >
-                          <ChevronLeft className="h-6 w-6" />
+                          <ChevronLeft className="h-5 w-5" />
                         </button>
                         <button
                           onClick={nextImage}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors"
-                          aria-label="Nächstes Bild"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 text-neutral-700 shadow-md hover:bg-white transition-colors"
+                          aria-label={t('nextImage')}
                         >
-                          <ChevronRight className="h-6 w-6" />
+                          <ChevronRight className="h-5 w-5" />
                         </button>
                       </>
                     )}
 
-                    {/* Image Counter */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-sm text-white">
-                      {currentImageIndex + 1} / {listing.media.length}
+                    {/* Bildzaehler */}
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-sm text-white backdrop-blur-sm">
+                      {currentImageIndex + 1} / {images.length}
                     </div>
 
-                    {/* Badges */}
+                    {/* Verkauft-Overlay */}
                     {listing.status === 'sold' && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                        <Badge variant="secondary" className="text-lg px-6 py-2">
-                          VERKAUFT
+                        <Badge variant="secondary" className="text-lg px-6 py-2 bg-white text-neutral-800 font-bold">
+                          {tm('sold')}
                         </Badge>
                       </div>
                     )}
                   </>
                 ) : (
                   <div className="flex h-full items-center justify-center">
-                    <span className="text-muted-foreground">Kein Bild verfügbar</span>
+                    <span className="text-muted-foreground">{tc('noImage')}</span>
                   </div>
                 )}
               </div>
 
               {/* Thumbnails */}
-              {listing.media.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                  {listing.media.map((media, index) => (
+              {images.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {images.map((media, index) => (
                     <button
                       key={media.id}
                       onClick={() => setCurrentImageIndex(index)}
                       className={cn(
-                        'relative h-20 w-20 shrink-0 overflow-hidden rounded-md border-2 transition-all',
+                        'relative h-16 w-16 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-lg border-2 transition-all',
                         currentImageIndex === index
-                          ? 'border-primary'
-                          : 'border-transparent hover:border-muted-foreground'
+                          ? 'border-primary ring-2 ring-primary/20'
+                          : 'border-transparent hover:border-muted-foreground/50'
                       )}
-                      aria-label={`Bild ${index + 1} anzeigen`}
+                      aria-label={t('showImage', { index: index + 1 })}
                     >
                       <Image
                         src={media.thumbnailUrl || media.url}
@@ -191,290 +324,466 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
               )}
             </div>
 
-            {/* Key Facts */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Technische Daten</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {keyFacts.map((fact) => (
-                    <div key={fact.label} className="flex justify-between border-b pb-2">
-                      <span className="text-muted-foreground">{fact.label}</span>
-                      <span className="font-medium">{fact.value}</span>
+            {/* Video-Bereich */}
+            {listing.media.some((m) => m.type === 'video') && (
+              <section>
+                <h2 className="text-lg font-semibold mb-4">{t('video')}</h2>
+                {listing.media
+                  .filter((m) => m.type === 'video')
+                  .map((video) => (
+                    <VideoEmbed
+                      key={video.id}
+                      url={video.url}
+                      title={`${listing.manufacturer.name} ${listing.title} - Video`}
+                      className="w-full"
+                    />
+                  ))}
+              </section>
+            )}
+
+            {/* Technische Daten */}
+            <section id="technische-daten">
+              <h2 className="text-lg font-semibold mb-4">{t('technicalData')}</h2>
+              <div className="rounded-xl border overflow-hidden">
+                <table className="w-full text-sm">
+                  <tbody>
+                    {technicalSpecs.map((spec, i) => (
+                      <tr
+                        key={spec.label}
+                        className={cn(
+                          'border-b last:border-b-0',
+                          i % 2 === 0 ? 'bg-muted/40' : 'bg-background'
+                        )}
+                      >
+                        <td className="px-4 py-3 text-muted-foreground font-medium w-2/5">
+                          {spec.label}
+                        </td>
+                        <td className="px-4 py-3 font-medium">{spec.value}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            {/* Beschreibung */}
+            <section id="beschreibung">
+              <h2 className="text-lg font-semibold mb-4">{t('description')}</h2>
+              <div className="prose prose-sm max-w-none dark:prose-invert prose-p:leading-relaxed">
+                {listing.description
+                  .split('\n')
+                  .filter((p) => p.trim())
+                  .map((paragraph, index) => (
+                    <p key={index}>{paragraph}</p>
+                  ))}
+              </div>
+            </section>
+
+            {/* Dokumente */}
+            {documents.length > 0 && (
+              <section id="dokumente">
+                <h2 className="text-lg font-semibold mb-4">{t('documents')}</h2>
+                <div className="space-y-2">
+                  {documents.map((doc) => (
+                    <div
+                      key={doc.id}
+                      className="flex items-center justify-between rounded-xl border p-4 hover:bg-muted/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{doc.filename || 'Dokument.pdf'}</p>
+                          <p className="text-xs text-muted-foreground">PDF-Dokument</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = doc.url;
+                          link.download = doc.filename || 'dokument.pdf';
+                          link.target = '_blank';
+                          link.rel = 'noopener noreferrer';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Download
+                      </Button>
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Video Section (if video URL exists in description or as media) */}
-            {listing.media.some((m) => m.type === 'video') && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Video</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {listing.media
-                    .filter((m) => m.type === 'video')
-                    .map((video) => (
-                      <VideoEmbed
-                        key={video.id}
-                        url={video.url}
-                        title={`${listing.manufacturer.name} ${listing.title} - Video`}
-                        className="w-full"
-                      />
-                    ))}
-                </CardContent>
-              </Card>
+              </section>
             )}
-
-            {/* Description & Equipment */}
-            <Tabs defaultValue="description">
-              <TabsList>
-                <TabsTrigger value="description">Beschreibung</TabsTrigger>
-                <TabsTrigger value="equipment">Lieferumfang</TabsTrigger>
-                <TabsTrigger value="documents">Dokumente</TabsTrigger>
-              </TabsList>
-              <TabsContent value="description" className="mt-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="prose prose-sm max-w-none dark:prose-invert">
-                      {listing.description.split('\n').map((paragraph, index) => (
-                        <p key={index}>{paragraph}</p>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="equipment" className="mt-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <ul className="space-y-2">
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        Messmaschine komplett
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        Software-Lizenz
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        Tasterkopf
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        Dokumentation
-                      </li>
-                    </ul>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="documents" className="mt-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between rounded-lg border p-3">
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-5 w-5 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">Datenblatt.pdf</p>
-                            <p className="text-sm text-muted-foreground">2.3 MB</p>
-                          </div>
-                        </div>
-                        <Button variant="outline" size="sm">
-                          <Download className="mr-2 h-4 w-4" />
-                          Download
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
           </div>
 
-          {/* Right Column - Price & Seller */}
+          {/* ===== RECHTE SPALTE: Sticky Sidebar ===== */}
           <div className="space-y-6">
-            {/* Price Card */}
-            <Card className="sticky top-20">
-              <CardContent className="pt-6">
-                {/* Manufacturer & Title */}
-                <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-                  {listing.manufacturer.name}
-                </p>
-                <h1 className="mt-1 text-2xl font-bold">{listing.title}</h1>
+            <div className="lg:sticky lg:top-20 space-y-6">
 
-                {/* Badges */}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {listing.seller?.isVerified && (
-                    <Badge variant="secondary" className="gap-1">
-                      <CheckCircle className="h-3 w-3" />
-                      Geprüftes Inserat
-                    </Badge>
-                  )}
-                </div>
-
-                <Separator className="my-4" />
-
-                {/* Price */}
-                <div>
-                  <p className="text-sm text-muted-foreground">Preis</p>
-                  <p className="text-3xl font-bold">{formatPrice(listing.price)}</p>
-                  <p className="text-sm text-muted-foreground">
-                    zzgl. MwSt. {listing.priceNegotiable && '· VB'}
-                  </p>
-                </div>
-
-                {/* CTA Buttons */}
-                <div className="mt-6 space-y-3">
-                  <Dialog open={inquiryDialogOpen} onOpenChange={setInquiryDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="w-full" size="lg" disabled={listing.status === 'sold'}>
-                        Anfrage senden
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[500px]">
-                      <DialogHeader>
-                        <DialogTitle>Anfrage an Verkäufer</DialogTitle>
-                      </DialogHeader>
-                      <form className="space-y-4 mt-4">
-                        <div className="grid gap-4 sm:grid-cols-2">
-                          <div>
-                            <Label htmlFor="name">Name *</Label>
-                            <Input id="name" placeholder="Ihr Name" />
-                          </div>
-                          <div>
-                            <Label htmlFor="company">Firma</Label>
-                            <Input id="company" placeholder="Firmenname" />
-                          </div>
-                        </div>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                          <div>
-                            <Label htmlFor="email">E-Mail *</Label>
-                            <Input id="email" type="email" placeholder="name@firma.de" />
-                          </div>
-                          <div>
-                            <Label htmlFor="phone">Telefon</Label>
-                            <Input id="phone" type="tel" placeholder="+49 123 456789" />
-                          </div>
-                        </div>
-                        <div>
-                          <Label htmlFor="message">Nachricht *</Label>
-                          <Textarea
-                            id="message"
-                            placeholder="Ihre Nachricht an den Verkäufer..."
-                            rows={4}
-                            defaultValue={`Guten Tag,\n\nich interessiere mich für ${listing.title}.\n\nIst die Maschine noch verfügbar?\n\nMit freundlichen Grüßen`}
-                          />
-                        </div>
-                        <div className="flex gap-3 justify-end">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setInquiryDialogOpen(false)}
-                          >
-                            Abbrechen
-                          </Button>
-                          <Button type="submit">Anfrage senden</Button>
-                        </div>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
-
-                  <div className="flex gap-2">
-                    <PdfExportButton listing={listing} className="flex-1" />
-                    <ShareDialog
-                      url={`/maschinen/${listing.slug}`}
-                      title={listing.title}
-                      description={`${listing.manufacturer.name} ${listing.title} - ${formatPrice(listing.price)}`}
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => toast.success('Zu Favoriten hinzugefügt')}
-                      aria-label="Zu Favoriten hinzufügen"
-                    >
-                      <Heart className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <Separator className="my-6" />
-
-                {/* Seller Info */}
-                {listing.seller && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-3">
-                      Verkäufer
+              {/* Preis-Karte */}
+              <Card className="shadow-lg border-0 ring-1 ring-border">
+                <CardContent className="p-6">
+                  {/* Desktop: Titel */}
+                  <div className="hidden lg:block">
+                    <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                      <Link
+                        href={`/hersteller/${listing.manufacturer.slug}`}
+                        className="hover:text-foreground transition-colors"
+                      >
+                        {listing.manufacturer.name}
+                      </Link>
                     </p>
-                    <div className="rounded-lg border p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                          <Building2 className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold">
-                              {listing.seller.companyName}
-                            </span>
-                            {listing.seller.isVerified && (
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                            )}
-                          </div>
-                          <div className="mt-2 space-y-1 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                              <MapPin className="h-4 w-4" />
-                              {listing.seller.addressCity}, {listing.seller.addressCountry}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <FileText className="h-4 w-4" />
-                              {listing.seller.listingCount} Inserate
-                            </div>
-                            {listing.seller.responseTime && (
-                              <div className="flex items-center gap-2">
-                                <Zap className="h-4 w-4" />
-                                {listing.seller.responseTime}
-                              </div>
-                            )}
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-4 w-4" />
-                              Mitglied seit {listing.seller.memberSince}
-                            </div>
-                          </div>
-                        </div>
+                    <h1 className="mt-1 text-xl font-bold leading-tight">{listing.title}</h1>
+
+                    {/* Badges */}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Badge className={cn('font-medium', conditionColors[listing.condition])}>
+                        {conditionLabels[listing.condition]}
+                      </Badge>
+                      <Badge variant="outline">{tm('yearBuilt', { year: listing.yearBuilt })}</Badge>
+                      {listing.featured && (
+                        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                          {tm('premium')}
+                        </Badge>
+                      )}
+                      {listing.status === 'sold' && (
+                        <Badge variant="secondary" className="bg-neutral-800 text-white">
+                          {tm('sold')}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <Separator className="my-4" />
+                  </div>
+
+                  {/* Preis */}
+                  <div>
+                    <p className="text-3xl font-bold hidden lg:block">{formatPrice(listing.price)}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5 hidden lg:block">
+                      {tm('vatExcl')}{listing.priceNegotiable && ` · ${tm('negotiableFull')}`}
+                    </p>
+                  </div>
+
+                  {/* Kurzinfos */}
+                  <div className="mt-4 space-y-2.5">
+                    {listing.measuringRangeX && (
+                      <div className="flex items-center gap-2.5 text-sm">
+                        <Ruler className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span>
+                          {listing.measuringRangeX} × {listing.measuringRangeY} × {listing.measuringRangeZ} mm
+                        </span>
                       </div>
+                    )}
+                    <div className="flex items-center gap-2.5 text-sm">
+                      <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span>
+                        {listing.locationCity}, {listing.locationCountry}
+                      </span>
+                    </div>
+                    {listing.publishedAt && (
+                      <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4 shrink-0" />
+                        <span>
+                          {tm('publishedAt', {
+                            date: new Date(listing.publishedAt).toLocaleDateString(locale, {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                            }),
+                          })}
+                        </span>
+                      </div>
+                    )}
+                    {listing.viewsCount > 0 && (
+                      <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                        <Eye className="h-4 w-4 shrink-0" />
+                        <span>{tm('views', { count: listing.viewsCount })}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CTA Buttons */}
+                  <div className="mt-6 space-y-3">
+                    <Dialog
+                      open={inquiryDialogOpen}
+                      onOpenChange={(open) => {
+                        setInquiryDialogOpen(open);
+                        if (!open) resetInquiryForm();
+                      }}
+                    >
+                      <DialogTrigger asChild>
+                        <Button className="w-full" size="lg" disabled={listing.status === 'sold'}>
+                          {ti('title')}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[500px]">
+                        <DialogHeader>
+                          <DialogTitle>{ti('titleToSeller')}</DialogTitle>
+                        </DialogHeader>
+                        {inquirySuccess ? (
+                          <div className="py-8 text-center">
+                            <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                              <CheckCircle className="h-6 w-6 text-green-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold mb-2">{ti('successTitle')}</h3>
+                            <p className="text-muted-foreground mb-6">
+                              {ti('successDesc')}
+                            </p>
+                            <Button onClick={() => setInquiryDialogOpen(false)}>{tc('close')}</Button>
+                          </div>
+                        ) : (
+                          <form className="space-y-4 mt-4" onSubmit={handleInquirySubmit}>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              <div>
+                                <Label htmlFor="name">{ti('name')} *</Label>
+                                <Input
+                                  id="name"
+                                  placeholder={ti('yourName')}
+                                  value={inquiryForm.name}
+                                  onChange={(e) =>
+                                    setInquiryForm((prev) => ({ ...prev, name: e.target.value }))
+                                  }
+                                  required
+                                  disabled={isSubmitting}
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="company">{ti('company')}</Label>
+                                <Input
+                                  id="company"
+                                  placeholder={ti('companyPlaceholder')}
+                                  value={inquiryForm.company}
+                                  onChange={(e) =>
+                                    setInquiryForm((prev) => ({ ...prev, company: e.target.value }))
+                                  }
+                                  disabled={isSubmitting}
+                                />
+                              </div>
+                            </div>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              <div>
+                                <Label htmlFor="email">{ti('email')} *</Label>
+                                <Input
+                                  id="email"
+                                  type="email"
+                                  placeholder={ti('emailPlaceholder')}
+                                  value={inquiryForm.email}
+                                  onChange={(e) =>
+                                    setInquiryForm((prev) => ({ ...prev, email: e.target.value }))
+                                  }
+                                  required
+                                  disabled={isSubmitting}
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="phone">{ti('phone')}</Label>
+                                <Input
+                                  id="phone"
+                                  type="tel"
+                                  placeholder={ti('phonePlaceholder')}
+                                  value={inquiryForm.phone}
+                                  onChange={(e) =>
+                                    setInquiryForm((prev) => ({ ...prev, phone: e.target.value }))
+                                  }
+                                  disabled={isSubmitting}
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label htmlFor="message">{ti('message')} *</Label>
+                              <Textarea
+                                id="message"
+                                placeholder={ti('messagePlaceholder')}
+                                rows={4}
+                                value={inquiryForm.message}
+                                onChange={(e) =>
+                                  setInquiryForm((prev) => ({ ...prev, message: e.target.value }))
+                                }
+                                required
+                                disabled={isSubmitting}
+                              />
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {ti('submitConsent')}
+                            </p>
+                            <div className="flex gap-3 justify-end">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setInquiryDialogOpen(false)}
+                                disabled={isSubmitting}
+                              >
+                                {tc('cancel')}
+                              </Button>
+                              <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting ? (
+                                  <>
+                                    <span className="animate-spin mr-2">⏳</span>
+                                    {ti('sending')}
+                                  </>
+                                ) : (
+                                  ti('title')
+                                )}
+                              </Button>
+                            </div>
+                          </form>
+                        )}
+                      </DialogContent>
+                    </Dialog>
+
+                    <div className="flex gap-2">
+                      <PdfExportButton listing={listing} className="flex-1" />
+                      <ShareDialog
+                        url={`/maschinen/${listing.slug}`}
+                        title={listing.title}
+                        description={`${listing.manufacturer.name} ${listing.title} - ${formatPrice(listing.price)}`}
+                      />
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => toast.success(t('addedToFavorites'))}
+                        aria-label={t('addToFavorites')}
+                      >
+                        <Heart className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                )}
+                </CardContent>
+              </Card>
 
-                {/* Location */}
-                <div className="mt-6">
-                  <p className="text-sm font-medium text-muted-foreground mb-3">
-                    Standort
-                  </p>
+              {/* Verkäufer-Karte */}
+              {listing.seller && (
+                <Card>
+                  <CardContent className="p-6">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
+                      {t('seller')}
+                    </p>
+                    <div className="flex items-start gap-4">
+                      {listing.seller.logoUrl ? (
+                        <Image
+                          src={listing.seller.logoUrl}
+                          alt={listing.seller.companyName}
+                          width={48}
+                          height={48}
+                          className="rounded-lg object-contain border"
+                        />
+                      ) : (
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+                          <Building2 className="h-6 w-6" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold truncate">{listing.seller.companyName}</h3>
+                          {listing.seller.isVerified && (
+                            <CheckCircle className="h-4 w-4 text-blue-600 shrink-0" />
+                          )}
+                        </div>
+                        {listing.seller.isVerified && (
+                          <p className="text-xs text-blue-600 font-medium mt-0.5">
+                            {t('verifiedDealer')}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 space-y-2.5 text-sm">
+                      {listing.seller.addressCity && (
+                        <div className="flex items-center gap-2.5 text-muted-foreground">
+                          <MapPin className="h-4 w-4 shrink-0" />
+                          <span>
+                            {listing.seller.addressCity}
+                            {listing.seller.addressCountry
+                              ? `, ${listing.seller.addressCountry}`
+                              : ''}
+                          </span>
+                        </div>
+                      )}
+                      {listing.seller.listingCount > 0 && (
+                        <div className="flex items-center gap-2.5 text-muted-foreground">
+                          <FileText className="h-4 w-4 shrink-0" />
+                          <span>
+                            {t('activeListings', { count: listing.seller.listingCount })}{' '}
+                            {listing.seller.listingCount === 1 ? tm('listingSingular') : tm('listings')}
+                          </span>
+                        </div>
+                      )}
+                      {listing.seller.memberSince && (
+                        <div className="flex items-center gap-2.5 text-muted-foreground">
+                          <Clock className="h-4 w-4 shrink-0" />
+                          <span>{t('memberSince', { date: listing.seller.memberSince })}</span>
+                        </div>
+                      )}
+                      {listing.seller.website && (
+                        <div className="flex items-center gap-2.5 text-muted-foreground">
+                          <Globe className="h-4 w-4 shrink-0" />
+                          <a
+                            href={
+                              listing.seller.website.startsWith('http')
+                                ? listing.seller.website
+                                : `https://${listing.seller.website}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-foreground transition-colors truncate"
+                          >
+                            {listing.seller.website
+                              .replace(/^https?:\/\//, '')
+                              .replace(/\/$/, '')}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+
+                    {listing.seller.phone && (
+                      <>
+                        <Separator className="my-4" />
+                        <Button variant="outline" className="w-full" asChild>
+                          <a href={`tel:${listing.seller.phone.replace(/\s/g, '')}`}>
+                            <Phone className="mr-2 h-4 w-4" />
+                            {listing.seller.phone}
+                          </a>
+                        </Button>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Standort-Karte */}
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-3">{t('location')}</h3>
                   <div className="rounded-lg border overflow-hidden">
-                    <div className="aspect-video bg-muted flex items-center justify-center">
+                    <div className="aspect-[16/9] bg-muted flex items-center justify-center">
                       <div className="text-center">
                         <MapPin className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                         <p className="font-medium">{listing.locationCity}</p>
                         <p className="text-sm text-muted-foreground">
-                          {listing.locationPostalCode}, {listing.locationCountry}
+                          {listing.locationPostalCode && `${listing.locationPostalCode}, `}
+                          {listing.locationCountry}
                         </p>
                       </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
 
-        {/* Similar Listings */}
+        {/* Aehnliche Maschinen */}
         {similarListings.length > 0 && (
           <section className="mt-16" aria-labelledby="similar-heading">
-            <h2 id="similar-heading" className="text-2xl font-bold mb-6">Ähnliche Maschinen</h2>
+            <h2 id="similar-heading" className="text-2xl font-bold mb-6">
+              {t('similarMachines')}
+            </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {similarListings.map((similar) => (
                 <ListingCard key={similar.id} listing={similar} showCompare={false} />
@@ -490,40 +799,40 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
           <button
             onClick={() => setLightboxOpen(false)}
             className="absolute right-4 top-4 z-50 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
-            aria-label="Galerie schließen"
+            aria-label={t('closeGallery')}
           >
             <X className="h-6 w-6" />
           </button>
           <div className="relative h-[90vh] w-full">
-            {listing.media[currentImageIndex] && (
+            {images[currentImageIndex] && (
               <Image
-                src={listing.media[currentImageIndex].url}
+                src={images[currentImageIndex].url}
                 alt={getImageAlt(currentImageIndex)}
                 fill
                 className="object-contain"
                 sizes="95vw"
               />
             )}
-            {listing.media.length > 1 && (
+            {images.length > 1 && (
               <>
                 <button
                   onClick={prevImage}
                   className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white hover:bg-black/70"
-                  aria-label="Vorheriges Bild"
+                  aria-label={t('prevImage')}
                 >
                   <ChevronLeft className="h-8 w-8" />
                 </button>
                 <button
                   onClick={nextImage}
                   className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white hover:bg-black/70"
-                  aria-label="Nächstes Bild"
+                  aria-label={t('nextImage')}
                 >
                   <ChevronRight className="h-8 w-8" />
                 </button>
               </>
             )}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white">
-              {currentImageIndex + 1} / {listing.media.length}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white bg-black/60 rounded-full px-4 py-1.5 backdrop-blur-sm">
+              {currentImageIndex + 1} / {images.length}
             </div>
           </div>
         </DialogContent>
@@ -532,7 +841,7 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
       {/* Sticky Mobile CTA */}
       {listing.status !== 'sold' && (
         <StickyMobileCTA
-          primaryLabel="Anfrage senden"
+          primaryLabel={ti('title')}
           onPrimaryClick={() => setInquiryDialogOpen(true)}
           showPhone={false}
           showScrollTop={false}

@@ -1,9 +1,10 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface PaginationProps {
   currentPage: number;
@@ -18,6 +19,8 @@ export function Pagination({
   baseUrl,
   className 
 }: PaginationProps) {
+  const t = useTranslations('pagination');
+
   // Generate page numbers to show
   const getPageNumbers = () => {
     const pages: (number | 'ellipsis')[] = [];
@@ -60,7 +63,7 @@ export function Pagination({
 
   return (
     <nav 
-      aria-label="Seitennavigation" 
+      aria-label={t('pageNavigation')} 
       className={cn('flex items-center justify-center gap-1', className)}
     >
       {/* Previous Button */}
@@ -74,12 +77,12 @@ export function Pagination({
         {currentPage === 1 ? (
           <span>
             <ChevronLeft className="h-4 w-4" />
-            <span className="sr-only">Vorherige Seite</span>
+            <span className="sr-only">{t('previousPage')}</span>
           </span>
         ) : (
           <Link href={getPageUrl(currentPage - 1)}>
             <ChevronLeft className="h-4 w-4" />
-            <span className="sr-only">Vorherige Seite</span>
+            <span className="sr-only">{t('previousPage')}</span>
           </Link>
         )}
       </Button>
@@ -132,12 +135,12 @@ export function Pagination({
         {currentPage === totalPages ? (
           <span>
             <ChevronRight className="h-4 w-4" />
-            <span className="sr-only">Nächste Seite</span>
+            <span className="sr-only">{t('nextPage')}</span>
           </span>
         ) : (
           <Link href={getPageUrl(currentPage + 1)}>
             <ChevronRight className="h-4 w-4" />
-            <span className="sr-only">Nächste Seite</span>
+            <span className="sr-only">{t('nextPage')}</span>
           </Link>
         )}
       </Button>
@@ -152,6 +155,8 @@ export function PaginationMobile({
   baseUrl,
   className 
 }: PaginationProps) {
+  const t = useTranslations('pagination');
+
   const getPageUrl = (page: number) => {
     const url = new URL(baseUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
     url.searchParams.set('page', page.toString());
@@ -164,7 +169,7 @@ export function PaginationMobile({
 
   return (
     <nav 
-      aria-label="Seitennavigation" 
+      aria-label={t('pageNavigation')} 
       className={cn('flex items-center justify-between gap-4', className)}
     >
       <Button
@@ -175,18 +180,18 @@ export function PaginationMobile({
         {currentPage === 1 ? (
           <span>
             <ChevronLeft className="mr-2 h-4 w-4" />
-            Zurück
+            {t('back')}
           </span>
         ) : (
           <Link href={getPageUrl(currentPage - 1)}>
             <ChevronLeft className="mr-2 h-4 w-4" />
-            Zurück
+            {t('back')}
           </Link>
         )}
       </Button>
 
       <span className="text-sm text-muted-foreground">
-        Seite {currentPage} von {totalPages}
+        {t('pageOf', { current: currentPage, total: totalPages })}
       </span>
 
       <Button
@@ -196,12 +201,12 @@ export function PaginationMobile({
       >
         {currentPage === totalPages ? (
           <span>
-            Weiter
+            {t('forward')}
             <ChevronRight className="ml-2 h-4 w-4" />
           </span>
         ) : (
           <Link href={getPageUrl(currentPage + 1)}>
-            Weiter
+            {t('forward')}
             <ChevronRight className="ml-2 h-4 w-4" />
           </Link>
         )}

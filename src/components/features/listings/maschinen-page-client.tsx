@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useMemo, useCallback, Suspense } from 'react';
-import Link from 'next/link';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { ChevronRight, LayoutGrid, List, ArrowUpDown, Search, X } from 'lucide-react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useRouter, usePathname } from '@/i18n/navigation';
+import { useTranslations, useLocale } from 'next-intl';
+import { LayoutGrid, List, ArrowUpDown, Search, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -19,13 +20,102 @@ import {
   ActiveFilters,
 } from '@/components/features/listings';
 import { CompareBar } from '@/components/shared/compare-bar';
-import { mockListings, sortOptions, manufacturers } from '@/data/mock-data';
-import type { ListingFilters } from '@/types';
+import { getPublicListings, getManufacturers, type PublicListing } from '@/lib/actions/listings';
+import type { ListingFilters, Listing, Manufacturer } from '@/types';
+
+// Convert PublicListing to Listing format for ListingGrid compatibility
+function convertToListing(pl: PublicListing, unknownLabel: string): Listing {
+  return {
+    id: pl.id,
+    accountId: pl.account_id,
+    manufacturerId: pl.manufacturer_id,
+    manufacturer: pl.manufacturer ? {
+      id: pl.manufacturer.id,
+      name: pl.manufacturer.name,
+      slug: pl.manufacturer.slug,
+      logoUrl: undefined,
+      country: undefined,
+      listingCount: 0,
+    } : {
+      id: '',
+      name: unknownLabel,
+      slug: '',
+      logoUrl: undefined,
+      country: undefined,
+      listingCount: 0,
+    },
+    title: pl.title,
+    slug: pl.slug,
+    description: pl.description,
+    price: pl.price,
+    priceNegotiable: pl.price_negotiable || false,
+    currency: pl.currency || 'EUR',
+    yearBuilt: pl.year_built,
+    condition: pl.condition,
+    measuringRangeX: pl.measuring_range_x || undefined,
+    measuringRangeY: pl.measuring_range_y || undefined,
+    measuringRangeZ: pl.measuring_range_z || undefined,
+    accuracyUm: pl.accuracy_um || undefined,
+    software: pl.software || undefined,
+    controller: pl.controller || undefined,
+    probeSystem: pl.probe_system || undefined,
+    locationCountry: pl.location_country,
+    locationCity: pl.location_city,
+    locationPostalCode: pl.location_postal_code,
+    status: pl.status || 'active',
+    featured: pl.featured || false,
+    viewsCount: pl.views_count || 0,
+    publishedAt: pl.published_at || undefined,
+    createdAt: pl.created_at || '',
+    updatedAt: pl.updated_at || '',
+    seller: pl.account ? {
+      id: pl.account.id,
+      companyName: pl.account.company_name,
+      slug: pl.account.slug,
+      logoUrl: pl.account.logo_url || undefined,
+      isVerified: pl.account.is_verified,
+      listingCount: 0,
+    } : undefined,
+    media: pl.media.map((m) => ({
+      id: m.id,
+      listingId: pl.id,
+      type: 'image' as const,
+      url: m.url,
+      thumbnailUrl: m.thumbnail_url || m.url,
+      filename: m.filename || '',
+      sortOrder: m.sort_order || 0,
+      isPrimary: m.is_primary || false,
+    })),
+  };
+}
 
 function MaschinenContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useTranslations('machines');
+  const ts = useTranslations('sortOptions');
+  const tc = useTranslations('common');
+  const locale = useLocale();
+
+  // Sort options using translations
+  const sortOpts = [
+    { value: 'relevance', label: ts('relevance') },
+    { value: 'date_desc', label: ts('date_desc') },
+    { value: 'date_asc', label: ts('date_asc') },
+    { value: 'price_asc', label: ts('price_asc') },
+    { value: 'price_desc', label: ts('price_desc') },
+    { value: 'year_desc', label: ts('year_desc') },
+    { value: 'year_asc', label: ts('year_asc') },
+  ];
+
+  // State
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [total, setTotal] = useState(0);
+  const [manufacturers, setManufacturers] = useState<{ id: string; name: string; slug: string }[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 24;
 
   // Parse filters from URL
   const getFiltersFromURL = useCallback((): ListingFilters => {
@@ -61,13 +151,6 @@ function MaschinenContent() {
       filters.countries = landParam.split(',');
     }
 
-    // Messbereich
-    const messbereichMinX = searchParams.get('mb_x_min');
-    if (messbereichMinX) filters.measuringRangeXMin = parseInt(messbereichMinX);
-
-    const messbereichMaxX = searchParams.get('mb_x_max');
-    if (messbereichMaxX) filters.measuringRangeXMax = parseInt(messbereichMaxX);
-
     return filters;
   }, [searchParams]);
 
@@ -75,6 +158,67 @@ function MaschinenContent() {
   const [sortBy, setSortBy] = useState(searchParams.get('sortierung') || 'relevance');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+
+  // Load manufacturers on mount
+  useEffect(() => {
+    const loadManufacturers = async () => {
+      const result = await getManufacturers();
+      if (result.success && result.data) {
+        setManufacturers(result.data);
+      }
+    };
+    loadManufacturers();
+  }, []);
+
+  // Load listings when filters or sort change
+  useEffect(() => {
+    const loadListings = async () => {
+      setIsLoading(true);
+      
+      // Map sort option to API sort parameter
+      let apiSortBy: 'newest' | 'price_asc' | 'price_desc' | 'year_desc' = 'newest';
+      switch (sortBy) {
+        case 'price_asc':
+          apiSortBy = 'price_asc';
+          break;
+        case 'price_desc':
+          apiSortBy = 'price_desc';
+          break;
+        case 'year_desc':
+          apiSortBy = 'year_desc';
+          break;
+        default:
+          apiSortBy = 'newest';
+      }
+
+      // Build filter options for API
+      const result = await getPublicListings({
+        search: filters.query,
+        manufacturerId: filters.manufacturers?.[0], // API currently supports single manufacturer
+        condition: filters.condition?.[0] as 'new' | 'like_new' | 'good' | 'fair' | undefined,
+        priceMin: filters.priceMin ? filters.priceMin / 100 : undefined,
+        priceMax: filters.priceMax ? filters.priceMax / 100 : undefined,
+        yearMin: filters.yearMin,
+        yearMax: filters.yearMax,
+        country: filters.countries?.[0],
+        sortBy: apiSortBy,
+        limit: itemsPerPage,
+        offset: (currentPage - 1) * itemsPerPage,
+      });
+      
+      if (result.success && result.data) {
+        setListings(result.data.listings.map((pl) => convertToListing(pl, tc('unknown'))));
+        setTotal(result.data.total);
+      } else {
+        setListings([]);
+        setTotal(0);
+      }
+      
+      setIsLoading(false);
+    };
+    
+    loadListings();
+  }, [filters, sortBy, currentPage, tc]);
 
   // Sync URL with filters
   const updateURL = useCallback(
@@ -91,10 +235,6 @@ function MaschinenContent() {
       if (newFilters.yearMin) params.set('jahr_min', String(newFilters.yearMin));
       if (newFilters.yearMax) params.set('jahr_max', String(newFilters.yearMax));
       if (newFilters.countries?.length) params.set('land', newFilters.countries.join(','));
-      if (newFilters.measuringRangeXMin)
-        params.set('mb_x_min', String(newFilters.measuringRangeXMin));
-      if (newFilters.measuringRangeXMax)
-        params.set('mb_x_max', String(newFilters.measuringRangeXMax));
       if (newSort !== 'relevance') params.set('sortierung', newSort);
 
       const queryString = params.toString();
@@ -107,6 +247,7 @@ function MaschinenContent() {
   const handleFiltersChange = useCallback(
     (newFilters: ListingFilters) => {
       setFilters(newFilters);
+      setCurrentPage(1); // Reset to first page
       updateURL(newFilters, sortBy);
     },
     [sortBy, updateURL]
@@ -116,6 +257,7 @@ function MaschinenContent() {
   const handleSortChange = useCallback(
     (newSort: string) => {
       setSortBy(newSort);
+      setCurrentPage(1); // Reset to first page
       updateURL(filters, newSort);
     },
     [filters, updateURL]
@@ -138,123 +280,20 @@ function MaschinenContent() {
     handleFiltersChange(rest);
   }, [filters, handleFiltersChange]);
 
-  // Filter and sort listings
-  const filteredListings = useMemo(() => {
-    let result = mockListings.filter((listing) => listing.status === 'active');
-
-    // Text search
-    if (filters.query) {
-      const query = filters.query.toLowerCase();
-      result = result.filter(
-        (l) =>
-          l.title.toLowerCase().includes(query) ||
-          l.description.toLowerCase().includes(query) ||
-          l.manufacturer.name.toLowerCase().includes(query) ||
-          l.model?.name?.toLowerCase().includes(query)
-      );
-    }
-
-    // Apply filters
-    if (filters.manufacturers && filters.manufacturers.length > 0) {
-      result = result.filter((l) =>
-        filters.manufacturers!.includes(l.manufacturerId)
-      );
-    }
-
-    if (filters.condition && filters.condition.length > 0) {
-      result = result.filter((l) => filters.condition!.includes(l.condition));
-    }
-
-    if (filters.priceMin) {
-      result = result.filter((l) => l.price >= filters.priceMin!);
-    }
-
-    if (filters.priceMax) {
-      result = result.filter((l) => l.price <= filters.priceMax!);
-    }
-
-    if (filters.yearMin) {
-      result = result.filter((l) => l.yearBuilt >= filters.yearMin!);
-    }
-
-    if (filters.yearMax) {
-      result = result.filter((l) => l.yearBuilt <= filters.yearMax!);
-    }
-
-    if (filters.countries && filters.countries.length > 0) {
-      result = result.filter((l) => {
-        const countryCode =
-          l.locationCountry === 'Deutschland'
-            ? 'DE'
-            : l.locationCountry === 'Österreich'
-            ? 'AT'
-            : l.locationCountry === 'Schweiz'
-            ? 'CH'
-            : l.locationCountry === 'Italien'
-            ? 'IT'
-            : l.locationCountry;
-        return filters.countries!.includes(countryCode);
-      });
-    }
-
-    // Messbereich Filter
-    if (filters.measuringRangeXMin) {
-      result = result.filter((l) => l.measuringRangeX >= filters.measuringRangeXMin!);
-    }
-    if (filters.measuringRangeXMax) {
-      result = result.filter((l) => l.measuringRangeX <= filters.measuringRangeXMax!);
-    }
-
-    // Apply sorting
-    switch (sortBy) {
-      case 'price_asc':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price_desc':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'date_desc':
-        result.sort(
-          (a, b) =>
-            new Date(b.publishedAt || b.createdAt).getTime() -
-            new Date(a.publishedAt || a.createdAt).getTime()
-        );
-        break;
-      case 'date_asc':
-        result.sort(
-          (a, b) =>
-            new Date(a.publishedAt || a.createdAt).getTime() -
-            new Date(b.publishedAt || b.createdAt).getTime()
-        );
-        break;
-      case 'year_desc':
-        result.sort((a, b) => b.yearBuilt - a.yearBuilt);
-        break;
-      case 'year_asc':
-        result.sort((a, b) => a.yearBuilt - b.yearBuilt);
-        break;
-      default:
-        // relevance - featured first, then by date
-        result.sort((a, b) => {
-          if (a.featured && !b.featured) return -1;
-          if (!a.featured && b.featured) return 1;
-          return (
-            new Date(b.publishedAt || b.createdAt).getTime() -
-            new Date(a.publishedAt || a.createdAt).getTime()
-          );
-        });
-    }
-
-    return result;
-  }, [filters, sortBy]);
-
   // Get manufacturer name for display
   const getManufacturerNames = () => {
     if (!filters.manufacturers?.length) return null;
     return filters.manufacturers
-      .map((id) => manufacturers.find((m) => m.id === id)?.name)
+      .map((id) => manufacturers.find((m) => m.id === id || m.slug === id)?.name)
       .filter(Boolean)
       .join(', ');
+  };
+
+  // Pagination
+  const totalPages = Math.ceil(total / itemsPerPage);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -263,13 +302,13 @@ function MaschinenContent() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold">
           {filters.query
-            ? `Suchergebnisse für "${filters.query}"`
+            ? t('searchResults', { query: filters.query })
             : getManufacturerNames()
-            ? `${getManufacturerNames()} Koordinatenmessmaschinen`
-            : 'Gebrauchte Koordinatenmessmaschinen'}
+            ? t('manufacturerResults', { manufacturer: getManufacturerNames() || '' })
+            : t('title')}
         </h1>
         <p className="mt-2 text-muted-foreground">
-          {filteredListings.length} Maschinen gefunden
+          {isLoading ? tc('loading') : t('totalFound', { total })}
         </p>
       </div>
 
@@ -282,7 +321,7 @@ function MaschinenContent() {
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Suche nach Hersteller, Modell, Stichwort..."
+              placeholder={t('searchPlaceholder')}
               className="pl-10 pr-10"
             />
             {searchQuery && (
@@ -290,13 +329,15 @@ function MaschinenContent() {
                 type="button"
                 onClick={clearSearch}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                aria-label="Suche löschen"
+                aria-label={t('clearSearch')}
               >
                 <X className="h-4 w-4" />
               </button>
             )}
           </div>
-          <Button type="submit">Suchen</Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : tc('search')}
+          </Button>
         </div>
       </form>
 
@@ -306,7 +347,7 @@ function MaschinenContent() {
           <ListingFiltersSidebar
             filters={filters}
             onFiltersChange={handleFiltersChange}
-            totalResults={filteredListings.length}
+            totalResults={total}
           />
         </div>
 
@@ -320,7 +361,7 @@ function MaschinenContent() {
                 <ListingFiltersSidebar
                   filters={filters}
                   onFiltersChange={handleFiltersChange}
-                  totalResults={filteredListings.length}
+                  totalResults={total}
                 />
               </div>
 
@@ -328,10 +369,10 @@ function MaschinenContent() {
               <Select value={sortBy} onValueChange={handleSortChange}>
                 <SelectTrigger className="w-[200px]">
                   <ArrowUpDown className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Sortieren" />
+                  <SelectValue placeholder={t('sort')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {sortOptions.map((option) => (
+                  {sortOpts.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -346,7 +387,7 @@ function MaschinenContent() {
                 variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('grid')}
-                aria-label="Rasteransicht"
+                aria-label={t('gridView')}
               >
                 <LayoutGrid className="h-4 w-4" />
               </Button>
@@ -354,7 +395,7 @@ function MaschinenContent() {
                 variant={viewMode === 'list' ? 'secondary' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('list')}
-                aria-label="Listenansicht"
+                aria-label={t('listView')}
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -366,51 +407,93 @@ function MaschinenContent() {
             <ActiveFilters filters={filters} onFiltersChange={handleFiltersChange} />
           </div>
 
-          {/* Listings Grid/List */}
-          {filteredListings.length > 0 ? (
+          {/* Loading State */}
+          {isLoading ? (
+            <div className="text-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary mb-4" />
+              <p className="text-muted-foreground">{t('loading')}</p>
+            </div>
+          ) : listings.length > 0 ? (
             <>
-              <ListingGrid listings={filteredListings} showCompare viewMode={viewMode} />
+              <ListingGrid listings={listings} showCompare viewMode={viewMode} />
 
               {/* Pagination */}
-              <div className="mt-8 flex items-center justify-center gap-2">
-                <Button variant="outline" disabled>
-                  Zurück
-                </Button>
-                <div className="flex items-center gap-1">
-                  <Button variant="default" size="sm">
-                    1
+              {totalPages > 1 && (
+                <div className="mt-8 flex items-center justify-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    {t('prev')}
                   </Button>
-                  <Button variant="outline" size="sm">
-                    2
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    3
-                  </Button>
-                  <span className="px-2">...</span>
-                  <Button variant="outline" size="sm">
-                    10
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum: number;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => handlePageChange(pageNum)}
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                    {totalPages > 5 && currentPage < totalPages - 2 && (
+                      <>
+                        <span className="px-2">...</span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(totalPages)}
+                        >
+                          {totalPages}
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    {t('nextPage')}
                   </Button>
                 </div>
-                <Button variant="outline">Weiter</Button>
-              </div>
+              )}
             </>
           ) : (
             <div className="text-center py-16">
               <div className="mx-auto max-w-md">
                 <Search className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Keine Maschinen gefunden</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('noMachines')}</h3>
                 <p className="text-muted-foreground mb-4">
-                  Versuchen Sie andere Suchbegriffe oder passen Sie Ihre Filter an.
+                  {total === 0 && !filters.query && !filters.manufacturers?.length
+                    ? t('noMachinesDesc')
+                    : t('noMachinesHint')}
                 </p>
                 <Button
                   variant="outline"
                   onClick={() => {
                     setFilters({});
                     setSearchQuery('');
+                    setCurrentPage(1);
                     router.push(pathname);
                   }}
                 >
-                  Filter zurücksetzen
+                  {t('resetFilters')}
                 </Button>
               </div>
             </div>
@@ -425,13 +508,15 @@ function MaschinenContent() {
 }
 
 export function MaschinenPageClient() {
+  const tc = useTranslations('common');
+
   return (
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-            <p className="text-muted-foreground">Lädt...</p>
+            <p className="text-muted-foreground">{tc('loading')}</p>
           </div>
         </div>
       }

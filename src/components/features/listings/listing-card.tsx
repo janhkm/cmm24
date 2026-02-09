@@ -1,13 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { MapPin, CheckCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
+import { useTranslations, useLocale } from 'next-intl';
 import type { Listing } from '@/types';
 
 interface ListingCardProps {
@@ -25,13 +26,17 @@ export function ListingCard({
   onCompareToggle,
   className,
 }: ListingCardProps) {
+  const t = useTranslations('machines');
+  const tCommon = useTranslations('common');
+  const locale = useLocale();
+
   const primaryImage = listing.media.find((m) => m.isPrimary) || listing.media[0];
   const isSold = listing.status === 'sold';
   const isNew = listing.publishedAt && 
     new Date(listing.publishedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('de-DE', {
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: listing.currency,
       minimumFractionDigits: 0,
@@ -63,7 +68,7 @@ export function ListingCard({
             />
           ) : (
             <div className="flex h-full items-center justify-center">
-              <span className="text-muted-foreground">Kein Bild</span>
+              <span className="text-muted-foreground">{t('noImage')}</span>
             </div>
           )}
 
@@ -71,15 +76,15 @@ export function ListingCard({
           <div className="absolute left-3 top-3 flex flex-col gap-2">
             {isSold && (
               <Badge variant="secondary" className="bg-neutral-800 text-white">
-                Verkauft
+                {t('sold')}
               </Badge>
             )}
             {isNew && !isSold && (
-              <Badge className="bg-primary">Neu</Badge>
+              <Badge className="bg-primary">{tCommon('new')}</Badge>
             )}
             {listing.featured && !isSold && (
               <Badge variant="outline" className="bg-white/90">
-                ⭐ Featured
+                ⭐ {t('featured')}
               </Badge>
             )}
           </div>
@@ -95,7 +100,7 @@ export function ListingCard({
                   checked={isCompared}
                   onCheckedChange={() => onCompareToggle?.(listing.id)}
                 />
-                Vergleichen
+                {tCommon('compare')}
               </label>
             </div>
           )}
@@ -103,8 +108,8 @@ export function ListingCard({
           {/* Sold Overlay */}
           {isSold && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-              <span className="rounded-lg bg-white px-4 py-2 font-semibold text-neutral-800">
-                VERKAUFT
+              <span className="rounded-lg bg-white px-4 py-2 font-semibold text-neutral-800 uppercase">
+                {t('sold')}
               </span>
             </div>
           )}
@@ -136,7 +141,7 @@ export function ListingCard({
         {listing.seller?.isVerified && (
           <div className="mt-3 flex items-center gap-1.5 text-xs text-green-600">
             <CheckCircle className="h-3.5 w-3.5" />
-            <span>Verifizierter Verkäufer</span>
+            <span>{t('verifiedSeller')}</span>
           </div>
         )}
 
@@ -147,12 +152,12 @@ export function ListingCard({
               {formatPrice(listing.price)}
             </p>
             {listing.priceNegotiable && (
-              <p className="text-xs text-muted-foreground">VB</p>
+              <p className="text-xs text-muted-foreground">{t('negotiable')}</p>
             )}
           </div>
           {!isSold && (
             <Button size="sm" asChild>
-              <Link href={`/maschinen/${listing.slug}`}>Anfrage</Link>
+              <Link href={`/maschinen/${listing.slug}`}>{t('inquiry')}</Link>
             </Button>
           )}
         </div>

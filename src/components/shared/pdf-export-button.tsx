@@ -15,6 +15,7 @@ import {
   openPdfWindow,
   downloadPdfHtml,
 } from '@/lib/pdf-export';
+import { useTranslations } from 'next-intl';
 import type { Listing } from '@/types';
 
 interface PdfExportButtonProps {
@@ -33,6 +34,7 @@ export function PdfExportButton({
   className,
 }: PdfExportButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const t = useTranslations('pdfExport');
 
   const handleExport = async (mode: 'print' | 'download') => {
     setIsGenerating(true);
@@ -48,7 +50,7 @@ export function PdfExportButton({
         filename = `CMM24-${listing.slug}`;
       } else if (listings && listings.length > 0) {
         content = generateComparisonPdfContent(listings);
-        title = `Maschinenvergleich - CMM24`;
+        title = `${t('machineComparison')} - CMM24`;
         filename = `CMM24-Vergleich-${new Date().toISOString().split('T')[0]}`;
       } else {
         return;
@@ -81,7 +83,7 @@ export function PdfExportButton({
           )}
           {size !== 'icon' && (
             <span className="ml-2">
-              {listing ? 'Als PDF' : 'PDF exportieren'}
+              {listing ? t('asPdf') : t('exportPdf')}
             </span>
           )}
         </Button>
@@ -89,11 +91,11 @@ export function PdfExportButton({
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => handleExport('print')}>
           <Printer className="h-4 w-4 mr-2" />
-          Drucken / Als PDF speichern
+          {t('printOrSave')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleExport('download')}>
           <FileText className="h-4 w-4 mr-2" />
-          HTML herunterladen
+          {t('downloadHtml')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

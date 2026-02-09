@@ -1,20 +1,16 @@
 'use client';
 
-import Link from 'next/link';
 import { X, GitCompare } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { useCompareStore } from '@/stores/compare-store';
-import { mockListings } from '@/data/mock-data';
-import { cn } from '@/lib/utils';
 
 export function CompareBar() {
-  const { items, removeItem, clearItems, maxItems } = useCompareStore();
+  const t = useTranslations('compare');
+  const { items, titles, removeItem, clearItems, maxItems } = useCompareStore();
 
   if (items.length === 0) return null;
-
-  const compareListings = items
-    .map((id) => mockListings.find((l) => l.id === id))
-    .filter(Boolean);
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-lg">
@@ -24,22 +20,22 @@ export function CompareBar() {
             <div className="flex items-center gap-2">
               <GitCompare className="h-5 w-5 text-primary" />
               <span className="font-medium">
-                {items.length} von {maxItems} Maschinen zum Vergleichen
+                {t('machinesForCompare', { count: items.length, max: maxItems })}
               </span>
             </div>
 
-            {/* Thumbnails */}
+            {/* Titel aus dem Store */}
             <div className="hidden sm:flex items-center gap-2">
-              {compareListings.map((listing) => (
+              {items.map((id) => (
                 <div
-                  key={listing!.id}
+                  key={id}
                   className="relative group flex items-center gap-2 rounded-md border bg-card px-2 py-1"
                 >
                   <span className="text-sm truncate max-w-[150px]">
-                    {listing!.title}
+                    {titles[id] || id.substring(0, 8)}
                   </span>
                   <button
-                    onClick={() => removeItem(listing!.id)}
+                    onClick={() => removeItem(id)}
                     className="rounded-full p-0.5 hover:bg-muted"
                   >
                     <X className="h-3 w-3" />
@@ -51,10 +47,10 @@ export function CompareBar() {
 
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={clearItems}>
-              Auswahl löschen
+              {t('clearSelection')}
             </Button>
             <Button asChild disabled={items.length < 2}>
-              <Link href="/vergleich">Vergleichen</Link>
+              <Link href={`/vergleich?ids=${items.join(',')}`}>{t('compare')}</Link>
             </Button>
           </div>
         </div>

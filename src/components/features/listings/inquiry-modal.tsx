@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Send, CheckCircle, Loader2 } from 'lucide-react';
+import { Send, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +16,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 import type { Listing } from '@/types';
+import { createInquiry } from '@/lib/actions/inquiries';
+import { Link } from '@/i18n/navigation';
 
 interface InquiryModalProps {
   listing: Listing;
@@ -23,15 +27,19 @@ interface InquiryModalProps {
 }
 
 export function InquiryModal({ listing, trigger }: InquiryModalProps) {
+  const t = useTranslations('inquiry');
+  const tc = useTranslations('common');
+
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     company: '',
-    message: `Guten Tag,\n\nich interessiere mich für Ihre ${listing.title} und würde gerne mehr Informationen erhalten.\n\nMit freundlichen Grüßen`,
+    message: t('defaultMessage', { listing: listing.title }),
     acceptPrivacy: false,
   });
 
@@ -43,12 +51,34 @@ export function InquiryModal({ listing, trigger }: InquiryModalProps) {
     }
 
     setIsLoading(true);
+    setError(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      // Call the real server action to create inquiry
+      // This will also auto-create a contact for Business sellers
+      const result = await createInquiry({
+        listingId: listing.id,
+        contactName: formData.name,
+        contactEmail: formData.email,
+        contactPhone: formData.phone || undefined,
+        contactCompany: formData.company || undefined,
+        message: formData.message,
+      });
 
-    setIsLoading(false);
-    setIsSuccess(true);
+      if (result.success) {
+        setIsSuccess(true);
+        toast.success(t('sent'));
+      } else {
+        setError(result.error || t('errorOccurred'));
+        toast.error(result.error || t('sentError'));
+      }
+    } catch (err) {
+      console.error('Inquiry submission error:', err);
+      setError(t('unexpectedError'));
+      toast.error(t('sentError'));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClose = () => {
@@ -56,12 +86,13 @@ export function InquiryModal({ listing, trigger }: InquiryModalProps) {
     // Reset after animation
     setTimeout(() => {
       setIsSuccess(false);
+      setError(null);
       setFormData({
         name: '',
         email: '',
         phone: '',
         company: '',
-        message: `Guten Tag,\n\nich interessiere mich für Ihre ${listing.title} und würde gerne mehr Informationen erhalten.\n\nMit freundlichen Grüßen`,
+        message: t('defaultMessage', { listing: listing.title }),
         acceptPrivacy: false,
       });
     }, 200);
@@ -73,7 +104,7 @@ export function InquiryModal({ listing, trigger }: InquiryModalProps) {
         {trigger || (
           <Button size="lg" className="w-full">
             <Send className="mr-2 h-4 w-4" />
-            Anfrage senden
+            {t('title')}
           </Button>
         )}
       </DialogTrigger>
@@ -85,33 +116,31 @@ export function InquiryModal({ listing, trigger }: InquiryModalProps) {
             </div>
             <DialogHeader>
               <DialogTitle className="text-center text-xl">
-                Anfrage gesendet!
+                {t('successTitle')}
               </DialogTitle>
               <DialogDescription className="text-center">
-                Vielen Dank für Ihre Anfrage. Der Verkäufer wurde benachrichtigt 
-                und wird sich in Kürze bei Ihnen melden.
+                {t('successDesc')}
               </DialogDescription>
             </DialogHeader>
             <Button onClick={handleClose} className="mt-6">
-              Schließen
+              {tc('close')}
             </Button>
           </div>
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>Anfrage senden</DialogTitle>
+              <DialogTitle>{t('title')}</DialogTitle>
               <DialogDescription>
-                Stellen Sie Ihre Frage an den Verkäufer von{' '}
-                <span className="font-medium">{listing.title}</span>
+                {t('description', { listing: listing.title })}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
+                  <Label htmlFor="name">{t('name')} *</Label>
                   <Input
                     id="name"
-                    placeholder="Max Mustermann"
+                    placeholder={t('namePlaceholder')}
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
@@ -120,10 +149,10 @@ export function InquiryModal({ listing, trigger }: InquiryModalProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="company">Firma</Label>
+                  <Label htmlFor="company">{t('company')}</Label>
                   <Input
                     id="company"
-                    placeholder="Musterfirma GmbH"
+                    placeholder={t('companyPlaceholder')}
                     value={formData.company}
                     onChange={(e) =>
                       setFormData({ ...formData, company: e.target.value })
@@ -134,11 +163,11 @@ export function InquiryModal({ listing, trigger }: InquiryModalProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">E-Mail *</Label>
+                  <Label htmlFor="email">{t('email')} *</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="name@firma.de"
+                    placeholder={t('emailPlaceholder')}
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
@@ -147,11 +176,11 @@ export function InquiryModal({ listing, trigger }: InquiryModalProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Telefon</Label>
+                  <Label htmlFor="phone">{t('phone')}</Label>
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="+49 123 456789"
+                    placeholder={t('phonePlaceholder')}
                     value={formData.phone}
                     onChange={(e) =>
                       setFormData({ ...formData, phone: e.target.value })
@@ -161,10 +190,10 @@ export function InquiryModal({ listing, trigger }: InquiryModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="message">Nachricht *</Label>
+                <Label htmlFor="message">{t('message')} *</Label>
                 <Textarea
                   id="message"
-                  placeholder="Ihre Nachricht an den Verkäufer..."
+                  placeholder={t('messagePlaceholder')}
                   rows={5}
                   value={formData.message}
                   onChange={(e) =>
@@ -187,17 +216,26 @@ export function InquiryModal({ listing, trigger }: InquiryModalProps) {
                   htmlFor="privacy"
                   className="text-sm leading-tight cursor-pointer"
                 >
-                  Ich akzeptiere die{' '}
-                  <a
-                    href="/datenschutz"
-                    target="_blank"
-                    className="text-primary hover:underline"
-                  >
-                    Datenschutzerklärung
-                  </a>{' '}
-                  und stimme zu, dass meine Daten an den Verkäufer weitergegeben werden. *
+                  {t.rich('privacyConsent', {
+                    privacyLink: (chunks) => (
+                      <Link
+                        href="/datenschutz"
+                        target="_blank"
+                        className="text-primary hover:underline"
+                      >
+                        {chunks}
+                      </Link>
+                    ),
+                  })}
                 </Label>
               </div>
+
+              {error && (
+                <div className="flex items-center gap-2 p-3 rounded-md bg-destructive/10 text-destructive text-sm">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <p>{error}</p>
+                </div>
+              )}
 
               <div className="flex gap-3 pt-2">
                 <Button
@@ -206,7 +244,7 @@ export function InquiryModal({ listing, trigger }: InquiryModalProps) {
                   onClick={() => setOpen(false)}
                   className="flex-1"
                 >
-                  Abbrechen
+                  {tc('cancel')}
                 </Button>
                 <Button
                   type="submit"
@@ -216,12 +254,12 @@ export function InquiryModal({ listing, trigger }: InquiryModalProps) {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Wird gesendet...
+                      {t('sending')}
                     </>
                   ) : (
                     <>
                       <Send className="mr-2 h-4 w-4" />
-                      Anfrage senden
+                      {t('title')}
                     </>
                   )}
                 </Button>

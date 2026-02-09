@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import {
   Bell,
   MessageSquare,
@@ -89,17 +90,8 @@ const getNotificationIcon = (type: Notification['type']) => {
   }
 };
 
-const formatTimeAgo = (date: Date) => {
-  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-  
-  if (seconds < 60) return 'Gerade eben';
-  if (seconds < 3600) return `Vor ${Math.floor(seconds / 60)} Min.`;
-  if (seconds < 86400) return `Vor ${Math.floor(seconds / 3600)} Std.`;
-  if (seconds < 604800) return `Vor ${Math.floor(seconds / 86400)} Tagen`;
-  return date.toLocaleDateString('de-DE');
-};
-
 export function NotificationCenter() {
+  const t = useTranslations('notifications');
   const [notifications, setNotifications] = useState(mockNotifications);
   const [open, setOpen] = useState(false);
 
@@ -119,6 +111,16 @@ export function NotificationCenter() {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
+  const formatTimeAgo = (date: Date) => {
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    
+    if (seconds < 60) return t('justNow');
+    if (seconds < 3600) return t('minutesAgo', { minutes: Math.floor(seconds / 60) });
+    if (seconds < 86400) return t('hoursAgo', { hours: Math.floor(seconds / 3600) });
+    if (seconds < 604800) return t('daysAgo', { days: Math.floor(seconds / 86400) });
+    return date.toLocaleDateString('de-DE');
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -134,7 +136,7 @@ export function NotificationCenter() {
       <PopoverContent className="w-80 p-0" align="end">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="font-semibold">Benachrichtigungen</h3>
+          <h3 className="font-semibold">{t('title')}</h3>
           <div className="flex items-center gap-1">
             {unreadCount > 0 && (
               <Button
@@ -144,7 +146,7 @@ export function NotificationCenter() {
                 onClick={markAllAsRead}
               >
                 <Check className="h-3 w-3 mr-1" />
-                Alle lesen
+                {t('markAllRead')}
               </Button>
             )}
           </div>
@@ -221,7 +223,7 @@ export function NotificationCenter() {
             <div className="py-12 text-center">
               <Bell className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">
-                Keine Benachrichtigungen
+                {t('empty')}
               </p>
             </div>
           )}
@@ -234,7 +236,7 @@ export function NotificationCenter() {
             <div className="p-2">
               <Button variant="ghost" size="sm" className="w-full" asChild>
                 <Link href="/seller/benachrichtigungen">
-                  Alle Benachrichtigungen
+                  {t('allNotifications')}
                 </Link>
               </Button>
             </div>
