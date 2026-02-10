@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { articles } from '@/data/content/articles';
-import { sanitizeMarkdownHtml } from '@/lib/sanitize-html';
 
 interface RatgeberDetailPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -186,7 +185,8 @@ export default async function RatgeberDetailPage({ params }: RatgeberDetailPageP
             {/* Content */}
             <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-a:text-primary">
               {/* Render markdown content */}
-              <div dangerouslySetInnerHTML={{ __html: sanitizeMarkdownHtml(renderMarkdown(article.content)) }} />
+              {/* Content stammt aus articles.ts (kein User-Input), daher keine Sanitierung noetig */}
+              <div dangerouslySetInnerHTML={{ __html: renderMarkdown(article.content) }} />
             </div>
 
             {/* Tags */}
