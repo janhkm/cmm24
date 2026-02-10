@@ -412,8 +412,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
               {/* ---- SIDEBAR (Filter-Navigation) ---- */}
               <aside className="w-full lg:w-64 xl:w-72 shrink-0">
-                <nav className="space-y-6 lg:sticky lg:top-20">
-
+                {/* Desktop: immer sichtbar, sticky */}
+                <nav className="hidden lg:block space-y-6 lg:sticky lg:top-20">
                   {/* Hersteller */}
                   <div>
                     <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">
@@ -434,20 +434,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                       ))}
                       {allManufacturers.length > 5 && (
                         <li>
-                          <Link
-                            href="/hersteller"
-                            className="flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium text-primary hover:underline"
-                          >
-                            Alle anzeigen
-                            <ArrowRight className="h-3.5 w-3.5" />
+                          <Link href="/hersteller" className="flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium text-primary hover:underline">
+                            Alle anzeigen <ArrowRight className="h-3.5 w-3.5" />
                           </Link>
                         </li>
                       )}
                     </ul>
                   </div>
-
                   <Separator />
-
                   {/* Messgroesse */}
                   <div>
                     <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">
@@ -468,9 +462,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                       ))}
                     </ul>
                   </div>
-
                   <Separator />
-
                   {/* Preis */}
                   <div>
                     <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">
@@ -491,9 +483,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                       ))}
                     </ul>
                   </div>
-
                   <Separator />
-
                   {/* Zustand */}
                   <div>
                     <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">
@@ -515,6 +505,100 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                     </ul>
                   </div>
                 </nav>
+
+                {/* Mobile: eingeklappte Accordion-Filter */}
+                <Accordion type="multiple" className="lg:hidden">
+                  <AccordionItem value="hersteller">
+                    <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                      <span className="flex items-center gap-2"><Factory className="h-4 w-4" /> Hersteller</span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <ul className="space-y-1">
+                        {sortedManufacturers.map((m) => (
+                          <li key={m.id}>
+                            <Link
+                              href={`/maschinen?hersteller=${m.slug}`}
+                              className="flex items-center justify-between rounded-md px-2.5 py-1.5 text-sm hover:bg-muted transition-colors group"
+                            >
+                              <span className="group-hover:text-primary transition-colors">{m.name}</span>
+                              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                            </Link>
+                          </li>
+                        ))}
+                        {allManufacturers.length > 5 && (
+                          <li>
+                            <Link href="/hersteller" className="flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium text-primary hover:underline">
+                              Alle anzeigen <ArrowRight className="h-3.5 w-3.5" />
+                            </Link>
+                          </li>
+                        )}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="messgroesse">
+                    <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                      <span className="flex items-center gap-2"><Ruler className="h-4 w-4" /> Messgröße (mm)</span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <ul className="space-y-1">
+                        {MEASURING_RANGES.map((range) => (
+                          <li key={range.label}>
+                            <Link
+                              href={`/maschinen?q=${range.x}+${range.y}+${range.z}`}
+                              className="flex items-center justify-between rounded-md px-2.5 py-1.5 text-sm hover:bg-muted transition-colors group"
+                            >
+                              <span className="group-hover:text-primary transition-colors">{range.label}</span>
+                              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="preis">
+                    <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                      <span className="flex items-center gap-2"><Euro className="h-4 w-4" /> Preis</span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <ul className="space-y-1">
+                        {PRICE_RANGES.map((range) => (
+                          <li key={range.label}>
+                            <Link
+                              href={`/maschinen?preis_min=${range.min}${range.max > 0 ? `&preis_max=${range.max}` : ''}`}
+                              className="flex items-center justify-between rounded-md px-2.5 py-1.5 text-sm hover:bg-muted transition-colors group"
+                            >
+                              <span className="group-hover:text-primary transition-colors">{range.label}</span>
+                              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="zustand">
+                    <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                      <span className="flex items-center gap-2"><Shield className="h-4 w-4" /> Zustand</span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <ul className="space-y-1">
+                        {CONDITIONS.map((c) => (
+                          <li key={c.value}>
+                            <Link
+                              href={`/maschinen?zustand=${c.value}`}
+                              className="flex items-center justify-between rounded-md px-2.5 py-1.5 text-sm hover:bg-muted transition-colors group"
+                            >
+                              <span className="group-hover:text-primary transition-colors">{c.label}</span>
+                              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </aside>
 
               {/* ---- HAUPTBEREICH (Inserate) ---- */}
