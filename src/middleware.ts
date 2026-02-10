@@ -285,11 +285,12 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization)
      * - favicon.ico, favicon.png
+     * - sitemap.xml, robots.txt (SEO-Dateien)
      * - Static assets (images, fonts)
      * - API routes (/api/...)
      * - Auth callback (/auth/...)
      * - Sentry monitoring (/monitoring)
      */
-    '/((?!_next/static|_next/image|favicon\\.ico|favicon\\.png|monitoring|api/|auth/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|otf|eot)$).*)',
+    '/((?!_next/static|_next/image|favicon\\.ico|favicon\\.png|sitemap\\.xml|robots\\.txt|monitoring|api/|auth/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|otf|eot)$).*)',
   ],
 };
