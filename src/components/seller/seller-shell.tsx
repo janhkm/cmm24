@@ -4,7 +4,10 @@ import { useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
 import { usePathname, useRouter } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
+import { routing, localeNames, localeFlags } from '@/i18n/routing';
+import type { Locale } from '@/i18n/routing';
 import {
   LayoutDashboard,
   FileText,
@@ -22,6 +25,7 @@ import {
   Key,
   Mail,
   UserCircle,
+  Globe,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -99,6 +103,8 @@ export function SellerShell({
 }: SellerShellProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const params = useParams();
+  const locale = useLocale() as Locale;
   const t = useTranslations('nav');
   const ts = useTranslations('seller');
   const tc = useTranslations('common');
@@ -110,6 +116,32 @@ export function SellerShell({
     await signOut();
     router.push('/login');
   };
+
+  function switchLocale(newLocale: string) {
+    // Dynamische Params (slug, id, token) aus dem aktuellen Pfad extrahieren
+    // und zurueck in den internen Pathname einsetzen, damit next-intl
+    // die Route korrekt in die Zielsprache uebersetzen kann.
+    const dynamicParams = { ...params };
+    delete dynamicParams.locale;
+
+    const hasDynamicParams = Object.keys(dynamicParams).length > 0;
+
+    if (hasDynamicParams) {
+      let templatePath: string = pathname;
+      for (const [key, value] of Object.entries(dynamicParams)) {
+        if (typeof value === 'string') {
+          templatePath = templatePath.replace(value, `[${key}]`);
+        }
+      }
+      router.replace(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        { pathname: templatePath, params: dynamicParams } as any,
+        { locale: newLocale as Locale }
+      );
+    } else {
+      router.replace(pathname, { locale: newLocale as Locale });
+    }
+  }
 
   const getBadgeValue = (badgeKey?: string): number | undefined => {
     if (badgeKey === 'inquiries' && unreadInquiries > 0) return unreadInquiries;
@@ -200,7 +232,27 @@ export function SellerShell({
                 <Separator />
                 <nav className="flex flex-col gap-1 p-4"><NavLinks /></nav>
                 <Separator />
-                <div className="p-4"><PlanWidget /></div>
+                <div className="p-4">
+                  <PlanWidget />
+                  {/* Sprachwechsler Mobile */}
+                  <div className="mt-4">
+                    <p className="mb-2 text-sm font-medium text-muted-foreground">
+                      {t('language' as any)}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {routing.locales.map((loc) => (
+                        <Button
+                          key={loc}
+                          variant={locale === loc ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => { switchLocale(loc); setMobileMenuOpen(false); }}
+                        >
+                          {localeFlags[loc]} {localeNames[loc]}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </SheetContent>
             </Sheet>
 
@@ -224,6 +276,28 @@ export function SellerShell({
                 <Plus className="h-4 w-4" />
               </Link>
             </Button>
+
+            {/* Sprachwechsler */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <span className="text-base leading-none">{localeFlags[locale]}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 max-h-80 overflow-y-auto">
+                {routing.locales.map((loc) => (
+                  <DropdownMenuItem
+                    key={loc}
+                    onClick={() => switchLocale(loc)}
+                    className={locale === loc ? 'bg-accent' : ''}
+                  >
+                    <span className="mr-2">{localeFlags[loc]}</span>
+                    {localeNames[loc]}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <NotificationBell />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

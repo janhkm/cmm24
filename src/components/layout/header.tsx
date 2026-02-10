@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useRouter, usePathname } from '@/i18n/navigation';
+import { useParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { routing, localeNames, localeFlags } from '@/i18n/routing';
 import type { Locale } from '@/i18n/routing';
@@ -58,6 +59,7 @@ export function Header({ user }: HeaderProps) {
   const locale = useLocale() as Locale;
   const router = useRouter();
   const pathname = usePathname();
+  const params = useParams();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -72,7 +74,32 @@ export function Header({ user }: HeaderProps) {
   ];
 
   function switchLocale(newLocale: string) {
-    router.replace(pathname, { locale: newLocale as Locale });
+    // Dynamische Params (slug, id, token) aus dem aktuellen Pfad extrahieren
+    // und zurueck in den internen Pathname einsetzen, damit next-intl
+    // die Route korrekt in die Zielsprache uebersetzen kann.
+    const dynamicParams = { ...params };
+    // locale ist kein Pfad-Param, entfernen
+    delete dynamicParams.locale;
+
+    // Pruefen ob es dynamische Segmente gibt (slug, id, token etc.)
+    const hasDynamicParams = Object.keys(dynamicParams).length > 0;
+
+    if (hasDynamicParams) {
+      // Internen Template-Pfad rekonstruieren: z.B. /maschinen/some-slug -> /maschinen/[slug]
+      let templatePath: string = pathname;
+      for (const [key, value] of Object.entries(dynamicParams)) {
+        if (typeof value === 'string') {
+          templatePath = templatePath.replace(value, `[${key}]`);
+        }
+      }
+      router.replace(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        { pathname: templatePath, params: dynamicParams } as any,
+        { locale: newLocale as Locale }
+      );
+    } else {
+      router.replace(pathname, { locale: newLocale as Locale });
+    }
   }
 
   return (
