@@ -303,7 +303,7 @@ function MessageThread({
 
       <CardContent className="flex-1 flex flex-col min-h-0 p-0">
         {/* Nachrichten-Bereich */}
-        <ScrollArea className="flex-1 px-6" ref={scrollAreaRef}>
+        <ScrollArea className="flex-1 px-6" ref={scrollAreaRef} translate="no">
           <div className="space-y-4 py-4">
             {/* Original-Anfrage als erste Nachricht */}
             {originalMessage && (
@@ -319,7 +319,7 @@ function MessageThread({
                     </span>
                   </div>
                   <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900 p-3">
-                    <p className="text-sm whitespace-pre-wrap">{originalMessage}</p>
+                    <p className="text-sm whitespace-pre-wrap" translate="yes">{originalMessage}</p>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">{t('initialInquiry')}</p>
                 </div>
@@ -343,7 +343,7 @@ function MessageThread({
                   <div key={message.id} className="flex justify-center">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted rounded-full px-3 py-1">
                       <Bot className="h-3 w-3" />
-                      {message.content}
+                      <span translate="yes">{message.content}</span>
                     </div>
                   </div>
                 );
@@ -372,7 +372,7 @@ function MessageThread({
                            {formatMessageTime(message.created_at || '')}
                         </span>
                       </div>
-                      <p className="text-sm whitespace-pre-wrap text-left">{message.content}</p>
+                      <p className="text-sm whitespace-pre-wrap text-left" translate="yes">{message.content}</p>
                       {/* Anhang-Anzeige */}
                       {message.attachment_url && (
                         <div className="mt-2 pt-2 border-t border-current/10">
@@ -585,7 +585,7 @@ export default function InquiryDetailPage() {
   const hasMessagingAccess = featureFlags?.inquiry_messaging ?? featureFlags?.email_composer ?? false;
   const hasReadReceipts = featureFlags?.read_receipts ?? false;
   const hasAttachments = featureFlags?.message_attachments ?? false;
-  const hasTemplates = featureFlags?.message_templates ?? false;
+  const hasTemplates = true; // Vorlagen sind fuer alle Seller kostenlos verfuegbar
 
   const statusConfig: Record<string, { label: string; color: string; icon: typeof MessageSquare }> = {
     new: { label: t('statusNew'), color: 'bg-blue-100 text-blue-800', icon: MessageSquare },
