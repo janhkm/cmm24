@@ -6,7 +6,6 @@ import {
   hasFeature,
   canCreateListing,
   getListingLimit,
-  getFeatureLimit,
   isAdmin,
   isSuperAdmin,
   isAccountSuspended,
@@ -16,6 +15,8 @@ import {
   canAccessApi,
   getRequiredTierForFeature,
   type UserContext,
+  type PlanTier,
+  type FeatureFlag,
 } from './permissions';
 
 // ============================================
@@ -30,7 +31,7 @@ const createCtx = (overrides: Partial<UserContext> = {}): UserContext => ({
   ...overrides,
 });
 
-const freePlan = {
+const freePlan: UserContext['plan'] = {
   id: 'plan-free',
   name: 'Free',
   slug: 'free',
@@ -60,10 +61,10 @@ const freePlan = {
   is_active: true,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-} as any;
+};
 
-const starterPlan = {
-  ...freePlan,
+const starterPlan: UserContext['plan'] = {
+  ...freePlan!,
   id: 'plan-starter',
   name: 'Starter',
   slug: 'starter',
@@ -81,10 +82,10 @@ const starterPlan = {
     api_access: false,
     support_level: '24h',
   },
-} as any;
+};
 
-const businessPlan = {
-  ...freePlan,
+const businessPlan: UserContext['plan'] = {
+  ...freePlan!,
   id: 'plan-business',
   name: 'Business',
   slug: 'business',
@@ -102,9 +103,9 @@ const businessPlan = {
     api_access: true,
     support_level: '4h',
   },
-} as any;
+};
 
-const userProfile = {
+const userProfile: UserContext['profile'] = {
   id: 'user-1',
   email: 'test@example.com',
   full_name: 'Test User',
@@ -118,20 +119,23 @@ const userProfile = {
   email_verified_at: null,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-} as any;
+};
 
-const adminProfile = { ...userProfile, role: 'admin' } as any;
-const superAdminProfile = { ...userProfile, role: 'super_admin' } as any;
+const adminProfile: UserContext['profile'] = { ...userProfile!, role: 'admin' };
+const superAdminProfile: UserContext['profile'] = { ...userProfile!, role: 'super_admin' };
 
-const activeAccount = {
+const activeAccount: UserContext['account'] = {
   id: 'account-1',
   owner_id: 'user-1',
   company_name: 'Test GmbH',
   slug: 'test-gmbh',
   status: 'active',
-} as any;
+} as UserContext['account'];
 
-const suspendedAccount = { ...activeAccount, status: 'suspended' } as any;
+const suspendedAccount: UserContext['account'] = {
+  ...activeAccount!,
+  status: 'suspended',
+} as UserContext['account'];
 
 // ============================================
 // Tests
@@ -155,20 +159,23 @@ describe('getPlanTier', () => {
   });
 });
 
+// ============================================
+// hasTier – Aktuell gibt immer true zurueck (alles free)
+// SPAETER: Wenn Paid-Plaene aktiv, diese Tests reaktivieren:
+//   - free hat NICHT starter-Tier → expect false
+//   - starter hat NICHT business-Tier → expect false
+// ============================================
+
 describe('hasTier', () => {
   it('free hat free-Tier', () => {
     expect(hasTier(createCtx({ plan: freePlan }), 'free')).toBe(true);
   });
 
-  it('free hat NICHT starter-Tier', () => {
-    expect(hasTier(createCtx({ plan: freePlan }), 'starter')).toBe(false);
-  });
-
-  it('starter hat starter- und free-Tier', () => {
-    const ctx = createCtx({ plan: starterPlan });
-    expect(hasTier(ctx, 'free')).toBe(true);
-    expect(hasTier(ctx, 'starter')).toBe(true);
-    expect(hasTier(ctx, 'business')).toBe(false);
+  it('alle Tiers geben true zurueck (alles free Modus)', () => {
+    // Aktuell ist alles freigeschaltet – hasTier() gibt immer true zurueck
+    expect(hasTier(createCtx({ plan: freePlan }), 'starter')).toBe(true);
+    expect(hasTier(createCtx({ plan: freePlan }), 'business')).toBe(true);
+    expect(hasTier(createCtx({ plan: starterPlan }), 'business')).toBe(true);
   });
 
   it('business hat alle Tiers', () => {
@@ -187,20 +194,26 @@ describe('getTierName', () => {
   });
 });
 
+// ============================================
+// hasFeature – Aktuell gibt immer true zurueck (alles free)
+// SPAETER: Wenn Paid-Plaene aktiv, alte Expectations reaktivieren
+// ============================================
+
 describe('hasFeature', () => {
-  it('free hat keine Features', () => {
+  it('alle Features sind freigeschaltet (alles free Modus)', () => {
     const ctx = createCtx({ plan: freePlan });
-    expect(hasFeature(ctx, 'statistics')).toBe(false);
-    expect(hasFeature(ctx, 'lead_pipeline')).toBe(false);
-    expect(hasFeature(ctx, 'api_access')).toBe(false);
+    // Aktuell: hasFeature() gibt immer true zurueck
+    expect(hasFeature(ctx, 'statistics')).toBe(true);
+    expect(hasFeature(ctx, 'lead_pipeline')).toBe(true);
+    expect(hasFeature(ctx, 'api_access')).toBe(true);
   });
 
-  it('starter hat statistics und email_composer', () => {
+  it('starter hat alle Features (alles free Modus)', () => {
     const ctx = createCtx({ plan: starterPlan });
     expect(hasFeature(ctx, 'statistics')).toBe(true);
     expect(hasFeature(ctx, 'email_composer')).toBe(true);
-    expect(hasFeature(ctx, 'lead_pipeline')).toBe(false);
-    expect(hasFeature(ctx, 'api_access')).toBe(false);
+    expect(hasFeature(ctx, 'lead_pipeline')).toBe(true);
+    expect(hasFeature(ctx, 'api_access')).toBe(true);
   });
 
   it('business hat alle Features', () => {
@@ -214,21 +227,24 @@ describe('hasFeature', () => {
   });
 });
 
+// ============================================
+// canCreateListing – Kein Limit mehr, nur suspended blockiert
+// SPAETER: Wenn Paid-Plaene aktiv, Limit-Tests reaktivieren
+// ============================================
+
 describe('canCreateListing', () => {
-  it('erlaubt Erstellung unter Limit', () => {
+  it('erlaubt Erstellung immer (alles free Modus)', () => {
     const ctx = createCtx({ plan: starterPlan, account: activeAccount });
     expect(canCreateListing(ctx, 0)).toBe(true);
     expect(canCreateListing(ctx, 4)).toBe(true);
+    // Kein Limit mehr – auch bei hoher Anzahl erlaubt
+    expect(canCreateListing(ctx, 5)).toBe(true);
+    expect(canCreateListing(ctx, 100)).toBe(true);
   });
 
-  it('blockiert bei erreichtem Limit', () => {
-    const ctx = createCtx({ plan: starterPlan, account: activeAccount });
-    expect(canCreateListing(ctx, 5)).toBe(false);
-  });
-
-  it('blockiert bei ueberschrittenem Limit (Downgrade)', () => {
+  it('erlaubt auch fuer Free-Plan ohne Limit', () => {
     const ctx = createCtx({ plan: freePlan, account: activeAccount });
-    expect(canCreateListing(ctx, 10)).toBe(false);
+    expect(canCreateListing(ctx, 10)).toBe(true);
   });
 
   it('blockiert bei gesperrtem Account', () => {
@@ -237,17 +253,16 @@ describe('canCreateListing', () => {
   });
 });
 
+// ============================================
+// getListingLimit – Gibt -1 zurueck (unbegrenzt)
+// SPAETER: Wenn Paid-Plaene aktiv, Limit-Werte reaktivieren
+// ============================================
+
 describe('getListingLimit', () => {
-  it('gibt 1 fuer Free-Plan', () => {
-    expect(getListingLimit(createCtx({ plan: freePlan }))).toBe(1);
-  });
-
-  it('gibt 5 fuer Starter-Plan', () => {
-    expect(getListingLimit(createCtx({ plan: starterPlan }))).toBe(5);
-  });
-
-  it('gibt 25 fuer Business-Plan', () => {
-    expect(getListingLimit(createCtx({ plan: businessPlan }))).toBe(25);
+  it('gibt -1 zurueck fuer alle Plaene (unbegrenzt, alles free Modus)', () => {
+    expect(getListingLimit(createCtx({ plan: freePlan }))).toBe(-1);
+    expect(getListingLimit(createCtx({ plan: starterPlan }))).toBe(-1);
+    expect(getListingLimit(createCtx({ plan: businessPlan }))).toBe(-1);
   });
 });
 
@@ -273,31 +288,41 @@ describe('Account Status', () => {
   });
 });
 
-describe('Feature Access by Tier', () => {
-  it('Statistiken ab Starter', () => {
-    expect(canAccessStatistics(createCtx({ plan: freePlan }))).toBe(false);
+// ============================================
+// Feature Access – Aktuell alle true (alles free)
+// SPAETER: Wenn Paid-Plaene aktiv, Tier-basierte Tests reaktivieren
+// ============================================
+
+describe('Feature Access (alles free Modus)', () => {
+  it('Statistiken fuer alle freigeschaltet', () => {
+    expect(canAccessStatistics(createCtx({ plan: freePlan }))).toBe(true);
     expect(canAccessStatistics(createCtx({ plan: starterPlan }))).toBe(true);
     expect(canAccessStatistics(createCtx({ plan: businessPlan }))).toBe(true);
   });
 
-  it('Lead Pipeline nur Business', () => {
-    expect(canAccessLeadPipeline(createCtx({ plan: freePlan }))).toBe(false);
-    expect(canAccessLeadPipeline(createCtx({ plan: starterPlan }))).toBe(false);
+  it('Lead Pipeline fuer alle freigeschaltet', () => {
+    expect(canAccessLeadPipeline(createCtx({ plan: freePlan }))).toBe(true);
+    expect(canAccessLeadPipeline(createCtx({ plan: starterPlan }))).toBe(true);
     expect(canAccessLeadPipeline(createCtx({ plan: businessPlan }))).toBe(true);
   });
 
-  it('Team Management nur Business', () => {
-    expect(canAccessTeamManagement(createCtx({ plan: freePlan }))).toBe(false);
-    expect(canAccessTeamManagement(createCtx({ plan: starterPlan }))).toBe(false);
+  it('Team Management fuer alle freigeschaltet', () => {
+    expect(canAccessTeamManagement(createCtx({ plan: freePlan }))).toBe(true);
+    expect(canAccessTeamManagement(createCtx({ plan: starterPlan }))).toBe(true);
     expect(canAccessTeamManagement(createCtx({ plan: businessPlan }))).toBe(true);
   });
 
-  it('API nur Business', () => {
-    expect(canAccessApi(createCtx({ plan: freePlan }))).toBe(false);
-    expect(canAccessApi(createCtx({ plan: starterPlan }))).toBe(false);
+  it('API fuer alle freigeschaltet', () => {
+    expect(canAccessApi(createCtx({ plan: freePlan }))).toBe(true);
+    expect(canAccessApi(createCtx({ plan: starterPlan }))).toBe(true);
     expect(canAccessApi(createCtx({ plan: businessPlan }))).toBe(true);
   });
 });
+
+// ============================================
+// getRequiredTierForFeature – bleibt unveraendert,
+// definiert die zukuenftige Tier-Zuordnung
+// ============================================
 
 describe('getRequiredTierForFeature', () => {
   it('gibt korrekten Tier fuer jedes Feature', () => {

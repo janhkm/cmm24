@@ -59,7 +59,8 @@ export function isSuperAdmin(ctx: UserContext): boolean {
 // Tier Checks
 // ============================================
 
-const TIER_ORDER: PlanTier[] = ['free', 'starter', 'business'];
+// Tier-Reihenfolge fuer spaetere Paid-Plaene
+// const TIER_ORDER: PlanTier[] = ['free', 'starter', 'business'];
 
 export function getPlanTier(ctx: UserContext): PlanTier {
   if (!ctx.plan) return 'free';
@@ -69,11 +70,11 @@ export function getPlanTier(ctx: UserContext): PlanTier {
   return 'free';
 }
 
-export function hasTier(ctx: UserContext, minTier: PlanTier): boolean {
+export function hasTier(_ctx: UserContext, _minTier: PlanTier): boolean {
   // ALLES IST JETZT FREE - immer true
   return true;
   
-  // AUSKOMMENTIERT: Alte Tier-basierte Logik
+  // SPAETER: Alte Tier-basierte Logik reaktivieren
   // const userTier = getPlanTier(ctx);
   // return TIER_ORDER.indexOf(userTier) >= TIER_ORDER.indexOf(minTier);
 }
@@ -92,11 +93,11 @@ export function getTierName(tier: PlanTier): string {
 // HINWEIS: Aktuell ist alles Free - alle Features freigeschaltet.
 // ============================================
 
-export function hasFeature(ctx: UserContext, feature: FeatureFlag): boolean {
+export function hasFeature(_ctx: UserContext, _feature: FeatureFlag): boolean {
   // ALLES IST JETZT FREE
   return true;
   
-  // AUSKOMMENTIERT: Alte Plan-basierte Logik
+  // SPAETER: Alte Plan-basierte Logik reaktivieren
   // if (!ctx.plan?.feature_flags) return false;
   // const flags = ctx.plan.feature_flags as Record<string, boolean | number | string>;
   // return flags[feature] === true;
@@ -118,70 +119,70 @@ export function getFeatureLimit(ctx: UserContext, feature: string): number {
 // ============================================
 
 // Listings - kein Limit mehr (Free = unbegrenzt)
-export function canCreateListing(ctx: UserContext, currentCount: number): boolean {
+export function canCreateListing(ctx: UserContext, _currentCount: number): boolean {
   if (isAccountSuspended(ctx)) return false;
   // ALLES IST JETZT FREE - kein Listing-Limit
   return true;
   
-  // AUSKOMMENTIERT: Alte Limit-Logik
+  // SPAETER: Alte Limit-Logik reaktivieren
   // const limit = getFeatureLimit(ctx, 'max_listings');
   // return currentCount < limit;
 }
 
-export function getListingLimit(ctx: UserContext): number {
+export function getListingLimit(_ctx: UserContext): number {
   // ALLES IST JETZT FREE - unbegrenzte Listings
   return -1;
   
-  // AUSKOMMENTIERT: Alte Limit-Logik
+  // SPAETER: Alte Limit-Logik reaktivieren
   // return getFeatureLimit(ctx, 'max_listings');
 }
 
-export function getImageLimit(ctx: UserContext): number {
+export function getImageLimit(_ctx: UserContext): number {
   // ALLES IST JETZT FREE - unbegrenzte Bilder
   return 999;
   
-  // AUSKOMMENTIERT: Alte Limit-Logik
+  // SPAETER: Alte Limit-Logik reaktivieren
   // return getFeatureLimit(ctx, 'max_images_per_listing');
 }
 
 // Statistiken - AUSKOMMENTIERT (wird spaeter Pay-Feature)
-export function canAccessStatistics(ctx: UserContext): boolean {
+export function canAccessStatistics(_ctx: UserContext): boolean {
   return true;
 }
 
 // Email Composer
-export function canAccessEmailComposer(ctx: UserContext): boolean {
+export function canAccessEmailComposer(_ctx: UserContext): boolean {
   return true;
 }
 
 // Lead Pipeline
-export function canAccessLeadPipeline(ctx: UserContext): boolean {
+export function canAccessLeadPipeline(_ctx: UserContext): boolean {
   return true;
 }
 
 // Auto Reply
-export function canAccessAutoReply(ctx: UserContext): boolean {
+export function canAccessAutoReply(_ctx: UserContext): boolean {
   return true;
 }
 
 // Team Management - jetzt Free
-export function canAccessTeamManagement(ctx: UserContext): boolean {
+export function canAccessTeamManagement(_ctx: UserContext): boolean {
   return true;
 }
 
-// API Access - AUSKOMMENTIERT (wird spaeter Pay-Feature)
-export function canAccessApi(ctx: UserContext): boolean {
+// API Access - wird spaeter Pay-Feature
+export function canAccessApi(_ctx: UserContext): boolean {
   return true;
 }
 
 // Featured Listings
-export function getFeaturedLimit(ctx: UserContext): number {
+export function getFeaturedLimit(_ctx: UserContext): number {
   // ALLES IST JETZT FREE
   return 999;
 }
 
 // Team Members
-export function getTeamMemberLimit(ctx: UserContext): number {
+export function getTeamMemberLimit(_ctx: UserContext): number {
   // ALLES IST JETZT FREE
   return 999;
 }
