@@ -45,6 +45,8 @@ export function ListingFiltersSidebar({
   const tc = useTranslations('common');
   const locale = useLocale();
 
+  const [manufacturerSearch, setManufacturerSearch] = useState('');
+
   const [priceRange, setPriceRange] = useState<[number, number]>([
     filters.priceMin ? filters.priceMin / 100 : 0,
     filters.priceMax ? filters.priceMax / 100 : 200000,
@@ -127,6 +129,7 @@ export function ListingFiltersSidebar({
     setPriceRange([0, 200000]);
     setYearRange([2010, new Date().getFullYear()]);
     setMeasuringRangeX([0, 3000]);
+    setManufacturerSearch('');
   };
 
   const formatPrice = (price: number) => {
@@ -156,10 +159,14 @@ export function ListingFiltersSidebar({
               <Input
                 placeholder={t('searchManufacturer')}
                 className="mb-2"
+                value={manufacturerSearch}
+                onChange={(e) => setManufacturerSearch(e.target.value)}
               />
               <ScrollArea className="h-48">
                 <div className="space-y-2 pr-4">
-                  {manufacturers.map((manufacturer) => (
+                  {manufacturers
+                    .filter((m) => !manufacturerSearch || m.name.toLowerCase().includes(manufacturerSearch.toLowerCase()))
+                    .map((manufacturer) => (
                     <div
                       key={manufacturer.id}
                       className="flex items-center space-x-2"
@@ -175,11 +182,16 @@ export function ListingFiltersSidebar({
                       >
                         {manufacturer.name}
                       </Label>
-                      <span className="text-xs text-muted-foreground">
-                        ({manufacturer.listingCount})
-                      </span>
+                      {manufacturer.listingCount !== undefined && (
+                        <span className="text-xs text-muted-foreground">
+                          ({manufacturer.listingCount})
+                        </span>
+                      )}
                     </div>
                   ))}
+                  {manufacturers.filter((m) => !manufacturerSearch || m.name.toLowerCase().includes(manufacturerSearch.toLowerCase())).length === 0 && (
+                    <p className="text-xs text-muted-foreground py-2">{tc('noResults')}</p>
+                  )}
                 </div>
               </ScrollArea>
             </div>

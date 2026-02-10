@@ -31,6 +31,9 @@ interface FeatureGateProps {
 /**
  * Gate component for plan-based feature access control.
  * Nutzt useSellerAuth() statt useAuth() - keine DB-Calls, sofort verfuegbar.
+ * 
+ * HINWEIS: Aktuell ist alles Free - alle Features sind freigeschaltet.
+ * Die alte Logik bleibt auskommentiert fuer spaetere Pay-Versionen.
  */
 export function FeatureGate({ 
   feature, 
@@ -38,32 +41,32 @@ export function FeatureGate({
   fallback,
   showDisabled = false,
 }: FeatureGateProps) {
-  const { plan } = useSellerAuth();
+  // ALLES IST JETZT FREE - immer Kinder rendern
+  return <>{children}</>;
   
-  // Check feature flag from plan
-  const featureFlags = plan?.feature_flags as Record<string, boolean> | null;
-  const hasAccess = featureFlags?.[feature] ?? false;
-  
-  if (hasAccess) {
-    return <>{children}</>;
-  }
-  
-  // Show disabled version if requested
-  if (showDisabled) {
-    return (
-      <div className="relative">
-        <div className="pointer-events-none opacity-50 select-none">
-          {children}
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg">
-          <UpgradePrompt feature={feature} compact />
-        </div>
-      </div>
-    );
-  }
-  
-  // Show custom fallback or default upgrade prompt
-  return fallback ? <>{fallback}</> : <UpgradePrompt feature={feature} />;
+  // AUSKOMMENTIERT: Alte Plan-basierte Zugriffskontrolle
+  // const { plan } = useSellerAuth();
+  // const featureFlags = plan?.feature_flags as Record<string, boolean> | null;
+  // const hasAccess = featureFlags?.[feature] ?? false;
+  // 
+  // if (hasAccess) {
+  //   return <>{children}</>;
+  // }
+  // 
+  // if (showDisabled) {
+  //   return (
+  //     <div className="relative">
+  //       <div className="pointer-events-none opacity-50 select-none">
+  //         {children}
+  //       </div>
+  //       <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg">
+  //         <UpgradePrompt feature={feature} compact />
+  //       </div>
+  //     </div>
+  //   );
+  // }
+  // 
+  // return fallback ? <>{fallback}</> : <UpgradePrompt feature={feature} />;
 }
 
 interface UpgradePromptProps {
@@ -144,27 +147,35 @@ export function UpgradePrompt({ feature, compact = false }: UpgradePromptProps) 
 
 /**
  * Hook to check if a feature is available.
- * Nutzt useSellerAuth() - Daten kommen vom Server-Layout, sofort verfuegbar.
+ * HINWEIS: Aktuell ist alles Free - gibt immer true zurueck.
  */
 export function useFeatureAccess(feature: FeatureFlag): boolean {
-  const { plan } = useSellerAuth();
-  const featureFlags = plan?.feature_flags as Record<string, boolean> | null;
-  return featureFlags?.[feature] ?? false;
+  // ALLES IST JETZT FREE
+  return true;
+  
+  // AUSKOMMENTIERT: Alte Plan-basierte Logik
+  // const { plan } = useSellerAuth();
+  // const featureFlags = plan?.feature_flags as Record<string, boolean> | null;
+  // return featureFlags?.[feature] ?? false;
 }
 
 /**
  * Hook to check multiple features at once
+ * HINWEIS: Aktuell ist alles Free - gibt immer true zurueck.
  */
 export function useFeatureFlags(): {
   hasFeature: (feature: FeatureFlag) => boolean;
   isLoading: boolean;
 } {
-  const { plan } = useSellerAuth();
-  
-  const hasFeature = (feature: FeatureFlag): boolean => {
-    const featureFlags = plan?.feature_flags as Record<string, boolean> | null;
-    return featureFlags?.[feature] ?? false;
-  };
-  
+  // ALLES IST JETZT FREE
+  const hasFeature = (_feature: FeatureFlag): boolean => true;
   return { hasFeature, isLoading: false };
+  
+  // AUSKOMMENTIERT: Alte Plan-basierte Logik
+  // const { plan } = useSellerAuth();
+  // const hasFeature = (feature: FeatureFlag): boolean => {
+  //   const featureFlags = plan?.feature_flags as Record<string, boolean> | null;
+  //   return featureFlags?.[feature] ?? false;
+  // };
+  // return { hasFeature, isLoading: false };
 }

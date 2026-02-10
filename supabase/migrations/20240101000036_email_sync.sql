@@ -5,8 +5,8 @@
 -- Token-Ablauf und Provider-Metadaten auf email_connections
 ALTER TABLE email_connections
   ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMPTZ,
-  ADD COLUMN IF NOT EXISTS provider_account_id TEXT,  -- Microsoft/Google User-ID
-  ADD COLUMN IF NOT EXISTS display_name TEXT;          -- Anzeigename vom Provider
+  ADD COLUMN IF NOT EXISTS provider_account_id TEXT,
+  ADD COLUMN IF NOT EXISTS display_name TEXT;
 
 -- Synchronisierte E-Mails
 CREATE TABLE IF NOT EXISTS synced_emails (
@@ -42,6 +42,7 @@ CREATE INDEX IF NOT EXISTS idx_synced_emails_connection ON synced_emails(connect
 CREATE INDEX IF NOT EXISTS idx_synced_emails_thread ON synced_emails(thread_id);
 CREATE INDEX IF NOT EXISTS idx_synced_emails_inquiry ON synced_emails(inquiry_id);
 
+DROP TRIGGER IF EXISTS update_synced_emails_updated_at ON synced_emails;
 CREATE TRIGGER update_synced_emails_updated_at
   BEFORE UPDATE ON synced_emails
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
@@ -49,27 +50,35 @@ CREATE TRIGGER update_synced_emails_updated_at
 -- RLS
 ALTER TABLE synced_emails ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Account owner can view synced emails"
-  ON synced_emails FOR SELECT
-  USING (
-    account_id IN (
-      SELECT id FROM accounts WHERE owner_id = auth.uid()
-    )
-  );
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'synced_emails' AND policyname = 'Account owner can view synced emails') THEN
+    CREATE POLICY "Account owner can view synced emails"
+      ON synced_emails FOR SELECT
+      USING (account_id IN (SELECT id FROM accounts WHERE owner_id = auth.uid()));
+  END IF;
+END $$;
 
-CREATE POLICY "Account owner can update synced emails"
-  ON synced_emails FOR UPDATE
-  USING (
-    account_id IN (
-      SELECT id FROM accounts WHERE owner_id = auth.uid()
-    )
-  );
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'synced_emails' AND policyname = 'Account owner can update synced emails') THEN
+    CREATE POLICY "Account owner can update synced emails"
+      ON synced_emails FOR UPDATE
+      USING (account_id IN (SELECT id FROM accounts WHERE owner_id = auth.uid()));
+  END IF;
+END $$;
 
 -- Nur Server (service_role) darf E-Mails einfuegen/loeschen
-CREATE POLICY "Service role can insert synced emails"
-  ON synced_emails FOR INSERT
-  WITH CHECK (true);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'synced_emails' AND policyname = 'Service role can insert synced emails') THEN
+    CREATE POLICY "Service role can insert synced emails"
+      ON synced_emails FOR INSERT
+      WITH CHECK (true);
+  END IF;
+END $$;
 
-CREATE POLICY "Service role can delete synced emails"
-  ON synced_emails FOR DELETE
-  USING (true);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'synced_emails' AND policyname = 'Service role can delete synced emails') THEN
+    CREATE POLICY "Service role can delete synced emails"
+      ON synced_emails FOR DELETE
+      USING (true);
+  END IF;
+END $$;

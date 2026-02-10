@@ -26,7 +26,7 @@ export default async function SellerLayout({
     redirect('/login');
   }
 
-  const { profile, account, plan, subscription, unreadInquiries, activeListings, listingLimit } = layoutData!;
+  const { profile, account, plan, subscription, unreadInquiries, unreadMessages, activeListings, listingLimit } = layoutData!;
 
   return (
     <SellerAuthProvider value={{ profile, account, plan, subscription, unreadInquiries, activeListings, listingLimit }}>
@@ -38,6 +38,7 @@ export default async function SellerLayout({
         activeListings={activeListings}
         listingLimit={listingLimit}
         unreadInquiries={unreadInquiries}
+        unreadMessages={unreadMessages}
       >
         {children}
       </SellerShell>

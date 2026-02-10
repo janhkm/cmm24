@@ -4,7 +4,7 @@ import { companyInfo } from '@/data/content/company';
 
 export const metadata: Metadata = {
   title: 'Allgemeine Geschäftsbedingungen | CMM24',
-  description: 'AGB der CMM24 GmbH – Nutzungsbedingungen für den Marktplatz für gebrauchte Koordinatenmessmaschinen.',
+  description: 'AGB von CMM24 – Nutzungsbedingungen für den Marktplatz für gebrauchte Koordinatenmessmaschinen.',
   robots: 'noindex, follow',
 };
 
@@ -762,9 +762,9 @@ export default function AGBPage() {
               Website: <a href="https://www.cedr.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">www.cedr.com</a>
             </li>
             <li>
-              <strong>Mediationsstelle der Industrie- und Handelskammer für München und Oberbayern</strong><br />
-              Max-Joseph-Straße 2, 80333 München, Deutschland<br />
-              Website: <a href="https://www.ihk-muenchen.de" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">www.ihk-muenchen.de</a>
+              <strong>Mediationsstelle der Industrie- und Handelskammer Region Stuttgart</strong><br />
+              Jägerstraße 30, 70174 Stuttgart, Deutschland<br />
+              Website: <a href="https://www.ihk-stuttgart.de" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">www.ihk-stuttgart.de</a>
             </li>
           </ul>
           <p className="mt-4">
@@ -981,7 +981,7 @@ export default function AGBPage() {
           </p>
           <p className="mt-4">
             (2) <strong>Gerichtsstand:</strong> Ausschließlicher Gerichtsstand für alle Streitigkeiten 
-            aus oder im Zusammenhang mit diesen AGB ist München, soweit der Nutzer Kaufmann, 
+            aus oder im Zusammenhang mit diesen AGB ist Stuttgart, soweit der Nutzer Kaufmann, 
             juristische Person des öffentlichen Rechts oder öffentlich-rechtliches Sondervermögen ist 
             oder keinen allgemeinen Gerichtsstand in Deutschland hat. Dieser Gerichtsstand gilt 
             vorbehaltlich zwingender Zuständigkeitsregelungen des EU-Rechts, insbesondere der 

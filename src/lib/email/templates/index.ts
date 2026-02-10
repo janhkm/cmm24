@@ -21,3 +21,4 @@ export { SubscriptionExpiringEmail } from './subscription-expiring';
 export { TeamMemberJoinedEmail } from './team-member-joined';
 export { AccountSuspendedEmail } from './account-suspended';
 export { AccountVerifiedEmail } from './account-verified';
+export { InquiryMessageEmail } from './inquiry-message';

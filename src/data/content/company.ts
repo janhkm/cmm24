@@ -12,15 +12,16 @@ export const teamMembers: TeamMember[] = [
 
 // Unternehmensinformationen fuer rechtliche Seiten (Impressum, AGB, Datenschutz)
 export const companyInfo = {
-  name: 'CMM24 GmbH',
-  street: 'Musterstraße 1',
-  postalCode: '80331',
-  city: 'München',
+  name: 'Kneissl Messtechnik GmbH',
+  street: 'Mühlstr. 41',
+  postalCode: '71229',
+  city: 'Leonberg',
   country: 'Deutschland',
-  email: 'kontakt@cmm24.de',
-  phone: '+49 89 123456',
-  managingDirector: 'Jan Hemkemeier',
-  registerCourt: 'Amtsgericht München',
-  registerNumber: 'HRB 123456',
-  vatId: 'DE123456789',
+  email: 'info@kneissl-messtechnik.de',
+  phone: '+49 (0) 7152 / 35 76 59-0',
+  fax: '+49 (0) 7152 / 35 76 59-60',
+  managingDirector: 'Dr. Matthias Kugler, Adrian Awad',
+  registerCourt: 'AG Stuttgart',
+  registerNumber: 'HRB 253089',
+  vatId: 'DE813458220',
 };

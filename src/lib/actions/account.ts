@@ -107,6 +107,57 @@ export async function updateAccount(data: UpdateAccountData): Promise<ActionResu
 }
 
 /**
+ * Erweitertes Profil aktualisieren (Galerie + Zertifikate, nur Business)
+ */
+export async function updatePremiumProfile(data: {
+  description?: string;
+  gallery_urls: { url: string; caption?: string }[];
+  certificates: { name: string; url?: string; issued_by?: string }[];
+}): Promise<ActionResult<Account>> {
+  try {
+    const supabase = await createActionClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: ErrorMessages.UNAUTHORIZED, code: 'UNAUTHORIZED' };
+    }
+
+    // Max. 6 Galerie-Bilder
+    if (data.gallery_urls.length > 6) {
+      return { success: false, error: 'Maximal 6 Galerie-Bilder erlaubt', code: 'VALIDATION_ERROR' };
+    }
+
+    // Max. 10 Zertifikate
+    if (data.certificates.length > 10) {
+      return { success: false, error: 'Maximal 10 Zertifikate erlaubt', code: 'VALIDATION_ERROR' };
+    }
+
+    const { data: account, error } = await supabase
+      .from('accounts')
+      .update({
+        description: data.description?.trim() || null,
+        gallery_urls: JSON.stringify(data.gallery_urls),
+        certificates: JSON.stringify(data.certificates),
+      })
+      .eq('owner_id', user.id)
+      .is('deleted_at', null)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[updatePremiumProfile] Error:', error);
+      return { success: false, error: 'Fehler beim Speichern', code: 'SERVER_ERROR' };
+    }
+
+    revalidatePath('/seller/konto');
+    return { success: true, data: account };
+  } catch (error) {
+    console.error('[updatePremiumProfile] Unexpected error:', error);
+    return { success: false, error: ErrorMessages.SERVER_ERROR, code: 'SERVER_ERROR' };
+  }
+}
+
+/**
  * Update auto-reply settings
  */
 export async function updateAutoReplySettings(data: AutoReplySettingsData): Promise<ActionResult> {
@@ -382,6 +433,8 @@ export interface UserProfileData {
     logoUrl: string | null;
     emailSignature: string | null;
     isVerified: boolean;
+    galleryUrls: { url: string; caption?: string }[];
+    certificates: { name: string; url?: string; issued_by?: string }[];
   };
   plan: {
     slug: string;
@@ -463,6 +516,8 @@ export async function getProfileWithAccount(): Promise<ActionResult<UserProfileD
           logoUrl: account.logo_url,
           emailSignature: account.email_signature,
           isVerified: account.is_verified || false,
+          galleryUrls: (account.gallery_urls as { url: string; caption?: string }[] | null) || [],
+          certificates: (account.certificates as { name: string; url?: string; issued_by?: string }[] | null) || [],
         },
         plan: {
           slug: plan.slug,

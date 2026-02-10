@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { LayoutGrid, List, ArrowUpDown, Search, X, Loader2 } from 'lucide-react';
+import { ArrowUpDown, Search, X, Loader2 } from 'lucide-react';
+// AUSKOMMENTIERT: import { LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -74,6 +75,7 @@ function convertToListing(pl: PublicListing, unknownLabel: string): Listing {
       slug: pl.account.slug,
       logoUrl: pl.account.logo_url || undefined,
       isVerified: pl.account.is_verified,
+      isPremium: pl.account.is_premium || false,
       listingCount: 0,
     } : undefined,
     media: pl.media.map((m) => ({
@@ -156,7 +158,9 @@ function MaschinenContent() {
 
   const [filters, setFilters] = useState<ListingFilters>(getFiltersFromURL);
   const [sortBy, setSortBy] = useState(searchParams.get('sortierung') || 'relevance');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  // AUSKOMMENTIERT: Grid/List Toggle — nur noch Listenansicht
+  // const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const viewMode = 'list' as const;
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
 
   // Load manufacturers on mount
@@ -348,6 +352,7 @@ function MaschinenContent() {
             filters={filters}
             onFiltersChange={handleFiltersChange}
             totalResults={total}
+            manufacturers={manufacturers}
           />
         </div>
 
@@ -362,6 +367,7 @@ function MaschinenContent() {
                   filters={filters}
                   onFiltersChange={handleFiltersChange}
                   totalResults={total}
+                  manufacturers={manufacturers}
                 />
               </div>
 
@@ -381,30 +387,17 @@ function MaschinenContent() {
               </Select>
             </div>
 
-            {/* View Toggle */}
+            {/* AUSKOMMENTIERT: View Toggle (nur noch Listenansicht)
             <div className="hidden sm:flex items-center gap-1 border rounded-md p-1">
-              <Button
-                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                aria-label={t('gridView')}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                aria-label={t('listView')}
-              >
-                <List className="h-4 w-4" />
-              </Button>
+              <Button variant="ghost" size="sm"><LayoutGrid className="h-4 w-4" /></Button>
+              <Button variant="secondary" size="sm"><List className="h-4 w-4" /></Button>
             </div>
+            */}
           </div>
 
           {/* Active Filters */}
           <div className="mb-6">
-            <ActiveFilters filters={filters} onFiltersChange={handleFiltersChange} />
+            <ActiveFilters filters={filters} onFiltersChange={handleFiltersChange} manufacturers={manufacturers} />
           </div>
 
           {/* Loading State */}

@@ -107,44 +107,8 @@ export default async function SoFunktioniertPage({ params }: { params: Promise<{
     },
   ];
 
-  const plans = [
-    {
-      name: 'Free',
-      price: '0 €',
-      period: tc('free'),
-      listings: t('planFreeListings'),
-      features: [t('planFreeFeature1'), t('planFreeFeature2'), t('planFreeFeature3')],
-      cta: t('planFreeCta'),
-      highlighted: false,
-    },
-    {
-      name: 'Starter',
-      price: '12,99 €',
-      period: '/ ' + tc('monthly').toLowerCase(),
-      listings: t('planStarterListings'),
-      features: [t('planStarterFeature1'), t('planStarterFeature2'), t('planStarterFeature3'), t('planStarterFeature4')],
-      cta: t('planStarterCta'),
-      highlighted: true,
-    },
-    {
-      name: 'Professional',
-      price: '21,99 €',
-      period: '/ ' + tc('monthly').toLowerCase(),
-      listings: t('planProfessionalListings'),
-      features: [t('planProfessionalFeature1'), t('planProfessionalFeature2'), t('planProfessionalFeature3')],
-      cta: t('planProfessionalCta'),
-      highlighted: false,
-    },
-    {
-      name: 'Business',
-      price: '34,99 €',
-      period: '/ ' + tc('monthly').toLowerCase(),
-      listings: t('planBusinessListings'),
-      features: [t('planBusinessFeature1'), t('planBusinessFeature2'), t('planBusinessFeature3')],
-      cta: t('planBusinessCta'),
-      highlighted: false,
-    },
-  ];
+  // AUSKOMMENTIERT: Pricing-Plans (alles ist jetzt Free)
+  // const plans = [...];  // Alte Plan-Definitionen entfernt
 
   return (
     <main>
@@ -293,7 +257,7 @@ export default async function SoFunktioniertPage({ params }: { params: Promise<{
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* Pricing Section - VEREINFACHT: Alles ist jetzt kostenlos */}
       <section className="py-16 md:py-24 bg-muted/30">
         <div className="container-page">
           <div className="text-center mb-12">
@@ -305,51 +269,50 @@ export default async function SoFunktioniertPage({ params }: { params: Promise<{
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {plans.map((plan) => (
-              <Card 
-                key={plan.name} 
-                className={plan.highlighted ? 'border-primary shadow-lg relative' : ''}
-              >
-                {plan.highlighted && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-full">
-                      {tc('popular')}
-                    </span>
-                  </div>
-                )}
-                <CardHeader>
-                  <CardTitle className="text-lg">{plan.name}</CardTitle>
-                  <div className="mt-2">
-                    <span className="text-3xl font-bold">{plan.price}</span>
-                    <span className="text-muted-foreground">{plan.period}</span>
-                  </div>
-                  <p className="text-sm font-medium text-primary mt-2">{plan.listings}</p>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 mb-6">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2 text-sm">
-                        <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button 
-                    className="w-full" 
-                    variant={plan.highlighted ? 'default' : 'outline'}
-                    asChild
-                  >
-                    <Link href="/registrieren">{plan.cta}</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="max-w-lg mx-auto">
+            <Card className="border-primary shadow-lg">
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl">Free</CardTitle>
+                <div className="mt-2">
+                  <span className="text-4xl font-bold">0 €</span>
+                  <span className="text-muted-foreground"> / {tc('free')}</span>
+                </div>
+                <p className="text-sm font-medium text-primary mt-2">
+                  {t('allFeaturesIncluded') || 'Alle Features inklusive'}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 mb-6">
+                  <li className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+                    {t('freeFeatureListings') || 'Unbegrenzte Inserate'}
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+                    {t('freeFeatureInquiries') || 'Anfragen empfangen & beantworten'}
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+                    {t('freeFeatureMessaging') || 'Nachrichten-System'}
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+                    {t('freeFeatureTeam') || 'Team-Verwaltung'}
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+                    {t('freeFeatureContacts') || 'Kontakte & CRM'}
+                  </li>
+                </ul>
+                <Button className="w-full" asChild>
+                  <Link href="/registrieren">
+                    {t('getStartedFree') || 'Kostenlos starten'}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
-
-          <p className="text-center text-sm text-muted-foreground mt-8">
-            {t('pricingNote')}
-          </p>
         </div>
       </section>
 

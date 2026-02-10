@@ -37,8 +37,8 @@ export default function WiderrufsbelehrungPage() {
           des Vertragsabschlusses.
         </p>
         <p className="text-muted-foreground mb-4">
-          Um Ihr Widerrufsrecht auszuüben, müssen Sie uns (CMM24 GmbH, Musterstraße 1, 
-          80331 München, E-Mail: widerruf@cmm24.de) mittels einer eindeutigen Erklärung 
+          Um Ihr Widerrufsrecht auszuüben, müssen Sie uns (Kneissl Messtechnik GmbH, Mühlstr. 41, 
+          71229 Leonberg, E-Mail: info@kneissl-messtechnik.de) mittels einer eindeutigen Erklärung 
           (z.B. ein mit der Post versandter Brief oder E-Mail) über Ihren Entschluss, 
           diesen Vertrag zu widerrufen, informieren.
         </p>
@@ -97,7 +97,7 @@ export default function WiderrufsbelehrungPage() {
           </p>
           <div className="bg-background rounded-lg p-4 text-sm">
             <p className="mb-2">An:</p>
-            <p className="mb-2">CMM24 GmbH<br />Musterstraße 1<br />80331 München<br />E-Mail: widerruf@cmm24.de</p>
+            <p className="mb-2">Kneissl Messtechnik GmbH<br />Mühlstr. 41<br />71229 Leonberg<br />E-Mail: info@kneissl-messtechnik.de</p>
             <p className="mb-2">
               Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen 
               Vertrag über den Kauf der folgenden Waren (*) / die Erbringung der 

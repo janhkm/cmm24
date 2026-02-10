@@ -70,8 +70,12 @@ export function getPlanTier(ctx: UserContext): PlanTier {
 }
 
 export function hasTier(ctx: UserContext, minTier: PlanTier): boolean {
-  const userTier = getPlanTier(ctx);
-  return TIER_ORDER.indexOf(userTier) >= TIER_ORDER.indexOf(minTier);
+  // ALLES IST JETZT FREE - immer true
+  return true;
+  
+  // AUSKOMMENTIERT: Alte Tier-basierte Logik
+  // const userTier = getPlanTier(ctx);
+  // return TIER_ORDER.indexOf(userTier) >= TIER_ORDER.indexOf(minTier);
 }
 
 export function getTierName(tier: PlanTier): string {
@@ -85,12 +89,17 @@ export function getTierName(tier: PlanTier): string {
 
 // ============================================
 // Feature Flag Checks
+// HINWEIS: Aktuell ist alles Free - alle Features freigeschaltet.
 // ============================================
 
 export function hasFeature(ctx: UserContext, feature: FeatureFlag): boolean {
-  if (!ctx.plan?.feature_flags) return false;
-  const flags = ctx.plan.feature_flags as Record<string, boolean | number | string>;
-  return flags[feature] === true;
+  // ALLES IST JETZT FREE
+  return true;
+  
+  // AUSKOMMENTIERT: Alte Plan-basierte Logik
+  // if (!ctx.plan?.feature_flags) return false;
+  // const flags = ctx.plan.feature_flags as Record<string, boolean | number | string>;
+  // return flags[feature] === true;
 }
 
 export function getFeatureLimit(ctx: UserContext, feature: string): number {
@@ -105,61 +114,76 @@ export function getFeatureLimit(ctx: UserContext, feature: string): number {
 
 // ============================================
 // Spezifische Permission Checks
+// HINWEIS: Aktuell ist alles Free - alle Checks geben true zurueck.
 // ============================================
 
-// Listings
+// Listings - kein Limit mehr (Free = unbegrenzt)
 export function canCreateListing(ctx: UserContext, currentCount: number): boolean {
   if (isAccountSuspended(ctx)) return false;
-  const limit = getFeatureLimit(ctx, 'max_listings');
-  return currentCount < limit;
+  // ALLES IST JETZT FREE - kein Listing-Limit
+  return true;
+  
+  // AUSKOMMENTIERT: Alte Limit-Logik
+  // const limit = getFeatureLimit(ctx, 'max_listings');
+  // return currentCount < limit;
 }
 
 export function getListingLimit(ctx: UserContext): number {
-  return getFeatureLimit(ctx, 'max_listings');
+  // ALLES IST JETZT FREE - unbegrenzte Listings
+  return -1;
+  
+  // AUSKOMMENTIERT: Alte Limit-Logik
+  // return getFeatureLimit(ctx, 'max_listings');
 }
 
 export function getImageLimit(ctx: UserContext): number {
-  return getFeatureLimit(ctx, 'max_images_per_listing');
+  // ALLES IST JETZT FREE - unbegrenzte Bilder
+  return 999;
+  
+  // AUSKOMMENTIERT: Alte Limit-Logik
+  // return getFeatureLimit(ctx, 'max_images_per_listing');
 }
 
-// Statistiken (Starter+)
+// Statistiken - AUSKOMMENTIERT (wird spaeter Pay-Feature)
 export function canAccessStatistics(ctx: UserContext): boolean {
-  return hasTier(ctx, 'starter');
+  return true;
 }
 
-// Email Composer (Starter+)
+// Email Composer
 export function canAccessEmailComposer(ctx: UserContext): boolean {
-  return hasTier(ctx, 'starter');
+  return true;
 }
 
-// Lead Pipeline (Business only)
+// Lead Pipeline
 export function canAccessLeadPipeline(ctx: UserContext): boolean {
-  return hasTier(ctx, 'business');
+  return true;
 }
 
-// Auto Reply (Business only)
+// Auto Reply
 export function canAccessAutoReply(ctx: UserContext): boolean {
-  return hasTier(ctx, 'business');
+  return true;
 }
 
-// Team Management (Business only)
+// Team Management - jetzt Free
 export function canAccessTeamManagement(ctx: UserContext): boolean {
-  return hasTier(ctx, 'business');
+  return true;
 }
 
-// API Access (Business only)
+// API Access - AUSKOMMENTIERT (wird spaeter Pay-Feature)
 export function canAccessApi(ctx: UserContext): boolean {
-  return hasTier(ctx, 'business');
+  return true;
 }
 
 // Featured Listings
 export function getFeaturedLimit(ctx: UserContext): number {
-  return getFeatureLimit(ctx, 'featured_per_month');
+  // ALLES IST JETZT FREE
+  return 999;
 }
 
 // Team Members
 export function getTeamMemberLimit(ctx: UserContext): number {
-  return getFeatureLimit(ctx, 'max_team_members');
+  // ALLES IST JETZT FREE
+  return 999;
 }
 
 // Admin

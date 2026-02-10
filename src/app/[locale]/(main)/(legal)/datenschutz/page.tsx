@@ -4,7 +4,7 @@ import { companyInfo } from '@/data/content/company';
 
 export const metadata: Metadata = {
   title: 'Datenschutzerklärung | CMM24',
-  description: 'Datenschutzerklärung der CMM24 GmbH – Informationen zur Verarbeitung Ihrer personenbezogenen Daten gemäß DSGVO.',
+  description: 'Datenschutzerklärung von CMM24 – Informationen zur Verarbeitung Ihrer personenbezogenen Daten gemäß DSGVO.',
   robots: 'noindex, follow',
 };
 
@@ -935,12 +935,12 @@ export default function DatenschutzPage() {
             gemäß Art. 56 DSGVO ist:
           </p>
           <address className="not-italic mt-4">
-            <p className="font-semibold">Bayerisches Landesamt für Datenschutzaufsicht (BayLDA)</p>
-            <p>Promenade 18</p>
-            <p>91522 Ansbach</p>
-            <p>Telefon: +49 981 180093-0</p>
-            <p>E-Mail: <a href="mailto:poststelle@lda.bayern.de" className="text-primary hover:underline">poststelle@lda.bayern.de</a></p>
-            <p>Website: <a href="https://www.lda.bayern.de" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">www.lda.bayern.de</a></p>
+            <p className="font-semibold">Der Landesbeauftragte für den Datenschutz und die Informationsfreiheit Baden-Württemberg</p>
+            <p>Lautenschlagerstraße 20</p>
+            <p>70173 Stuttgart</p>
+            <p>Telefon: +49 711 615541-0</p>
+            <p>E-Mail: <a href="mailto:poststelle@lfdi.bwl.de" className="text-primary hover:underline">poststelle@lfdi.bwl.de</a></p>
+            <p>Website: <a href="https://www.baden-wuerttemberg.datenschutz.de" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">www.baden-wuerttemberg.datenschutz.de</a></p>
           </address>
 
           <h3 className="text-lg font-medium mt-6 mb-3">27.2 Ihr Recht auf Beschwerde bei Ihrer lokalen Aufsichtsbehörde</h3>

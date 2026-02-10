@@ -50,7 +50,7 @@ interface NavItem {
   nameKey: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-  badgeKey?: 'inquiries';
+  badgeKey?: 'inquiries' | 'messages';
   requiredPlan?: PlanSlug;
   isNew?: boolean;
 }
@@ -59,12 +59,17 @@ const navigation: NavItem[] = [
   { nameKey: 'dashboard', href: '/seller/dashboard', icon: LayoutDashboard },
   { nameKey: 'myListings', href: '/seller/inserate', icon: FileText },
   { nameKey: 'inquiries', href: '/seller/anfragen', icon: MessageSquare, badgeKey: 'inquiries' },
-  { nameKey: 'emails', href: '/seller/emails', icon: Mail, requiredPlan: 'starter' },
-  { nameKey: 'contacts', href: '/seller/kontakte', icon: UserCircle, requiredPlan: 'business', isNew: true },
-  { nameKey: 'statistics', href: '/seller/statistiken', icon: BarChart3, requiredPlan: 'starter' },
-  { nameKey: 'team', href: '/seller/team', icon: Users, requiredPlan: 'business' },
-  { nameKey: 'api', href: '/seller/api', icon: Key, requiredPlan: 'business' },
-  { nameKey: 'subscription', href: '/seller/abo', icon: CreditCard },
+  // Kommunikation + Kontakte zusammengefuehrt unter "Kommunikation"
+  { nameKey: 'communication', href: '/seller/communication', icon: Mail, badgeKey: 'messages' },
+  // AUSKOMMENTIERT: Kontakte separat (jetzt unter Kommunikation)
+  // { nameKey: 'contacts', href: '/seller/kontakte', icon: UserCircle, isNew: true },
+  // AUSKOMMENTIERT: Statistiken (wird spaeter als Pay-Feature zurueckkommen)
+  // { nameKey: 'statistics', href: '/seller/statistiken', icon: BarChart3 },
+  { nameKey: 'team', href: '/seller/team', icon: Users },
+  // AUSKOMMENTIERT: API-Zugang (wird spaeter als Pay-Feature zurueckkommen)
+  // { nameKey: 'api', href: '/seller/api', icon: Key },
+  // AUSKOMMENTIERT: Abo/Subscription (alles ist jetzt Free)
+  // { nameKey: 'subscription', href: '/seller/abo', icon: CreditCard },
   { nameKey: 'settings', href: '/seller/konto', icon: Settings },
 ];
 
@@ -77,6 +82,7 @@ export interface SellerShellProps {
   activeListings: number;
   listingLimit: number;
   unreadInquiries: number;
+  unreadMessages: number;
   children: React.ReactNode;
 }
 
@@ -88,6 +94,7 @@ export function SellerShell({
   activeListings,
   listingLimit,
   unreadInquiries,
+  unreadMessages,
   children,
 }: SellerShellProps) {
   const pathname = usePathname();
@@ -106,6 +113,7 @@ export function SellerShell({
 
   const getBadgeValue = (badgeKey?: string): number | undefined => {
     if (badgeKey === 'inquiries' && unreadInquiries > 0) return unreadInquiries;
+    if (badgeKey === 'messages' && unreadMessages > 0) return unreadMessages;
     return undefined;
   };
 
@@ -143,35 +151,32 @@ export function SellerShell({
     </>
   );
 
-  const PlanWidget = () => (
-    <div className="rounded-lg border bg-muted/50 p-4">
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">{ts('plan')}</span>
-        <span className="font-medium">{planName}</span>
-      </div>
-      <div className="mt-2">
-        <div className="flex items-center justify-between text-sm mb-1">
-          <span className="text-muted-foreground">{ts('listingsUsed')}</span>
-          <span className="font-medium">
-            {activeListings}{listingLimit === -1 ? ` (${tc('unlimited')})` : `/${listingLimit}`}
-          </span>
-        </div>
-        {listingLimit !== -1 && listingLimit > 0 && (
-          <div className="h-2 rounded-full bg-muted">
-            <div
-              className="h-2 rounded-full bg-primary"
-              style={{ width: `${Math.min((activeListings / listingLimit) * 100, 100)}%` }}
-            />
-          </div>
-        )}
-      </div>
-      {currentPlanSlug !== 'business' && (
-        <Button className="mt-4 w-full" variant="outline" size="sm" asChild>
-          <Link href="/seller/abo/upgrade">{tc('upgrade')}</Link>
-        </Button>
-      )}
-    </div>
-  );
+  // AUSKOMMENTIERT: PlanWidget (alles ist jetzt Free, kein Upgrade noetig)
+  // const PlanWidget = () => (
+  //   <div className="rounded-lg border bg-muted/50 p-4">
+  //     <div className="flex items-center justify-between text-sm">
+  //       <span className="text-muted-foreground">{ts('plan')}</span>
+  //       <span className="font-medium">{planName}</span>
+  //     </div>
+  //     <div className="mt-2">
+  //       <div className="flex items-center justify-between text-sm mb-1">
+  //         <span className="text-muted-foreground">{ts('listingsUsed')}</span>
+  //         <span className="font-medium">
+  //           {activeListings}{listingLimit === -1 ? ` (${tc('unlimited')})` : `/${listingLimit}`}
+  //         </span>
+  //       </div>
+  //       {listingLimit !== -1 && listingLimit > 0 && (
+  //         <div className="h-2 rounded-full bg-muted">
+  //           <div
+  //             className="h-2 rounded-full bg-primary"
+  //             style={{ width: `${Math.min((activeListings / listingLimit) * 100, 100)}%` }}
+  //           />
+  //         </div>
+  //       )}
+  //     </div>
+  //   </div>
+  // );
+  const PlanWidget = () => null;
 
   return (
     <div className="min-h-screen bg-muted/30">

@@ -53,6 +53,7 @@ export interface SellerLayoutData {
   plan: Plan | null;
   subscription: (Subscription & { plans: Plan | null }) | null;
   unreadInquiries: number;
+  unreadMessages: number;
   activeListings: number;
   listingLimit: number;
 }
@@ -77,8 +78,8 @@ export async function getSellerLayoutData(): Promise<SellerLayoutData | null> {
 
   if (!profile || !account) return null;
 
-  // Subscription + Plan + Inquiry-Count + Listing-Count parallel
-  const [subscriptionResult, unreadResult, listingCountResult] = await Promise.all([
+  // Subscription + Plan + Inquiry-Count + Listing-Count + Unread-Messages parallel
+  const [subscriptionResult, unreadResult, listingCountResult, unreadMessagesResult] = await Promise.all([
     supabase
       .from('subscriptions')
       .select('*, plans(*)')
@@ -97,11 +98,23 @@ export async function getSellerLayoutData(): Promise<SellerLayoutData | null> {
       .eq('account_id', account.id)
       .in('status', ['draft', 'pending_review', 'active'])
       .is('deleted_at', null),
+    // Summe aller ungelesenen Nachrichten fuer den Seller
+    supabase
+      .from('inquiries')
+      .select('unread_messages_seller')
+      .eq('account_id', account.id)
+      .gt('unread_messages_seller', 0)
+      .is('deleted_at', null),
   ]);
 
   const sub = subscriptionResult.data;
   const plan = sub ? (sub.plans as Plan) : null;
   const listingLimit = plan?.listing_limit ?? 1;
+  
+  // Ungelesene Nachrichten summieren
+  const totalUnreadMessages = (unreadMessagesResult.data ?? []).reduce(
+    (sum, row) => sum + (row.unread_messages_seller ?? 0), 0
+  );
 
   return {
     profile,
@@ -109,6 +122,7 @@ export async function getSellerLayoutData(): Promise<SellerLayoutData | null> {
     plan,
     subscription: sub as (Subscription & { plans: Plan | null }) | null,
     unreadInquiries: unreadResult.count ?? 0,
+    unreadMessages: totalUnreadMessages,
     activeListings: listingCountResult.count ?? 0,
     listingLimit,
   };

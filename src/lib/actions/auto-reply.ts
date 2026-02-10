@@ -389,6 +389,31 @@ export async function processAutoReplyQueue(): Promise<ActionResult<{
           p_queue_id: reply.queue_id,
           p_success: true,
         });
+        
+        // System-Nachricht in inquiry_messages erstellen
+        await supabase.from('inquiry_messages').insert({
+          inquiry_id: reply.inquiry_id,
+          sender_type: 'system',
+          sender_profile_id: null,
+          content: fullMessage,
+          is_read: false,
+        });
+        
+        // last_message_at aktualisieren und unread-Counter fuer Buyer erhoehen
+        const { data: currentInquiry } = await supabase
+          .from('inquiries')
+          .select('unread_messages_buyer')
+          .eq('id', reply.inquiry_id)
+          .single();
+        
+        await supabase
+          .from('inquiries')
+          .update({
+            last_message_at: new Date().toISOString(),
+            unread_messages_buyer: (currentInquiry?.unread_messages_buyer ?? 0) + 1,
+          })
+          .eq('id', reply.inquiry_id);
+        
         sent++;
       } else {
         // Mark as failed

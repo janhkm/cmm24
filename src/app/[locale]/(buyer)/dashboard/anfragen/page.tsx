@@ -181,13 +181,21 @@ export default function BuyerInquiriesPage() {
                         </p>
                       </div>
                       
-                      {inquiry.listing?.slug && inquiry.listing?.status === 'active' && (
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link href={`/maschinen/${inquiry.listing.slug}`}>
-                            <ExternalLink className="h-4 w-4" />
+                      <div className="flex items-center gap-2">
+                        <Button variant="default" size="sm" asChild>
+                          <Link href={`/dashboard/anfragen/${inquiry.id}`}>
+                            <MessageSquare className="mr-1 h-3 w-3" />
+                            {t('viewConversation')}
                           </Link>
                         </Button>
-                      )}
+                        {inquiry.listing?.slug && inquiry.listing?.status === 'active' && (
+                          <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/maschinen/${inquiry.listing.slug}`}>
+                              <ExternalLink className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </div>

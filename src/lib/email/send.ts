@@ -21,6 +21,7 @@ import {
   TeamMemberJoinedEmail,
   AccountSuspendedEmail,
   AccountVerifiedEmail,
+  InquiryMessageEmail,
 } from './templates';
 
 // =============================================================================
@@ -593,6 +594,41 @@ export async function sendAccountVerifiedEmail(params: {
     AccountVerifiedEmail({
       userName,
       companyName,
+    }),
+    {
+      from: emailConfig.from.notifications,
+    }
+  );
+}
+
+// =============================================================================
+// Inquiry Message Notification
+// =============================================================================
+
+/**
+ * Benachrichtigung ueber neue Nachricht in einer Anfrage
+ */
+export async function sendInquiryMessageEmail(params: {
+  to: string;
+  recipientName: string;
+  senderName: string;
+  senderCompany?: string;
+  listingTitle: string;
+  messagePreview: string;
+  inquiryUrl: string;
+}): Promise<SendEmailResult> {
+  const { to, recipientName, senderName, senderCompany, listingTitle, messagePreview, inquiryUrl } = params;
+
+  return sendEmail(
+    to,
+    `Neue Nachricht zu: ${listingTitle}`,
+    InquiryMessageEmail({
+      recipientName,
+      senderName,
+      senderCompany,
+      listingTitle,
+      messagePreview,
+      inquiryUrl,
     }),
     {
       from: emailConfig.from.notifications,

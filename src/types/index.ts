@@ -78,6 +78,7 @@ export interface Seller {
   addressCity?: string;
   addressCountry?: string;
   isVerified: boolean;
+  isPremium?: boolean;
   listingCount: number;
   responseTime?: string;
   memberSince?: string;

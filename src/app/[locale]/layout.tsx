@@ -116,6 +116,14 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <meta name="google-adsense-account" content="ca-pub-6413555007331039" />
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6413555007331039"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} min-h-screen font-sans antialiased`}
         suppressHydrationWarning

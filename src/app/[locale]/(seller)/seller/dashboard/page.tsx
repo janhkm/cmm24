@@ -7,16 +7,18 @@ import {
   Plus,
   ArrowRight,
   Clock,
-  CheckCircle,
-  Zap,
-  Crown,
+  // AUSKOMMENTIERT: Nicht mehr benoetigte Imports (Plan Status Card entfernt)
+  // CheckCircle,
+  // Zap,
+  // Crown,
 } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { OnboardingChecklist, ActivityLog } from '@/components/features/seller';
+// AUSKOMMENTIERT: import { Progress } from '@/components/ui/progress';
+// AUSKOMMENTIERT: Onboarding und Aktivitaeten-Log
+// import { OnboardingChecklist, ActivityLog } from '@/components/features/seller';
 import { getSellerLayoutData, getSellerDashboardData } from '@/lib/actions/dashboard';
 
 /**
@@ -85,9 +87,11 @@ export default async function SellerDashboardPage({ params }: { params: Promise<
     redirect('/login');
   }
 
-  const { profile, account, plan, subscription } = layoutData!;
+  const { profile, account, plan } = layoutData!;
   const dashboardData = await getSellerDashboardData(account.id);
-  const isEarlyAdopter = subscription?.is_early_adopter ?? false;
+  // AUSKOMMENTIERT: subscription und isEarlyAdopter nicht mehr benoetig (alles ist Free)
+  // const { subscription } = layoutData!;
+  // const isEarlyAdopter = subscription?.is_early_adopter ?? false;
   const { stats, recentInquiries, recentListings } = dashboardData;
 
   // Usage berechnen
@@ -95,8 +99,8 @@ export default async function SellerDashboardPage({ params }: { params: Promise<
   const listingLimit = stats.listingLimit;
   const usagePercent = listingLimit === -1 ? 0 : Math.min((listingsUsed / listingLimit) * 100, 100);
 
-  // Feature flags
-  const featureFlags = (plan?.feature_flags as Record<string, boolean>) || {};
+  // AUSKOMMENTIERT: Feature flags (Plan Status Card entfernt)
+  // const featureFlags = (plan?.feature_flags as Record<string, boolean>) || {};
 
   // Stats cards
   const statsCards = [
@@ -186,75 +190,12 @@ export default async function SellerDashboardPage({ params }: { params: Promise<
         ))}
       </div>
 
-      {/* Plan Status Card */}
-      <Card className="border-primary/20 bg-primary/5">
+      {/* AUSKOMMENTIERT: Plan Status Card (alles ist jetzt Free, kein Upgrade noetig) */}
+      {/* <Card className="border-primary/20 bg-primary/5">
         <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                <Crown className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold">{plan?.name || 'Free'} Plan</h3>
-                  {plan && (() => {
-                    const interval = subscription?.billing_interval || 'monthly';
-                    const price = isEarlyAdopter
-                      ? (interval === 'yearly' ? plan.launch_price_yearly : plan.launch_price_monthly) ?? plan.price_monthly
-                      : (interval === 'yearly' ? plan.price_yearly : plan.price_monthly);
-                    const displayPrice = price === 0
-                      ? tc('free')
-                      : `${price}€/${interval === 'yearly' ? 'Jahr' : 'Mo'}`;
-                    return (
-                      <Badge variant="secondary">
-                        {displayPrice}
-                        {isEarlyAdopter && price > 0 && (
-                          <span className="ml-1 text-green-600">{t('earlyAdopter')}</span>
-                        )}
-                      </Badge>
-                    );
-                  })()}
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {plan?.description || t('freePlan')}
-                </p>
-                {listingLimit !== -1 && (
-                  <div className="mt-3 max-w-xs">
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span>{t('listingsOf', { used: listingsUsed, limit: listingLimit })}</span>
-                      <span className="text-muted-foreground">{Math.round(usagePercent)}%</span>
-                    </div>
-                    <Progress value={usagePercent} className="h-2" />
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('included')}</p>
-                <div className="flex flex-wrap gap-2">
-                  {featureFlags.lead_pipeline && (
-                    <Badge variant="outline" className="gap-1"><CheckCircle className="h-3 w-3" />{t('leadPipeline')}</Badge>
-                  )}
-                  {featureFlags.statistics && (
-                    <Badge variant="outline" className="gap-1"><CheckCircle className="h-3 w-3" />{tn('statistics')}</Badge>
-                  )}
-                  {featureFlags.team_management && (
-                    <Badge variant="outline" className="gap-1"><Zap className="h-3 w-3" />{t('teamManagement')}</Badge>
-                  )}
-                </div>
-              </div>
-              {plan?.slug !== 'business' && (
-                <div className="flex items-center">
-                  <Button asChild>
-                    <Link href="/seller/abo/upgrade">{tc('upgrade')}<ArrowRight className="ml-2 h-4 w-4" /></Link>
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
+          ... Plan Status Card auskommentiert ...
         </CardContent>
-      </Card>
+      </Card> */}
 
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Recent Inquiries */}
@@ -360,29 +301,32 @@ export default async function SellerDashboardPage({ params }: { params: Promise<
         </Card>
       </div>
 
-      {/* Onboarding Checklist */}
+      {/* AUSKOMMENTIERT: Onboarding Checklist
       <OnboardingChecklist />
+      */}
 
       {/* Quick Actions */}
       <Card>
         <CardHeader><CardTitle>{t('quickActions')}</CardTitle></CardHeader>
         <CardContent>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
               <Link href="/seller/inserate/neu"><Plus className="h-5 w-5" /><span>{t('createListing')}</span></Link>
             </Button>
             <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
               <Link href="/seller/anfragen"><MessageSquare className="h-5 w-5" /><span>{t('processInquiries')}</span></Link>
             </Button>
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
+            {/* AUSKOMMENTIERT: Upgrade Quick Action (alles ist jetzt Free) */}
+            {/* <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
               <Link href="/seller/abo"><TrendingUp className="h-5 w-5" /><span>{t('upgradePlan')}</span></Link>
-            </Button>
+            </Button> */}
           </div>
         </CardContent>
       </Card>
 
-      {/* Activity Log */}
+      {/* AUSKOMMENTIERT: Activity Log
       <ActivityLog limit={5} showFilter={false} />
+      */}
     </div>
   );
 }

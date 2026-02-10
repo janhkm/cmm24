@@ -39,8 +39,8 @@ import type { Database } from '@/types/supabase';
 
 type Plan = Database['public']['Tables']['plans']['Row'];
 
-// Onboarding Steps
-type Step = 'welcome' | 'profile' | 'plan' | 'success';
+// Onboarding Steps - Plan-Auswahl AUSKOMMENTIERT (alles ist jetzt Free)
+type Step = 'welcome' | 'profile' | /* 'plan' | */ 'success';
 
 // Form Data
 interface OnboardingData {
@@ -56,7 +56,7 @@ interface OnboardingData {
   passwordConfirm: string;
   phone: string;
   
-  // Step 3: Plan
+  // AUSKOMMENTIERT: Step 3: Plan (alles ist jetzt Free)
   selectedPlan: string;
   billingInterval: 'monthly' | 'yearly';
   
@@ -80,12 +80,14 @@ const initialData: OnboardingData = {
   acceptedMarketing: false,
 };
 
-const steps: Step[] = ['welcome', 'profile', 'plan', 'success'];
+// AUSKOMMENTIERT: Plan-Schritt entfernt (alles ist jetzt Free)
+// const steps: Step[] = ['welcome', 'profile', 'plan', 'success'];
+const steps: Step[] = ['welcome', 'profile', 'success'];
 
 const stepProgress: Record<Step, number> = {
-  welcome: 25,
-  profile: 50,
-  plan: 75,
+  welcome: 33,
+  profile: 66,
+  // plan: 75,  // AUSKOMMENTIERT
   success: 100,
 };
 
@@ -100,7 +102,7 @@ export default function RegisterPage() {
   const stepTitles: Record<Step, string> = {
     welcome: t('title'),
     profile: t('stepAbout'),
-    plan: t('stepPlan'),
+    // plan: t('stepPlan'),  // AUSKOMMENTIERT
     success: t('stepDone'),
   };
 
@@ -164,9 +166,10 @@ export default function RegisterPage() {
         if (!data.acceptedTerms) newErrors.acceptedTerms = t('acceptTermsRequired');
         break;
 
-      case 'plan':
-        if (!data.selectedPlan) newErrors.selectedPlan = t('selectPlan');
-        break;
+      // AUSKOMMENTIERT: Plan-Validierung (alles ist jetzt Free)
+      // case 'plan':
+      //   if (!data.selectedPlan) newErrors.selectedPlan = t('selectPlan');
+      //   break;
     }
 
     setErrors(newErrors);
@@ -181,16 +184,13 @@ export default function RegisterPage() {
         setStep('profile');
         break;
       case 'profile':
-        if (data.userIntent === 'buy') {
-          // Kaeufer ueberspringen Plan-Auswahl, direkt registrieren
-          handleRegistration();
-        } else {
-          setStep('plan');
-        }
-        break;
-      case 'plan':
+        // ALLES IST JETZT FREE - direkt registrieren, kein Plan-Schritt
         handleRegistration();
         break;
+      // AUSKOMMENTIERT: Plan-Schritt
+      // case 'plan':
+      //   handleRegistration();
+      //   break;
     }
   };
 
@@ -199,9 +199,10 @@ export default function RegisterPage() {
       case 'profile':
         setStep('welcome');
         break;
-      case 'plan':
-        setStep('profile');
-        break;
+      // AUSKOMMENTIERT: Plan-Schritt
+      // case 'plan':
+      //   setStep('profile');
+      //   break;
     }
   };
 
@@ -695,8 +696,8 @@ export default function RegisterPage() {
         </Card>
       )}
 
-      {/* Step: Plan Selection */}
-      {step === 'plan' && (
+      {/* AUSKOMMENTIERT: Step: Plan Selection (alles ist jetzt Free) */}
+      {false && (
         <div className="space-y-3">
           {/* Header + Launch Banner Combined */}
           <div className="flex items-center justify-between">

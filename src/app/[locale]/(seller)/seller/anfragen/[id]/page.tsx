@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
@@ -18,7 +18,15 @@ import {
   ExternalLink,
   Copy,
   FileText,
-  Sparkles,
+  User,
+  Bot,
+  Check,
+  CheckCheck,
+  Paperclip,
+  Zap,
+  Download,
+  Image as ImageIcon,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +40,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { EmailComposer } from '@/components/features/seller';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSellerAuth } from '@/hooks/use-seller-auth';
 import { toast } from 'sonner';
 import {
@@ -41,6 +49,28 @@ import {
   updateInquiryNotes,
   markInquiryAsRead,
 } from '@/lib/actions/inquiries';
+import {
+  getInquiryMessages,
+  sendInquiryMessage,
+  uploadMessageAttachment,
+  markInquiryMessagesAsRead,
+  type InquiryMessage,
+} from '@/lib/actions/messages';
+import {
+  getMessageTemplates,
+  type MessageTemplate,
+} from '@/lib/actions/message-templates';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type InquiryStatus = 'new' | 'contacted' | 'offer_sent' | 'won' | 'lost';
 
@@ -64,12 +94,498 @@ interface Inquiry {
   } | null;
 }
 
+// =============================================================================
+// Nachrichten-Thread Komponente
+// =============================================================================
+
+function MessageThread({
+  inquiryId,
+  originalMessage,
+  contactName,
+  createdAt,
+  hasMessagingAccess,
+  hasReadReceipts,
+  hasAttachments,
+  hasTemplates,
+  locale,
+}: {
+  inquiryId: string;
+  originalMessage: string | null;
+  contactName: string;
+  createdAt: string | null;
+  hasMessagingAccess: boolean;
+  hasReadReceipts: boolean;
+  hasAttachments: boolean;
+  hasTemplates: boolean;
+  locale: string;
+}) {
+  const t = useTranslations('sellerInquiries');
+  const [messages, setMessages] = useState<InquiryMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [newMessage, setNewMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [pendingAttachment, setPendingAttachment] = useState<{
+    url: string; name: string; type: string; size: number;
+  } | null>(null);
+  const [templates, setTemplates] = useState<MessageTemplate[]>([]);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const prevMessageCountRef = useRef(0);
+
+  // Pruefen ob User am Ende des Chats ist (mit 100px Toleranz)
+  const isNearBottom = useCallback(() => {
+    const el = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
+  // Nachrichten laden (initial)
+  useEffect(() => {
+    const loadMessages = async () => {
+      setIsLoading(true);
+      const result = await getInquiryMessages(inquiryId);
+      if (result.success && result.data) {
+        setMessages(result.data.messages);
+        prevMessageCountRef.current = result.data.messages.length;
+        // Nachrichten als gelesen markieren
+        markInquiryMessagesAsRead(inquiryId).catch(() => {});
+      }
+      setIsLoading(false);
+    };
+
+    loadMessages();
+  }, [inquiryId]);
+
+  // Polling fuer neue Nachrichten (alle 10s) — nur updaten wenn sich etwas geaendert hat
+  useEffect(() => {
+    if (!hasMessagingAccess) return;
+    const interval = setInterval(async () => {
+      const result = await getInquiryMessages(inquiryId);
+      if (result.success && result.data) {
+        const newMessages = result.data.messages;
+        // Nur updaten wenn sich die Anzahl oder Inhalte geaendert haben
+        setMessages(prev => {
+          if (prev.length === newMessages.length &&
+              prev[prev.length - 1]?.id === newMessages[newMessages.length - 1]?.id) {
+            // Nichts geaendert, kein Re-Render noetig
+            return prev;
+          }
+          return newMessages;
+        });
+        markInquiryMessagesAsRead(inquiryId).catch(() => {});
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [inquiryId, hasMessagingAccess]);
+
+  // Nachrichtenvorlagen laden (nur wenn Feature aktiv)
+  useEffect(() => {
+    if (!hasTemplates) return;
+    const loadTemplates = async () => {
+      // Account-ID aus dem Seller-Auth holen
+      const msgResult = await getInquiryMessages(inquiryId);
+      if (msgResult.success && msgResult.data) {
+        const accountId = msgResult.data.inquiry.account_id;
+        if (accountId) {
+          const tplResult = await getMessageTemplates(accountId);
+          if (tplResult.success && tplResult.data) {
+            setTemplates(tplResult.data);
+          }
+        }
+      }
+    };
+    loadTemplates();
+  }, [inquiryId, hasTemplates]);
+
+  // Nach unten scrollen: nur beim ersten Laden oder wenn neue Nachrichten dazukommen
+  // und der User bereits am Ende des Chats war
+  useEffect(() => {
+    if (isLoading) return;
+
+    const hasNewMessages = messages.length > prevMessageCountRef.current;
+    const wasAtBottom = isNearBottom();
+
+    // Beim ersten Laden immer nach unten, danach nur wenn neue Nachrichten UND User am Ende war
+    if (prevMessageCountRef.current === 0 || (hasNewMessages && wasAtBottom)) {
+      scrollToBottom();
+    }
+
+    prevMessageCountRef.current = messages.length;
+  }, [messages, isLoading, scrollToBottom, isNearBottom]);
+
+  // Datei-Upload Handler
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = ''; // Reset fuer erneuten Upload
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const result = await uploadMessageAttachment(inquiryId, formData);
+    if (result.success && result.data) {
+      setPendingAttachment(result.data);
+      toast.success(t('fileUploaded'));
+    } else {
+      toast.error(result.error || t('fileUploadError'));
+    }
+    setIsUploading(false);
+  };
+
+  // Template auswaehlen
+  const handleTemplateSelect = (template: MessageTemplate) => {
+    setNewMessage((prev) => prev ? `${prev}\n${template.content}` : template.content);
+    setShowTemplates(false);
+    textareaRef.current?.focus();
+  };
+
+  const handleSend = async () => {
+    if ((!newMessage.trim() && !pendingAttachment) || isSending) return;
+
+    setIsSending(true);
+    const content = newMessage.trim() || (pendingAttachment ? `📎 ${pendingAttachment.name}` : '');
+    setNewMessage('');
+    const attachment = pendingAttachment || undefined;
+    setPendingAttachment(null);
+
+    const result = await sendInquiryMessage(inquiryId, content, attachment);
+
+    if (result.success && result.data) {
+      setMessages((prev) => [...prev, result.data!]);
+      toast.success(t('messageSent'));
+    } else {
+      toast.error(result.error || t('messageSendError'));
+      setNewMessage(content); // Nachricht wiederherstellen
+      if (attachment) setPendingAttachment(attachment);
+    }
+
+    setIsSending(false);
+    textareaRef.current?.focus();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const formatMessageTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const isYesterday = new Date(now.getTime() - 86400000).toDateString() === date.toDateString();
+
+    const time = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+
+    if (isToday) return time;
+    if (isYesterday) return `${t('yesterday')}, ${time}`;
+    return `${date.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' })}, ${time}`;
+  };
+
+  return (
+    <Card className="flex flex-col h-full">
+      <CardHeader className="pb-3 shrink-0">
+        <CardTitle className="text-lg flex items-center gap-2">
+          <MessageSquare className="h-5 w-5" />
+          {t('conversation')}
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent className="flex-1 flex flex-col min-h-0 p-0">
+        {/* Nachrichten-Bereich */}
+        <ScrollArea className="flex-1 px-6" ref={scrollAreaRef}>
+          <div className="space-y-4 py-4">
+            {/* Original-Anfrage als erste Nachricht */}
+            {originalMessage && (
+              <div className="flex gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                  <User className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-medium">{contactName}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {createdAt && formatMessageTime(createdAt)}
+                    </span>
+                  </div>
+                  <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900 p-3">
+                    <p className="text-sm whitespace-pre-wrap">{originalMessage}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">{t('initialInquiry')}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Lade-Indikator */}
+            {isLoading && (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            )}
+
+            {/* Nachrichten */}
+            {messages.map((message) => {
+              const isSeller = message.sender_type === 'seller';
+              const isSystem = message.sender_type === 'system';
+
+              if (isSystem) {
+                return (
+                  <div key={message.id} className="flex justify-center">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted rounded-full px-3 py-1">
+                      <Bot className="h-3 w-3" />
+                      {message.content}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div key={message.id} className={`flex gap-3 ${isSeller ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                    isSeller
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-blue-100 text-blue-700'
+                  }`}>
+                    <User className="h-4 w-4" />
+                  </div>
+                  <div className={`max-w-[85%] min-w-0 ${isSeller ? 'ml-auto' : ''}`}>
+                    <div className={`rounded-lg p-3 ${
+                      isSeller
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted'
+                    }`}>
+                      <div className={`flex items-center gap-2 mb-1 ${isSeller ? 'justify-end' : ''}`}>
+                        <span className={`text-xs font-medium ${isSeller ? 'text-primary-foreground/80' : 'text-foreground'}`}>
+                          {message.sender_name || (isSeller ? t('you') : contactName)}
+                        </span>
+                        <span className={`text-[10px] ${isSeller ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
+                           {formatMessageTime(message.created_at || '')}
+                        </span>
+                      </div>
+                      <p className="text-sm whitespace-pre-wrap text-left">{message.content}</p>
+                      {/* Anhang-Anzeige */}
+                      {message.attachment_url && (
+                        <div className="mt-2 pt-2 border-t border-current/10">
+                          {message.attachment_type?.startsWith('image/') ? (
+                            <a href={message.attachment_url} target="_blank" rel="noopener noreferrer" className="block">
+                              <img
+                                src={message.attachment_url}
+                                alt={message.attachment_name || 'Bild'}
+                                className="max-w-[240px] rounded-md"
+                              />
+                            </a>
+                          ) : (
+                            <a
+                              href={message.attachment_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`flex items-center gap-2 text-xs ${isSeller ? 'text-primary-foreground/80 hover:text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                            >
+                              <Download className="h-3.5 w-3.5 shrink-0" />
+                              <span className="truncate">{message.attachment_name || 'Datei'}</span>
+                              {message.attachment_size && (
+                                <span className="shrink-0">({(message.attachment_size / 1024).toFixed(0)} KB)</span>
+                              )}
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {isSeller && (
+                      <div className="flex items-center justify-end gap-1 mt-0.5">
+                        {hasReadReceipts ? (
+                          message.is_read ? (
+                            <>
+                              <CheckCheck className="h-3 w-3 text-blue-500" />
+                              {message.read_at && (
+                                <span className="text-[10px] text-muted-foreground ml-0.5">
+                                  {t('readAt', { time: new Date(message.read_at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) })}
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <Check className="h-3 w-3 text-muted-foreground" />
+                          )
+                        ) : (
+                          <Check className="h-3 w-3 text-muted-foreground" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
+
+        {/* Eingabe-Bereich */}
+        {hasMessagingAccess ? (
+          <div className="border-t p-4 shrink-0">
+            {/* Pending Attachment Preview */}
+            {pendingAttachment && (
+              <div className="flex items-center gap-2 mb-2 p-2 bg-muted rounded-md text-sm">
+                {pendingAttachment.type.startsWith('image/') ? (
+                  <ImageIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                ) : (
+                  <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                )}
+                <span className="truncate flex-1">{pendingAttachment.name}</span>
+                <span className="text-xs text-muted-foreground shrink-0">
+                  ({(pendingAttachment.size / 1024).toFixed(0)} KB)
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 shrink-0"
+                  onClick={() => setPendingAttachment(null)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+            <div className="flex gap-2">
+              {/* Datei-Upload (nur Business) */}
+              {hasAttachments && (
+                <>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="shrink-0 h-auto"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isSending || isUploading}
+                        >
+                          {isUploading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Paperclip className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t('attachFile')}</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </>
+              )}
+              {/* Quick-Reply Templates (nur Business) */}
+              {hasTemplates && templates.length > 0 && (
+                <Popover open={showTemplates} onOpenChange={setShowTemplates}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="shrink-0 h-auto"
+                      disabled={isSending}
+                    >
+                      <Zap className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-72 p-1">
+                    <div className="text-xs font-medium text-muted-foreground px-2 py-1.5">
+                      {t('quickReplies')}
+                    </div>
+                    <div className="max-h-48 overflow-y-auto">
+                      {templates.map((tpl) => (
+                        <button
+                          key={tpl.id}
+                          className="w-full text-left px-2 py-1.5 text-sm rounded-sm hover:bg-muted transition-colors"
+                          onClick={() => handleTemplateSelect(tpl)}
+                        >
+                          <div className="font-medium truncate">{tpl.title}</div>
+                          <div className="text-xs text-muted-foreground truncate">{tpl.content}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
+              <Textarea
+                ref={textareaRef}
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={t('typeMessage')}
+                rows={2}
+                className="resize-none text-sm"
+                disabled={isSending}
+              />
+              <Button
+                onClick={handleSend}
+                disabled={(!newMessage.trim() && !pendingAttachment) || isSending}
+                size="icon"
+                className="shrink-0 h-auto"
+              >
+                {isSending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1.5">
+              <kbd className="px-1 py-0.5 text-[10px] bg-muted rounded">⌘</kbd>
+              {' + '}
+              <kbd className="px-1 py-0.5 text-[10px] bg-muted rounded">Enter</kbd>
+              {' '}{t('toSendMessage')}
+            </p>
+          </div>
+        ) : (
+          <div className="border-t p-4 shrink-0">
+            <div className="text-center py-2">
+              <p className="text-sm text-muted-foreground mb-2">
+                {t('messagingLocked')}
+              </p>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/seller/abo">
+                  {t('upgradeToCommunicate')}
+                </Link>
+              </Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// =============================================================================
+// Haupt-Seite
+// =============================================================================
+
 export default function InquiryDetailPage() {
   const params = useParams();
   const t = useTranslations('sellerInquiries');
   const locale = useLocale();
-  const { profile, isLoading: authLoading } = useSellerAuth();
+  const { profile, plan, isLoading: authLoading } = useSellerAuth();
   const inquiryId = params.id as string;
+
+  // Feature-Flags pruefen
+  const featureFlags = plan?.feature_flags as Record<string, boolean> | null;
+  const hasMessagingAccess = featureFlags?.inquiry_messaging ?? featureFlags?.email_composer ?? false;
+  const hasReadReceipts = featureFlags?.read_receipts ?? false;
+  const hasAttachments = featureFlags?.message_attachments ?? false;
+  const hasTemplates = featureFlags?.message_templates ?? false;
 
   const statusConfig: Record<string, { label: string; color: string; icon: typeof MessageSquare }> = {
     new: { label: t('statusNew'), color: 'bg-blue-100 text-blue-800', icon: MessageSquare },
@@ -85,7 +601,6 @@ export default function InquiryDetailPage() {
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState<InquiryStatus>('new');
   const [copied, setCopied] = useState<string | null>(null);
-  const [isEmailComposerOpen, setIsEmailComposerOpen] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -96,7 +611,7 @@ export default function InquiryDetailPage() {
           setInquiry(data);
           setNotes(data.notes || '');
           setStatus(data.status || 'new');
-          
+
           if (!data.read_at) {
             await markInquiryAsRead(inquiryId);
           }
@@ -110,7 +625,7 @@ export default function InquiryDetailPage() {
         setIsLoading(false);
       }
     };
-    
+
     if (!authLoading) {
       loadData();
     }
@@ -198,6 +713,7 @@ export default function InquiryDetailPage() {
             <h1 className="text-2xl font-bold">{t('inquiryFrom', { name: inquiry.name })}</h1>
             <p className="text-muted-foreground">
               {inquiry.company && `${inquiry.company} • `}
+              {inquiry.listing?.title && `${inquiry.listing.title} • `}
               {inquiry.created_at && new Date(inquiry.created_at).toLocaleDateString(locale, {
                 day: '2-digit',
                 month: '2-digit',
@@ -215,72 +731,26 @@ export default function InquiryDetailPage() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Message */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">{t('message')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-muted/50 rounded-lg p-4">
-                <p className="whitespace-pre-wrap">{inquiry.message || t('noMessage')}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Listing Info */}
-          {inquiry.listing && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">{t('inquiredListing')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-4">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold truncate">{inquiry.listing.title}</h3>
-                    {inquiry.listing.price && (
-                      <p className="text-lg font-bold text-primary">
-                        {inquiry.listing.price.toLocaleString(locale)} €
-                      </p>
-                    )}
-                    <Button variant="link" className="px-0 h-auto" asChild>
-                      <Link href={`/maschinen/${inquiry.listing.slug}`} target="_blank">
-                        {t('viewListing')}
-                        <ExternalLink className="ml-1 h-3 w-3" />
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Internal Notes */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">{t('internalNotes')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder={t('notesPlaceholder')}
-                rows={4}
-              />
-              <Button onClick={handleSaveNotes} disabled={isSaving}>
-                {isSaving ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : null}
-                {t('saveNotes')}
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Linke Seite: Nachrichten-Thread (Hauptbereich) */}
+        <div className="lg:col-span-2">
+          <div className="h-[calc(100vh-16rem)]">
+            <MessageThread
+              inquiryId={inquiryId}
+              originalMessage={inquiry.message}
+              contactName={inquiry.name}
+              createdAt={inquiry.created_at}
+              hasMessagingAccess={hasMessagingAccess}
+              hasReadReceipts={hasReadReceipts}
+              hasAttachments={hasAttachments}
+              hasTemplates={hasTemplates}
+              locale={locale}
+            />
+          </div>
         </div>
 
-        {/* Sidebar */}
+        {/* Rechte Sidebar */}
         <div className="space-y-6">
-          {/* Contact Info */}
+          {/* Kontaktdaten */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">{t('contactDetails')}</CardTitle>
@@ -345,12 +815,11 @@ export default function InquiryDetailPage() {
               <Separator />
 
               <div className="flex gap-2">
-                <Button 
-                  className="flex-1" 
-                  onClick={() => setIsEmailComposerOpen(true)}
-                >
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  {t('emailWithTemplate')}
+                <Button variant="outline" className="flex-1" asChild>
+                  <a href={`mailto:${inquiry.email}`}>
+                    <Mail className="mr-2 h-4 w-4" />
+                    {t('openInEmailClient')}
+                  </a>
                 </Button>
                 {inquiry.phone && (
                   <Button variant="outline" asChild>
@@ -360,14 +829,31 @@ export default function InquiryDetailPage() {
                   </Button>
                 )}
               </div>
-              <Button variant="outline" className="w-full" asChild>
-                <a href={`mailto:${inquiry.email}`}>
-                  <Mail className="mr-2 h-4 w-4" />
-                  {t('openInEmailClient')}
-                </a>
-              </Button>
             </CardContent>
           </Card>
+
+          {/* Angefragtes Inserat */}
+          {inquiry.listing && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">{t('inquiredListing')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <h3 className="font-semibold truncate">{inquiry.listing.title}</h3>
+                {inquiry.listing.price && (
+                  <p className="text-lg font-bold text-primary">
+                    {inquiry.listing.price.toLocaleString(locale)} €
+                  </p>
+                )}
+                <Button variant="link" className="px-0 h-auto" asChild>
+                  <Link href={`/maschinen/${inquiry.listing.slug}`} target="_blank">
+                    {t('viewListing')}
+                    <ExternalLink className="ml-1 h-3 w-3" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Status */}
           <Card>
@@ -402,64 +888,28 @@ export default function InquiryDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Quick Actions */}
+          {/* Interne Notizen */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">{t('quickActions')}</CardTitle>
+              <CardTitle className="text-lg">{t('internalNotes')}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => handleStatusChange('contacted')}
-                disabled={status === 'contacted'}
-              >
-                <Phone className="mr-2 h-4 w-4" />
-                {t('markContacted')}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => handleStatusChange('offer_sent')}
-                disabled={status === 'offer_sent'}
-              >
-                <FileText className="mr-2 h-4 w-4" />
-                {t('statusOfferSent')}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start text-green-600 hover:text-green-700"
-                onClick={() => handleStatusChange('won')}
-                disabled={status === 'won'}
-              >
-                <CheckCircle className="mr-2 h-4 w-4" />
-                {t('markWon')}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start text-muted-foreground"
-                onClick={() => handleStatusChange('lost')}
-                disabled={status === 'lost'}
-              >
-                <XCircle className="mr-2 h-4 w-4" />
-                {t('markLost')}
+            <CardContent className="space-y-4">
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={t('notesPlaceholder')}
+                rows={3}
+              />
+              <Button onClick={handleSaveNotes} disabled={isSaving} size="sm">
+                {isSaving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                {t('saveNotes')}
               </Button>
             </CardContent>
           </Card>
         </div>
       </div>
-
-      {/* Email Composer Modal */}
-      <EmailComposer
-        open={isEmailComposerOpen}
-        onOpenChange={setIsEmailComposerOpen}
-        recipientName={inquiry.name}
-        recipientEmail={inquiry.email}
-        recipientCompany={inquiry.company || undefined}
-        machineName={inquiry.listing?.title}
-        machinePrice={inquiry.listing?.price ? `${inquiry.listing.price.toLocaleString(locale)} €` : undefined}
-        sellerName={profile?.full_name || t('seller')}
-      />
     </div>
   );
 }

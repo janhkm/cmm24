@@ -21,6 +21,7 @@ import {
   Eye,
   Calendar,
   Ruler,
+  Crown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -665,31 +666,45 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
                       {t('seller')}
                     </p>
                     <div className="flex items-start gap-4">
-                      {listing.seller.logoUrl ? (
-                        <Image
-                          src={listing.seller.logoUrl}
-                          alt={listing.seller.companyName}
-                          width={48}
-                          height={48}
-                          className="rounded-lg object-contain border"
-                        />
-                      ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
-                          <Building2 className="h-6 w-6" />
-                        </div>
-                      )}
+                      <Link href={`/unternehmen/${listing.seller.slug}` as any} className="shrink-0">
+                        {listing.seller.logoUrl ? (
+                          <Image
+                            src={listing.seller.logoUrl}
+                            alt={listing.seller.companyName}
+                            width={48}
+                            height={48}
+                            className="rounded-lg object-contain border hover:border-primary transition-colors"
+                          />
+                        ) : (
+                          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+                            <Building2 className="h-6 w-6" />
+                          </div>
+                        )}
+                      </Link>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold truncate">{listing.seller.companyName}</h3>
+                          <Link href={`/unternehmen/${listing.seller.slug}` as any} className="font-semibold truncate hover:text-primary transition-colors hover:underline">
+                            {listing.seller.companyName}
+                          </Link>
+                          {/* AUSKOMMENTIERT: Verified Badge
                           {listing.seller.isVerified && (
                             <CheckCircle className="h-4 w-4 text-blue-600 shrink-0" />
                           )}
+                          */}
                         </div>
-                        {listing.seller.isVerified && (
+                        {/* AUSKOMMENTIERT: Premium/Verified Badges
+                        {listing.seller.isPremium && (
+                          <Badge className="bg-amber-100 text-amber-800 border-amber-300 mt-1">
+                            <Crown className="h-3 w-3 mr-1" />
+                            {t('premiumDealer')}
+                          </Badge>
+                        )}
+                        {listing.seller.isVerified && !listing.seller.isPremium && (
                           <p className="text-xs text-blue-600 font-medium mt-0.5">
                             {t('verifiedDealer')}
                           </p>
                         )}
+                        */}
                       </div>
                     </div>
 
@@ -752,6 +767,14 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
                         </Button>
                       </>
                     )}
+
+                    <Separator className="my-4" />
+                    <Button variant="secondary" className="w-full" asChild>
+                      <Link href={`/unternehmen/${listing.seller.slug}` as any}>
+                        <Building2 className="mr-2 h-4 w-4" />
+                        {t('viewSellerProfile')}
+                      </Link>
+                    </Button>
                   </CardContent>
                 </Card>
               )}

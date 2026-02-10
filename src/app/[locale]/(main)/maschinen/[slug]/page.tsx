@@ -62,6 +62,7 @@ function convertToListing(pl: PublicListing & { similar?: PublicListing[] }, loc
       slug: pl.account.slug,
       logoUrl: pl.account.logo_url || undefined,
       isVerified: pl.account.is_verified,
+      isPremium: pl.account.is_premium || false,
       listingCount: (pl.account as any).listing_count || 0,
       phone: (pl.account as any).phone || undefined,
       website: (pl.account as any).website || undefined,

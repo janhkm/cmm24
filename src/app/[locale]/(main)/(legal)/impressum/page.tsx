@@ -4,7 +4,7 @@ import { companyInfo } from '@/data/content/company';
 
 export const metadata: Metadata = {
   title: 'Impressum | CMM24',
-  description: 'Impressum und rechtliche Informationen der CMM24 GmbH – Ihr Marktplatz für gebrauchte Koordinatenmessmaschinen.',
+  description: 'Impressum und rechtliche Informationen von CMM24 – Ihr Marktplatz für gebrauchte Koordinatenmessmaschinen.',
   robots: 'noindex, follow',
 };
 
@@ -32,6 +32,7 @@ export default function ImpressumPage() {
         <section className="mb-8">
           <h2 className="text-xl font-semibold mb-4">Kontakt</h2>
           <p>Telefon: {companyInfo.phone}</p>
+          {companyInfo.fax && <p>Telefax: {companyInfo.fax}</p>}
           <p>E-Mail: <a href={`mailto:${companyInfo.email}`} className="text-primary hover:underline">{companyInfo.email}</a></p>
         </section>
 

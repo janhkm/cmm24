@@ -724,7 +724,7 @@ export async function getPublicListingBySlug(slug: string): Promise<ActionResult
       *,
       listing_media(*),
       manufacturers(id, name, slug),
-      accounts(id, company_name, slug, logo_url, is_verified, phone, website, address_city, address_country, created_at)
+      accounts(id, company_name, slug, logo_url, is_verified, is_premium, phone, website, address_city, address_country, created_at)
     `)
     .eq('slug', slug)
     .in('status', ['active', 'sold'])
@@ -758,7 +758,7 @@ export async function getPublicListingBySlug(slug: string): Promise<ActionResult
       *,
       listing_media(id, url, thumbnail_url, is_primary, sort_order),
       manufacturers(id, name, slug),
-      accounts(id, company_name, slug, logo_url, is_verified)
+      accounts(id, company_name, slug, logo_url, is_verified, is_premium)
     `)
     .eq('manufacturer_id', listing.manufacturer_id)
     .neq('id', listing.id)
@@ -773,14 +773,14 @@ export async function getPublicListingBySlug(slug: string): Promise<ActionResult
       media: ((listing.listing_media as ListingMedia[]) || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
       manufacturer: listing.manufacturers as { id: string; name: string; slug: string } | null,
       account: listing.accounts ? {
-        ...(listing.accounts as { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean; phone?: string; website?: string; address_city?: string; address_country?: string; created_at?: string }),
+        ...(listing.accounts as { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean; is_premium?: boolean; phone?: string; website?: string; address_city?: string; address_country?: string; created_at?: string }),
         listing_count: sellerListingCount,
       } : null,
       similar: (similarListings || []).map((l) => ({
         ...l,
         media: ((l.listing_media as ListingMedia[]) || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
         manufacturer: l.manufacturers as { id: string; name: string; slug: string } | null,
-        account: l.accounts as { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean } | null,
+        account: l.accounts as { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean; is_premium?: boolean } | null,
       })),
     },
   };
@@ -790,13 +790,14 @@ export async function getPublicListingBySlug(slug: string): Promise<ActionResult
 export interface PublicListing extends Listing {
   media: ListingMedia[];
   manufacturer: { id: string; name: string; slug: string } | null;
-  account?: { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean; listing_count?: number; phone?: string; website?: string; address_city?: string; address_country?: string; created_at?: string } | null;
+  account?: { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean; is_premium?: boolean; listing_count?: number; phone?: string; website?: string; address_city?: string; address_country?: string; created_at?: string } | null;
 }
 
 export interface PublicListingFilters {
   search?: string;
   manufacturerId?: string;
   manufacturerSlug?: string;
+  accountSlug?: string;
   condition?: 'new' | 'like_new' | 'good' | 'fair';
   priceMin?: number;
   priceMax?: number;
@@ -825,7 +826,7 @@ export async function getPublicListings(options?: PublicListingFilters): Promise
       *,
       listing_media(id, url, thumbnail_url, is_primary, sort_order),
       manufacturers(id, name, slug),
-      accounts(id, company_name, slug, logo_url, is_verified)
+      accounts(id, company_name, slug, logo_url, is_verified, is_premium)
     `, { count: 'exact' })
     .is('deleted_at', null);
   
@@ -885,7 +886,7 @@ export async function getPublicListings(options?: PublicListingFilters): Promise
           *,
           listing_media(id, url, thumbnail_url, is_primary, sort_order),
           manufacturers(id, name, slug),
-          accounts(id, company_name, slug, logo_url, is_verified)
+          accounts(id, company_name, slug, logo_url, is_verified, is_premium)
         `)
         .in('id', ids);
       
@@ -907,7 +908,7 @@ export async function getPublicListings(options?: PublicListingFilters): Promise
             ...listing,
             media: ((listing.listing_media as ListingMedia[]) || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
             manufacturer: listing.manufacturers as { id: string; name: string; slug: string } | null,
-            account: listing.accounts as { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean } | null,
+            account: listing.accounts as { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean; is_premium?: boolean } | null,
           })),
           total: totalCount,
         },
@@ -930,6 +931,20 @@ export async function getPublicListings(options?: PublicListingFilters): Promise
     
     if (manufacturer) {
       query = query.eq('manufacturer_id', manufacturer.id);
+    }
+  }
+  
+  // Account (Unternehmen) by slug
+  if (options?.accountSlug) {
+    const { data: acc } = await supabase
+      .from('accounts')
+      .select('id')
+      .eq('slug', options.accountSlug)
+      .is('deleted_at', null)
+      .single();
+    
+    if (acc) {
+      query = query.eq('account_id', acc.id);
     }
   }
   
@@ -999,7 +1014,7 @@ export async function getPublicListings(options?: PublicListingFilters): Promise
         ...listing,
         media: ((listing.listing_media as ListingMedia[]) || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
         manufacturer: listing.manufacturers as { id: string; name: string; slug: string } | null,
-        account: listing.accounts as { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean } | null,
+        account: listing.accounts as { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean; is_premium?: boolean } | null,
       })),
       total: count || 0,
     },
@@ -1047,7 +1062,7 @@ export async function getRandomListings(count: number = 5): Promise<ActionResult
       *,
       listing_media(id, url, thumbnail_url, is_primary, sort_order, filename),
       manufacturers(id, name, slug),
-      accounts(id, company_name, slug, logo_url, is_verified)
+      accounts(id, company_name, slug, logo_url, is_verified, is_premium)
     `)
     .eq('status', 'active')
     .is('deleted_at', null)
@@ -1075,7 +1090,7 @@ export async function getRandomListings(count: number = 5): Promise<ActionResult
       ...listing,
       media: ((listing.listing_media as ListingMedia[]) || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
       manufacturer: listing.manufacturers as { id: string; name: string; slug: string } | null,
-      account: listing.accounts as { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean } | null,
+      account: listing.accounts as { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean; is_premium?: boolean } | null,
     })),
   };
 }
@@ -1096,7 +1111,7 @@ export async function getListingsByIds(ids: string[]): Promise<ActionResult<Publ
       *,
       listing_media(id, url, thumbnail_url, is_primary, sort_order),
       manufacturers(id, name, slug),
-      accounts(id, company_name, slug, logo_url, is_verified)
+      accounts(id, company_name, slug, logo_url, is_verified, is_premium)
     `)
     .in('id', ids)
     .in('status', ['active', 'sold'])
@@ -1119,7 +1134,7 @@ export async function getListingsByIds(ids: string[]): Promise<ActionResult<Publ
       ...listing,
       media: ((listing.listing_media as ListingMedia[]) || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
       manufacturer: listing.manufacturers as { id: string; name: string; slug: string } | null,
-      account: listing.accounts as { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean } | null,
+      account: listing.accounts as { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean; is_premium?: boolean } | null,
     })),
   };
 }
@@ -1472,4 +1487,63 @@ export async function duplicateListing(listingId: string): Promise<ActionResult<
 
   revalidatePath('/seller/inserate');
   return { success: true, data: duplicate };
+}
+
+// =============================================================================
+// PUBLIC COMPANY PROFILE
+// =============================================================================
+
+export interface PublicCompanyProfile {
+  id: string;
+  company_name: string;
+  slug: string;
+  logo_url: string | null;
+  description: string | null;
+  website: string | null;
+  phone: string | null;
+  address_city: string | null;
+  address_country: string | null;
+  is_verified: boolean | null;
+  is_premium: boolean | null;
+  gallery_urls: { url: string; caption?: string }[];
+  certificates: { name: string; url?: string; issued_by?: string }[];
+  created_at: string | null;
+  listing_count: number;
+}
+
+/**
+ * Oeffentliches Unternehmensprofil anhand des Slugs laden.
+ */
+export async function getPublicCompanyBySlug(slug: string): Promise<ActionResult<PublicCompanyProfile>> {
+  const supabase = await createActionClient();
+  
+  const { data: account, error } = await supabase
+    .from('accounts')
+    .select('id, company_name, slug, logo_url, description, website, phone, address_city, address_country, is_verified, is_premium, gallery_urls, certificates, created_at')
+    .eq('slug', slug)
+    .eq('status', 'active')
+    .is('deleted_at', null)
+    .single();
+  
+  if (error || !account) {
+    return { success: false, error: 'Unternehmen nicht gefunden' };
+  }
+  
+  // Aktive Inserate zaehlen
+  const { count } = await supabase
+    .from('listings')
+    .select('id', { count: 'exact', head: true })
+    .eq('account_id', account.id)
+    .eq('status', 'active')
+    .is('deleted_at', null);
+  
+  return {
+    success: true,
+    data: {
+      ...account,
+      gallery_urls: (account.gallery_urls as { url: string; caption?: string }[] | null) || [],
+      certificates: (account.certificates as { name: string; url?: string; issued_by?: string }[] | null) || [],
+      listing_count: count || 0,
+    },
+  };
 }

@@ -572,6 +572,24 @@ export async function createInquiry(data: CreateInquiryData): Promise<ActionResu
       return { success: false, error: 'Fehler beim Senden der Anfrage', code: 'SERVER_ERROR' };
     }
     
+    // Erste inquiry_message fuer die Buyer-Nachricht erstellen
+    await supabase.from('inquiry_messages').insert({
+      inquiry_id: inquiry.id,
+      sender_type: 'buyer',
+      sender_profile_id: buyerProfileId,
+      content: data.message,
+      is_read: false,
+    });
+    
+    // last_message_at und unread-Counter initialisieren
+    await supabase
+      .from('inquiries')
+      .update({
+        last_message_at: new Date().toISOString(),
+        unread_messages_seller: 1,
+      })
+      .eq('id', inquiry.id);
+    
     // If we have a contact, create an activity
     if (contactId) {
       await supabase.from('contact_activities').insert({

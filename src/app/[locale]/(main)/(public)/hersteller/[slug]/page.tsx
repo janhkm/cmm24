@@ -69,6 +69,7 @@ function convertToListing(pl: PublicListing): Listing {
       slug: pl.account.slug,
       logoUrl: pl.account.logo_url || undefined,
       isVerified: pl.account.is_verified,
+      isPremium: pl.account.is_premium || false,
       listingCount: 0,
     } : undefined,
     media: pl.media.map((m) => ({

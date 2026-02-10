@@ -23,12 +23,15 @@ export type Database = {
           auto_reply_delay_minutes: number | null
           auto_reply_enabled: boolean | null
           auto_reply_message: string | null
+          certificates: Json | null
           company_name: string
           created_at: string | null
           deleted_at: string | null
           description: string | null
           email_signature: string | null
+          gallery_urls: Json | null
           id: string
+          is_premium: boolean | null
           is_verified: boolean | null
           legal_form: string | null
           logo_url: string | null
@@ -50,12 +53,15 @@ export type Database = {
           auto_reply_delay_minutes?: number | null
           auto_reply_enabled?: boolean | null
           auto_reply_message?: string | null
+          certificates?: Json | null
           company_name: string
           created_at?: string | null
           deleted_at?: string | null
           description?: string | null
           email_signature?: string | null
+          gallery_urls?: Json | null
           id?: string
+          is_premium?: boolean | null
           is_verified?: boolean | null
           legal_form?: string | null
           logo_url?: string | null
@@ -77,12 +83,15 @@ export type Database = {
           auto_reply_delay_minutes?: number | null
           auto_reply_enabled?: boolean | null
           auto_reply_message?: string | null
+          certificates?: Json | null
           company_name?: string
           created_at?: string | null
           deleted_at?: string | null
           description?: string | null
           email_signature?: string | null
+          gallery_urls?: Json | null
           id?: string
+          is_premium?: boolean | null
           is_verified?: boolean | null
           legal_form?: string | null
           logo_url?: string | null
@@ -614,106 +623,6 @@ export type Database = {
           },
         ]
       }
-      synced_emails: {
-        Row: {
-          id: string
-          account_id: string
-          connection_id: string
-          external_id: string
-          thread_id: string | null
-          folder: string
-          from_name: string | null
-          from_email: string
-          to_addresses: Array<{ name: string; address: string }>
-          cc_addresses: Array<{ name: string; address: string }> | null
-          subject: string | null
-          preview: string | null
-          body_html: string | null
-          body_text: string | null
-          is_read: boolean
-          is_starred: boolean
-          has_attachments: boolean
-          importance: string
-          received_at: string
-          inquiry_id: string | null
-          raw_data: Record<string, unknown> | null
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          account_id: string
-          connection_id: string
-          external_id: string
-          thread_id?: string | null
-          folder?: string
-          from_name?: string | null
-          from_email: string
-          to_addresses?: Array<{ name: string; address: string }>
-          cc_addresses?: Array<{ name: string; address: string }> | null
-          subject?: string | null
-          preview?: string | null
-          body_html?: string | null
-          body_text?: string | null
-          is_read?: boolean
-          is_starred?: boolean
-          has_attachments?: boolean
-          importance?: string
-          received_at: string
-          inquiry_id?: string | null
-          raw_data?: Record<string, unknown> | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          account_id?: string
-          connection_id?: string
-          external_id?: string
-          thread_id?: string | null
-          folder?: string
-          from_name?: string | null
-          from_email?: string
-          to_addresses?: Array<{ name: string; address: string }>
-          cc_addresses?: Array<{ name: string; address: string }> | null
-          subject?: string | null
-          preview?: string | null
-          body_html?: string | null
-          body_text?: string | null
-          is_read?: boolean
-          is_starred?: boolean
-          has_attachments?: boolean
-          importance?: string
-          received_at?: string
-          inquiry_id?: string | null
-          raw_data?: Record<string, unknown> | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "synced_emails_account_id_fkey"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "synced_emails_connection_id_fkey"
-            columns: ["connection_id"]
-            isOneToOne: false
-            referencedRelation: "email_connections"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "synced_emails_inquiry_id_fkey"
-            columns: ["inquiry_id"]
-            isOneToOne: false
-            referencedRelation: "inquiries"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       inquiries: {
         Row: {
           account_id: string
@@ -727,12 +636,15 @@ export type Database = {
           created_at: string | null
           deleted_at: string | null
           id: string
+          last_message_at: string | null
           listing_id: string
           lost_reason: string | null
           message: string
           notes: string | null
           source: Database["public"]["Enums"]["inquiry_source"] | null
           status: Database["public"]["Enums"]["inquiry_status"] | null
+          unread_messages_buyer: number | null
+          unread_messages_seller: number | null
           updated_at: string | null
           value: number | null
         }
@@ -748,12 +660,15 @@ export type Database = {
           created_at?: string | null
           deleted_at?: string | null
           id?: string
+          last_message_at?: string | null
           listing_id: string
           lost_reason?: string | null
           message: string
           notes?: string | null
           source?: Database["public"]["Enums"]["inquiry_source"] | null
           status?: Database["public"]["Enums"]["inquiry_status"] | null
+          unread_messages_buyer?: number | null
+          unread_messages_seller?: number | null
           updated_at?: string | null
           value?: number | null
         }
@@ -769,12 +684,15 @@ export type Database = {
           created_at?: string | null
           deleted_at?: string | null
           id?: string
+          last_message_at?: string | null
           listing_id?: string
           lost_reason?: string | null
           message?: string
           notes?: string | null
           source?: Database["public"]["Enums"]["inquiry_source"] | null
           status?: Database["public"]["Enums"]["inquiry_status"] | null
+          unread_messages_buyer?: number | null
+          unread_messages_seller?: number | null
           updated_at?: string | null
           value?: number | null
         }
@@ -805,6 +723,66 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inquiry_messages: {
+        Row: {
+          attachment_name: string | null
+          attachment_size: number | null
+          attachment_type: string | null
+          attachment_url: string | null
+          content: string
+          created_at: string | null
+          id: string
+          inquiry_id: string
+          is_read: boolean | null
+          read_at: string | null
+          sender_profile_id: string | null
+          sender_type: string
+        }
+        Insert: {
+          attachment_name?: string | null
+          attachment_size?: number | null
+          attachment_type?: string | null
+          attachment_url?: string | null
+          content: string
+          created_at?: string | null
+          id?: string
+          inquiry_id: string
+          is_read?: boolean | null
+          read_at?: string | null
+          sender_profile_id?: string | null
+          sender_type: string
+        }
+        Update: {
+          attachment_name?: string | null
+          attachment_size?: number | null
+          attachment_type?: string | null
+          attachment_url?: string | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          inquiry_id?: string
+          is_read?: boolean | null
+          read_at?: string | null
+          sender_profile_id?: string | null
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiry_messages_inquiry_id_fkey"
+            columns: ["inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "inquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inquiry_messages_sender_profile_id_fkey"
+            columns: ["sender_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -915,6 +893,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "listing_media_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_view_events: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          viewed_date: string
+          visitor_hash: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          viewed_date?: string
+          visitor_hash: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          viewed_date?: string
+          visitor_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_view_events_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
@@ -1115,6 +1125,44 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      message_templates: {
+        Row: {
+          account_id: string
+          content: string
+          created_at: string | null
+          id: string
+          sort_order: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          account_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          sort_order?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          account_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          sort_order?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_templates_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       models: {
         Row: {
@@ -1482,6 +1530,106 @@ export type Database = {
           },
         ]
       }
+      synced_emails: {
+        Row: {
+          account_id: string
+          body_html: string | null
+          body_text: string | null
+          cc_addresses: Json | null
+          connection_id: string
+          created_at: string | null
+          external_id: string
+          folder: string
+          from_email: string
+          from_name: string | null
+          has_attachments: boolean | null
+          id: string
+          importance: string | null
+          inquiry_id: string | null
+          is_read: boolean | null
+          is_starred: boolean | null
+          preview: string | null
+          raw_data: Json | null
+          received_at: string
+          subject: string | null
+          thread_id: string | null
+          to_addresses: Json
+          updated_at: string | null
+        }
+        Insert: {
+          account_id: string
+          body_html?: string | null
+          body_text?: string | null
+          cc_addresses?: Json | null
+          connection_id: string
+          created_at?: string | null
+          external_id: string
+          folder?: string
+          from_email: string
+          from_name?: string | null
+          has_attachments?: boolean | null
+          id?: string
+          importance?: string | null
+          inquiry_id?: string | null
+          is_read?: boolean | null
+          is_starred?: boolean | null
+          preview?: string | null
+          raw_data?: Json | null
+          received_at: string
+          subject?: string | null
+          thread_id?: string | null
+          to_addresses?: Json
+          updated_at?: string | null
+        }
+        Update: {
+          account_id?: string
+          body_html?: string | null
+          body_text?: string | null
+          cc_addresses?: Json | null
+          connection_id?: string
+          created_at?: string | null
+          external_id?: string
+          folder?: string
+          from_email?: string
+          from_name?: string | null
+          has_attachments?: boolean | null
+          id?: string
+          importance?: string | null
+          inquiry_id?: string | null
+          is_read?: boolean | null
+          is_starred?: boolean | null
+          preview?: string | null
+          raw_data?: Json | null
+          received_at?: string
+          subject?: string | null
+          thread_id?: string | null
+          to_addresses?: Json
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "synced_emails_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "synced_emails_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "email_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "synced_emails_inquiry_id_fkey"
+            columns: ["inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "inquiries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_invitations: {
         Row: {
           accepted_at: string | null
@@ -1591,6 +1739,22 @@ export type Database = {
     Functions: {
       approve_listing: { Args: { p_listing_id: string }; Returns: undefined }
       can_create_listing: { Args: { p_account_id: string }; Returns: boolean }
+      cleanup_old_view_events: { Args: never; Returns: number }
+      complete_registration: {
+        Args: {
+          p_accepted_marketing?: boolean
+          p_accepted_terms?: boolean
+          p_company_name?: string
+          p_company_slug?: string
+          p_email: string
+          p_full_name: string
+          p_machine_count?: string
+          p_onboarding_intent?: string
+          p_phone?: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       create_notification: {
         Args: {
           p_inquiry_id?: string
@@ -1617,6 +1781,7 @@ export type Database = {
         Args: { p_account_id: string; p_max_members: number }
         Returns: number
       }
+      ensure_profile_exists: { Args: { p_user_id: string }; Returns: boolean }
       find_or_create_contact: {
         Args: {
           p_account_id: string
@@ -1669,6 +1834,10 @@ export type Database = {
       }
       process_auto_reply_queue_cron: { Args: never; Returns: undefined }
       reactivate_account: { Args: { p_account_id: string }; Returns: undefined }
+      record_listing_view: {
+        Args: { p_listing_id: string; p_visitor_hash: string }
+        Returns: boolean
+      }
       reject_listing: {
         Args: { p_listing_id: string; p_reason: string }
         Returns: undefined

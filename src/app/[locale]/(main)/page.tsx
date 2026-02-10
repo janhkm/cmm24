@@ -73,7 +73,7 @@ function buildJsonLd(showcaseListings: PublicListing[], faqs: { question: string
         '@type': 'Organization',
         '@id': 'https://cmm24.de/#organization',
         name: 'CMM24',
-        legalName: 'CMM24 GmbH',
+        legalName: 'Kneissl Messtechnik GmbH',
         url: 'https://cmm24.de',
         logo: {
           '@type': 'ImageObject',
@@ -86,16 +86,16 @@ function buildJsonLd(showcaseListings: PublicListing[], faqs: { question: string
         foundingDate: '2026',
         address: {
           '@type': 'PostalAddress',
-          streetAddress: 'Musterstraße 1',
-          addressLocality: 'München',
-          postalCode: '80331',
+          streetAddress: 'Mühlstr. 41',
+          addressLocality: 'Leonberg',
+          postalCode: '71229',
           addressCountry: 'DE',
         },
         contactPoint: [
           {
             '@type': 'ContactPoint',
             contactType: 'customer service',
-            email: 'kontakt@cmm24.de',
+            email: 'info@kneissl-messtechnik.de',
             availableLanguage: ['German', 'English'],
           },
         ],
@@ -222,6 +222,7 @@ function convertToListing(pl: PublicListing): Listing {
       slug: pl.account.slug,
       logoUrl: pl.account.logo_url || undefined,
       isVerified: pl.account.is_verified,
+      isPremium: pl.account.is_premium || false,
       listingCount: 0,
     } : undefined,
     media: pl.media.map((m) => ({

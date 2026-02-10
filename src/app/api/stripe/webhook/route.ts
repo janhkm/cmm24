@@ -357,6 +357,21 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   
   log('info', 'Stripe Webhook', `Updated subscription for account ${finalAccountId}: ${status}, cancel_at_period_end=${cancelAtPeriodEnd}`);
   
+  // Premium-Badge aktualisieren basierend auf Plan
+  const { data: planDetails } = await supabaseAdmin
+    .from('plans')
+    .select('slug')
+    .eq('id', plan.id)
+    .single();
+
+  const isPremium = planDetails?.slug === 'business' && (status === 'active' || status === 'trialing');
+  await supabaseAdmin
+    .from('accounts')
+    .update({ is_premium: isPremium })
+    .eq('id', finalAccountId);
+
+  log('info', 'Stripe Webhook', `Set is_premium=${isPremium} for account ${finalAccountId}`);
+
   // Kontakte aus bestehenden Anfragen nachtraeglich erstellen (bei Upgrade auf CRM-Plan)
   if (finalAccountId && (status === 'active' || status === 'trialing')) {
     await checkAndBackfillContacts(finalAccountId, plan.id);
@@ -409,6 +424,12 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     })
     .eq('account_id', account.id);
   
+  // Premium-Badge entfernen
+  await supabaseAdmin
+    .from('accounts')
+    .update({ is_premium: false })
+    .eq('id', account.id);
+
   // Team-Mitglieder deaktivieren (Free = 0 Team-Mitglieder)
   try {
     await supabaseAdmin

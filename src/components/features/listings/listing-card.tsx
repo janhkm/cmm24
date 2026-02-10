@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
-import { MapPin, CheckCircle } from 'lucide-react';
+import { MapPin, CheckCircle, Crown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -137,13 +137,22 @@ export function ListingCard({
           </span>
         </div>
 
-        {/* Seller Badge */}
-        {listing.seller?.isVerified && (
-          <div className="mt-3 flex items-center gap-1.5 text-xs text-green-600">
-            <CheckCircle className="h-3.5 w-3.5" />
-            <span>{t('verifiedSeller')}</span>
-          </div>
-        )}
+        {/* AUSKOMMENTIERT: Seller Badges (Premium/Verifiziert ausgeklammert)
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {listing.seller?.isPremium && (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+              <Crown className="h-3 w-3" />
+              {t('premiumDealer')}
+            </span>
+          )}
+          {listing.seller?.isVerified && (
+            <span className="inline-flex items-center gap-1 text-xs text-green-600">
+              <CheckCircle className="h-3.5 w-3.5" />
+              {t('verifiedSeller')}
+            </span>
+          )}
+        </div>
+        */}
 
         {/* Price & CTA */}
         <div className="mt-4 flex items-center justify-between gap-2">

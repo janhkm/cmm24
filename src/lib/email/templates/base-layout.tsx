@@ -60,7 +60,7 @@ export function BaseLayout({ preview, children }: BaseLayoutProps) {
               <Link href={`${baseUrl}/impressum`} style={link}>Impressum</Link>
             </Text>
             <Text style={footerAddress}>
-              CMM24 GmbH • Musterstraße 1 • 80331 München • Deutschland
+              Kneissl Messtechnik GmbH • Mühlstr. 41 • 71229 Leonberg • Deutschland
             </Text>
           </Section>
         </Container>
