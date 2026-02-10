@@ -17,8 +17,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 // AUSKOMMENTIERT: import { Progress } from '@/components/ui/progress';
-// AUSKOMMENTIERT: Onboarding und Aktivitaeten-Log
-// import { OnboardingChecklist, ActivityLog } from '@/components/features/seller';
+import { OnboardingChecklist } from '@/components/features/seller';
+// AUSKOMMENTIERT: Aktivitaeten-Log
+// import { ActivityLog } from '@/components/features/seller';
 import { getSellerLayoutData, getSellerDashboardData } from '@/lib/actions/dashboard';
 
 /**
@@ -301,9 +302,8 @@ export default async function SellerDashboardPage({ params }: { params: Promise<
         </Card>
       </div>
 
-      {/* AUSKOMMENTIERT: Onboarding Checklist
+      {/* Onboarding Checklist */}
       <OnboardingChecklist />
-      */}
 
       {/* Quick Actions */}
       <Card>

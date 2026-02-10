@@ -158,7 +158,7 @@ export default async function HerstellerDetailPage({ params }: HerstellerDetailP
         url: `https://cmm24.de/maschinen/${listing.slug}`,
         offers: {
           '@type': 'Offer',
-          price: listing.price / 100,
+          price: (listing.price || 0) / 100,
           priceCurrency: listing.currency,
         },
       },

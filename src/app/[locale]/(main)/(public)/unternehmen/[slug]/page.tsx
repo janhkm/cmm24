@@ -294,7 +294,7 @@ export default async function CompanyProfilePage({ params }: CompanyProfilePageP
                 </div>
 
                 {/* Galerie (jetzt fuer alle, ehemals nur Premium) */}
-                {company.gallery_urls.length > 0 && (
+                {Array.isArray(company.gallery_urls) && company.gallery_urls.length > 0 && (
                   <div className="mt-8">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                       <ImageIcon className="h-5 w-5" />
@@ -321,7 +321,7 @@ export default async function CompanyProfilePage({ params }: CompanyProfilePageP
                 )}
 
                 {/* Zertifikate (jetzt fuer alle, ehemals nur Premium) */}
-                {company.certificates.length > 0 && (
+                {Array.isArray(company.certificates) && company.certificates.length > 0 && (
                   <div className="mt-8">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                       <Award className="h-5 w-5" />

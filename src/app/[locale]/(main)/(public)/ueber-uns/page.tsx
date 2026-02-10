@@ -1,10 +1,9 @@
 import { Link } from '@/i18n/navigation';
-import { ArrowRight, Target, Users, Shield, Globe } from 'lucide-react';
+import { ArrowRight, Target, Shield, Globe, Building2, Lightbulb } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { teamMembers } from '@/data/content/company';
-import { stats } from '@/data/constants';
+import { teamMembers, companyInfo } from '@/data/content/company';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -36,6 +35,17 @@ export default async function UeberUnsPage({ params }: { params: Promise<{ local
       name: 'CMM24',
       description: t('description'),
       foundingDate: '2026',
+      parentOrganization: {
+        '@type': 'Organization',
+        name: companyInfo.name,
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: companyInfo.street,
+          postalCode: companyInfo.postalCode,
+          addressLocality: companyInfo.city,
+          addressCountry: 'DE',
+        },
+      },
       founders: teamMembers.map((member) => ({
         '@type': 'Person',
         name: member.name,
@@ -51,7 +61,7 @@ export default async function UeberUnsPage({ params }: { params: Promise<{ local
       description: t('valueTransparencyDesc'),
     },
     {
-      icon: Users,
+      icon: Lightbulb,
       title: t('valueExpertise'),
       description: t('valueExpertiseDesc'),
     },
@@ -76,9 +86,13 @@ export default async function UeberUnsPage({ params }: { params: Promise<{ local
       
       <main>
         {/* Hero Section */}
-        <section className="bg-muted/50 py-16 md:py-24">
+        <section className="bg-gradient-to-b from-muted/50 to-background py-16 md:py-24">
           <div className="container-page">
             <div className="max-w-3xl">
+              <div className="flex items-center gap-2 text-sm font-medium text-primary mb-4">
+                <Building2 className="h-4 w-4" />
+                {t('subtitle')}
+              </div>
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
                 {t('title')}
               </h1>
@@ -89,50 +103,57 @@ export default async function UeberUnsPage({ params }: { params: Promise<{ local
           </div>
         </section>
 
-        {/* Mission Section */}
+        {/* Story Section - Wie alles begann */}
         <section className="py-16 md:py-24">
           <div className="container-page">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl font-bold mb-6">{t('missionTitle')}</h2>
-                <p className="text-lg text-muted-foreground mb-6">
-                  {t('missionP1')}
-                </p>
-                <p className="text-lg text-muted-foreground mb-6">
-                  {t('missionP2')}
-                </p>
-                <ul className="space-y-3 text-muted-foreground">
-                  <li className="flex items-start gap-3">
-                    <ArrowRight className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                    <span>{t('missionBullet1')}</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <ArrowRight className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                    <span>{t('missionBullet2')}</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <ArrowRight className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                    <span>{t('missionBullet3')}</span>
-                  </li>
-                </ul>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                {stats.map((stat, index) => (
-                  <Card key={index} className="text-center">
-                    <CardContent className="pt-6">
-                      <p className="text-4xl font-bold text-primary mb-2">{stat.value}</p>
-                      <p className="text-sm text-muted-foreground">{stat.label}</p>
-                    </CardContent>
-                  </Card>
-                ))}
+            <div className="max-w-3xl">
+              <h2 className="text-3xl font-bold mb-6">{t('storyTitle')}</h2>
+              <div className="space-y-4 text-lg text-muted-foreground leading-relaxed">
+                <p>{t('storyP1')}</p>
+                <p>{t('storyP2')}</p>
+                <p>{t('storyP3')}</p>
               </div>
             </div>
           </div>
         </section>
 
+        {/* Mission Section */}
+        <section className="py-16 md:py-24 bg-muted/30">
+          <div className="container-page">
+            <div className="max-w-3xl">
+              <h2 className="text-3xl font-bold mb-6">{t('missionTitle')}</h2>
+              <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+                {t('missionP1')}
+              </p>
+              <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+                {t('missionP2')}
+              </p>
+              <ul className="space-y-3 text-muted-foreground">
+                <li className="flex items-start gap-3">
+                  <ArrowRight className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                  <span>{t('missionBullet1')}</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <ArrowRight className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                  <span>{t('missionBullet2')}</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <ArrowRight className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                  <span>{t('missionBullet3')}</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <ArrowRight className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                  <span>{t('missionBullet4')}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        
+
         {/* Values Section */}
-        <section className="bg-muted/50 py-16 md:py-24">
+        <section className="bg-muted/30 py-16 md:py-24">
           <div className="container-page">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">{t('valuesTitle')}</h2>
@@ -158,49 +179,11 @@ export default async function UeberUnsPage({ params }: { params: Promise<{ local
         </section>
 
         {/* Team Section */}
-        <section className="py-16 md:py-24">
-          <div className="container-page">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">{t('teamTitle')}</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                {t('teamSubtitle')}
-              </p>
-            </div>
-            
-            <div className="max-w-md mx-auto">
-              {teamMembers.map((member, index) => (
-                <Card key={index}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-4">
-                      <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center text-2xl font-bold text-muted-foreground">
-                        {member.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{member.name}</h3>
-                        <p className="text-sm text-primary mb-2">{member.role}</p>
-                        <p className="text-sm text-muted-foreground">{member.bio}</p>
-                        {member.linkedin && (
-                          <a 
-                            href={member.linkedin}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-primary hover:underline mt-2 inline-block"
-                          >
-                            LinkedIn →
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
+       
 
         {/* CTA Section */}
         <section className="bg-primary text-primary-foreground py-16">
-          <div className="container text-center">
+          <div className="container-page text-center">
             <h2 className="text-3xl font-bold mb-4">
               {t('ctaTitle')}
             </h2>
@@ -209,7 +192,7 @@ export default async function UeberUnsPage({ params }: { params: Promise<{ local
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" asChild>
-                <Link href="/kontakt">{t('ctaButton')}</Link>
+                <a href="mailto:support@cmm24.com">{t('ctaButton')}</a>
               </Button>
               <Button size="lg" variant="outline" className="border-primary-foreground/20 hover:bg-primary-foreground/10" asChild>
                 <Link href="/faq">{tn('faq')}</Link>

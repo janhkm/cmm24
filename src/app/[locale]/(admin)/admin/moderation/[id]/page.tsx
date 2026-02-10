@@ -252,8 +252,8 @@ export default function ModerationDetailPage({ params }: ModerationDetailPagePro
                 <div>
                   <Label className="text-muted-foreground">Preis</Label>
                   <p className="font-medium">
-                    {formatPrice(listing.price)}
-                    {listing.priceNegotiable && ' (VB)'}
+                    {listing.price ? formatPrice(listing.price) : 'VB'}
+                    {listing.price && listing.priceNegotiable && ' (VB)'}
                   </p>
                 </div>
                 <div>
@@ -327,7 +327,7 @@ export default function ModerationDetailPage({ params }: ModerationDetailPagePro
               <CardTitle>Beschreibung</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="whitespace-pre-wrap text-sm">{listing.description}</p>
+              <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: listing.description }} />
             </CardContent>
           </Card>
         </div>

@@ -378,10 +378,12 @@ export default function AnfragenPage() {
                               <Link href={`/maschinen/${inquiry.listing.slug}`} className="font-medium hover:text-primary line-clamp-1">
                                 {inquiry.listing.title}
                               </Link>
-                              {inquiry.listing.price != null && (
+                              {inquiry.listing.price ? (
                                 <p className="text-sm text-muted-foreground mt-1">
                                   {new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(inquiry.listing.price / 100)}
                                 </p>
+                              ) : (
+                                <p className="text-sm text-muted-foreground mt-1">VB</p>
                               )}
                             </div>
                             <div className="mt-3 flex flex-col gap-2">
@@ -516,7 +518,7 @@ export default function AnfragenPage() {
                               <Link href={`/maschinen/${inq.listing.slug}`} className="font-medium hover:text-primary line-clamp-1">
                                 {inq.listing.title}
                               </Link>
-                              {inq.listing.price != null && (
+                              {!!inq.listing.price && (
                                 <p className="text-sm text-muted-foreground mt-1">
                                   {new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(inq.listing.price / 100)}
                                 </p>

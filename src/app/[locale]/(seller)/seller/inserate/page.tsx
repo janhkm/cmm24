@@ -412,12 +412,14 @@ export default function InseratePage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {/* AUSKOMMENTIERT: Featured/Hervorheben Button
           {hasFeaturedLimit !== 0 && (
             <Button variant="outline" onClick={openFeaturedDialog}>
               <Sparkles className="mr-2 h-4 w-4 text-amber-500" />
               {t('highlightListing')}
             </Button>
           )}
+          */}
           <Button asChild>
             <Link href="/seller/inserate/neu">
               <Plus className="mr-2 h-4 w-4" />
@@ -516,24 +518,17 @@ export default function InseratePage() {
             <p className="text-sm text-muted-foreground">{t('sold')}</p>
           </CardContent>
         </Card>
-        <Card className={cn(
-          hasFeaturedLimit > 0 && 'border-amber-500/50'
-        )}>
+        {/* AUSKOMMENTIERT: Featured/Hervorgehoben Stats-Card
+        <Card className={cn(hasFeaturedLimit > 0 && 'border-amber-500/50')}>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <Star className="h-5 w-5 text-amber-500" />
-              <div className="text-2xl font-bold">
-                {featuredCount}
-                {hasFeaturedLimit !== -1 && hasFeaturedLimit > 0 && (
-                  <span className="text-sm font-normal text-muted-foreground">
-                    /{hasFeaturedLimit}
-                  </span>
-                )}
-              </div>
+              <div className="text-2xl font-bold">{featuredCount}</div>
             </div>
             <p className="text-sm text-muted-foreground">{t('highlighted')}</p>
           </CardContent>
         </Card>
+        */}
       </div>
 
       {/* Bulk Actions Bar */}
@@ -653,12 +648,14 @@ export default function InseratePage() {
                     )}
                     <TableHead className="w-[300px]">{t('listingColumn')}</TableHead>
                     <TableHead>{t('statusColumn')}</TableHead>
+                    {/* AUSKOMMENTIERT: Featured-Spalte
                     <TableHead className="text-center">
                       <div className="flex items-center justify-center gap-1">
                         <Star className="h-4 w-4" />
                         <span className="sr-only">{t('highlighted')}</span>
                       </div>
                     </TableHead>
+                    */}
                     <TableHead>{t('priceColumn')}</TableHead>
                     <TableHead>{t('viewsColumn')}</TableHead>
                     <TableHead>{t('createdColumn')}</TableHead>
@@ -709,23 +706,15 @@ export default function InseratePage() {
                         </Link>
                       </TableCell>
                       <TableCell>{getStatusBadge(listing.status || 'draft')}</TableCell>
+                      {/* AUSKOMMENTIERT: Featured-Zelle
                       <TableCell className="text-center">
                         {listing.featured ? (
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <Badge variant="outline" className="gap-1 border-amber-300 bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400">
-                                <Star className="h-3 w-3 fill-current" />
-                                Featured
-                              </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{t('thisFeatured')}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        ) : (
-                          <span className="text-muted-foreground">–</span>
-                        )}
+                          <Badge variant="outline" className="gap-1 border-amber-300 bg-amber-50 text-amber-700">
+                            <Star className="h-3 w-3 fill-current" />Featured
+                          </Badge>
+                        ) : (<span className="text-muted-foreground">–</span>)}
                       </TableCell>
+                      */}
                       <TableCell className="font-medium">
                         {formatPrice(listing.price)}
                       </TableCell>
@@ -765,25 +754,17 @@ export default function InseratePage() {
                               <Copy className="mr-2 h-4 w-4" />
                               {t('duplicate')}
                             </DropdownMenuItem>
+                            {/* AUSKOMMENTIERT: Featured/Hervorheben Menueeintrag
                             {hasFeaturedLimit !== 0 && (
                               <>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() => toggleFeatured(listing.id)}
-                                  disabled={
-                                    !listing.featured &&
-                                    !canFeatureMore &&
-                                    hasFeaturedLimit !== -1
-                                  }
-                                >
-                                  <Star className={cn(
-                                    'mr-2 h-4 w-4',
-                                    listing.featured && 'fill-amber-500 text-amber-500'
-                                  )} />
+                                <DropdownMenuItem onClick={() => toggleFeatured(listing.id)}>
+                                  <Star className="mr-2 h-4 w-4" />
                                   {listing.featured ? t('removeHighlight') : t('highlight')}
                                 </DropdownMenuItem>
                               </>
                             )}
+                            */}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => handleArchive(listing)}>
                               <Archive className="mr-2 h-4 w-4" />
@@ -831,8 +812,8 @@ export default function InseratePage() {
         </Card>
       )}
 
-      {/* Featured Listing Dialog */}
-      <Dialog open={featuredDialogOpen} onOpenChange={setFeaturedDialogOpen}>
+      {/* AUSKOMMENTIERT: Featured Listing Dialog */}
+      {false && <Dialog open={featuredDialogOpen} onOpenChange={setFeaturedDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -958,7 +939,7 @@ export default function InseratePage() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog>}
     </div>
   );
 }

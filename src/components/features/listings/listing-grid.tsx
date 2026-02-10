@@ -206,10 +206,14 @@ function ListingListItem({
             </Link>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-xl font-bold text-primary">{formatPrice(listing.price)}</p>
-            <p className="text-[11px] text-muted-foreground">
-              {tMachines('vatExcl')}{listing.priceNegotiable && ` · ${tMachines('negotiable')}`}
+            <p className="text-xl font-bold text-primary">
+              {listing.price ? formatPrice(listing.price) : (tMachines('priceOnRequest') || 'VB')}
             </p>
+            {!!listing.price && (
+              <p className="text-[11px] text-muted-foreground">
+                {tMachines('vatExcl')}{listing.priceNegotiable && ` · ${tMachines('negotiable')}`}
+              </p>
+            )}
           </div>
         </div>
 
@@ -254,7 +258,7 @@ function ListingListItem({
         {/* Beschreibung (Kurzform) */}
         {listing.description && (
           <p className="mt-2.5 text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-            {listing.description}
+            {listing.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}
           </p>
         )}
 

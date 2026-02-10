@@ -113,7 +113,7 @@ export async function generateMetadata({ params }: ListingDetailPageProps): Prom
 
   const manufacturerName = listing.manufacturer?.name || tCommon('unknown');
   const conditionLabel = tConditions(listing.condition);
-  const title = t('titleMeta', { manufacturer: manufacturerName, model: listing.title, price: formatPrice(listing.price) });
+  const title = t('titleMeta', { manufacturer: manufacturerName, model: listing.title, price: listing.price ? formatPrice(listing.price) : 'VB' });
   const description = t('descMeta', {
     manufacturer: manufacturerName,
     model: listing.title,
@@ -157,7 +157,7 @@ export async function generateMetadata({ params }: ListingDetailPageProps): Prom
     },
     twitter: {
       card: 'summary_large_image',
-      title: t('twitterTitle', { manufacturer: manufacturerName, model: listing.title, price: formatPrice(listing.price) }),
+      title: t('twitterTitle', { manufacturer: manufacturerName, model: listing.title, price: listing.price ? formatPrice(listing.price) : 'VB' }),
       description,
       images: (() => {
         const firstImage = listing.media.find((m) => !m.filename?.toLowerCase().endsWith('.pdf') && m.mime_type !== 'application/pdf');
@@ -225,7 +225,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       '@id': `https://cmm24.de/maschinen/${listing.slug}#offer`,
       url: `https://cmm24.de/maschinen/${listing.slug}`,
       priceCurrency: listing.currency,
-      price: listing.price / 100,
+      price: listing.price ? listing.price / 100 : undefined,
       priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
       availability: listing.status === 'active' 
         ? 'https://schema.org/InStock' 

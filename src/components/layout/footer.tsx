@@ -33,7 +33,6 @@ export function Footer() {
     ],
     unternehmen: [
       { name: tn('about'), href: '/ueber-uns' as const },
-      { name: tn('contact'), href: '/kontakt' as const },
     ],
     rechtliches: [
       { name: t('impressum'), href: '/impressum' as const },
@@ -118,6 +117,14 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <a
+                  href="mailto:support@cmm24.com"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  support@cmm24.com
+                </a>
+              </li>
             </ul>
           </div>
 

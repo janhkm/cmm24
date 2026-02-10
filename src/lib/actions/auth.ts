@@ -42,6 +42,38 @@ function generateSlug(companyName: string): string {
 }
 
 /**
+ * Aktuellen User und Profildaten holen (fuer Client-Components).
+ * Gibt null zurueck wenn nicht eingeloggt.
+ */
+export async function getCurrentUser(): Promise<{
+  id: string;
+  email: string;
+  fullName: string | null;
+  avatarUrl: string | null;
+} | null> {
+  try {
+    const supabase = await createActionClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('id', user.id)
+      .single();
+
+    return {
+      id: user.id,
+      email: user.email || '',
+      fullName: profile?.full_name || null,
+      avatarUrl: profile?.avatar_url || null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Sign in with email and password
  */
 export async function signInWithPassword(credentials: LoginCredentials): Promise<ActionResult> {

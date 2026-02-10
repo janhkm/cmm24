@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -67,14 +68,15 @@ interface Manufacturer {
 const step1Schema = z.object({
   manufacturerId: z.string().min(1, 'Bitte wählen Sie einen Hersteller'),
   modelNameCustom: z.string().max(100, 'Max. 100 Zeichen').optional(),
-  title: z.string().min(10, 'Titel muss mind. 10 Zeichen haben').max(150, 'Max. 150 Zeichen'),
+  title: z.string().min(1, 'Bitte Hersteller und Modell angeben').max(150, 'Max. 150 Zeichen'),
   yearBuilt: z.string().refine((val) => {
     const year = parseInt(val);
     return year >= 1950 && year <= new Date().getFullYear() + 1;
   }, 'Ungültiges Baujahr'),
   condition: z.string().min(1, 'Bitte wählen Sie einen Zustand'),
-  price: z.string().min(1, 'Bitte geben Sie einen Preis ein'),
+  price: z.string(),
   priceNegotiable: z.boolean(),
+  noPrice: z.boolean(),
 });
 
 const step2Schema = z.object({
@@ -94,7 +96,11 @@ const step3Schema = z.object({
 });
 
 const step4Schema = z.object({
-  description: z.string().min(50, 'Beschreibung muss mind. 50 Zeichen haben').max(5000, 'Max. 5000 Zeichen'),
+  description: z.string().min(1, 'Bitte geben Sie eine Beschreibung ein').refine((val) => {
+    // HTML-Tags entfernen fuer Zeichenzaehlung
+    const textOnly = val.replace(/<[^>]*>/g, '').trim();
+    return textOnly.length >= 50;
+  }, 'Beschreibung muss mind. 50 Zeichen haben'),
 });
 
 // Combined schema
@@ -172,6 +178,7 @@ export default function NewListingPage() {
       condition: '',
       price: '',
       priceNegotiable: false,
+      noPrice: false,
       measuringRangeX: '',
       measuringRangeY: '',
       measuringRangeZ: '',
@@ -188,6 +195,19 @@ export default function NewListingPage() {
   });
 
   const { trigger, getValues, formState: { errors } } = form;
+
+  // Titel automatisch aus Hersteller + Modell zusammensetzen
+  const watchManufacturerId = form.watch('manufacturerId');
+  const watchModel = form.watch('modelNameCustom');
+
+  useEffect(() => {
+    const manufacturerName = manufacturers.find((m) => m.id === watchManufacturerId)?.name || '';
+    const model = (watchModel || '').trim();
+    const autoTitle = [manufacturerName, model].filter(Boolean).join(' ');
+    if (autoTitle) {
+      form.setValue('title', autoTitle, { shouldValidate: true });
+    }
+  }, [watchManufacturerId, watchModel, manufacturers, form]);
 
   // Validate current step before proceeding
   const validateStep = async (step: number): Promise<boolean> => {
@@ -379,13 +399,15 @@ export default function NewListingPage() {
   const saveListing = async (): Promise<string | null> => {
     const values = getValues();
     
-    // Parse price (remove formatting)
-    const priceString = values.price.replace(/\./g, '').replace(/,/g, '');
-    const priceInCents = parseInt(priceString) * 100;
-    
-    if (isNaN(priceInCents)) {
-      toast.error(t('invalidPrice'));
-      return null;
+    // Parse price (remove formatting) — 0 wenn "Kein Preis"
+    let priceInCents: number = 0;
+    if (!values.noPrice && values.price) {
+      const priceString = values.price.replace(/\./g, '').replace(/,/g, '');
+      priceInCents = parseInt(priceString) * 100;
+      if (isNaN(priceInCents)) {
+        toast.error(t('invalidPrice'));
+        return null;
+      }
     }
 
     const listingData = {
@@ -395,7 +417,7 @@ export default function NewListingPage() {
       yearBuilt: parseInt(values.yearBuilt),
       condition: values.condition as 'new' | 'like_new' | 'good' | 'fair',
       price: priceInCents,
-      priceNegotiable: values.priceNegotiable,
+      priceNegotiable: values.noPrice ? true : values.priceNegotiable,
       measuringRangeX: values.measuringRangeX ? parseInt(values.measuringRangeX) : undefined,
       measuringRangeY: values.measuringRangeY ? parseInt(values.measuringRangeY) : undefined,
       measuringRangeZ: values.measuringRangeZ ? parseInt(values.measuringRangeZ) : undefined,
@@ -685,10 +707,15 @@ export default function NewListingPage() {
                       <FormItem>
                         <FormLabel>{t('listingTitle')}</FormLabel>
                         <FormControl>
-                          <Input placeholder={t('titlePlaceholder')} {...field} />
+                          <Input
+                            placeholder={t('titlePlaceholder')}
+                            {...field}
+                            readOnly
+                            className="bg-muted/50"
+                          />
                         </FormControl>
                         <FormDescription>
-                          {t('titleHelpText')}
+                          {t('titleAutoGenerated') || 'Wird automatisch aus Hersteller und Modell generiert.'}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -746,14 +773,15 @@ export default function NewListingPage() {
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('priceEur')}</FormLabel>
+                        <FormLabel>{t('priceEur').replace(' *', '')} {!form.watch('noPrice') && '*'}</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input
-                              placeholder={t('pricePlaceholder')}
+                              placeholder={form.watch('noPrice') ? (t('noPrice') || 'Preis auf Anfrage') : t('pricePlaceholder')}
                               {...field}
                               onChange={(e) => field.onChange(formatPrice(e.target.value))}
                               className="pr-12"
+                              disabled={form.watch('noPrice')}
                             />
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                               €
@@ -765,23 +793,51 @@ export default function NewListingPage() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="priceNegotiable"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel className="text-sm cursor-pointer !mt-0">
-                          {t('priceNegotiable')}
-                        </FormLabel>
-                      </FormItem>
+                  <div className="flex flex-col gap-2">
+                    <FormField
+                      control={form.control}
+                      name="noPrice"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={(checked) => {
+                                field.onChange(checked);
+                                if (checked) {
+                                  form.setValue('price', '');
+                                  form.setValue('priceNegotiable', true);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="text-sm cursor-pointer !mt-0">
+                            {t('noPriceLabel')}
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+
+                    {!form.watch('noPrice') && (
+                      <FormField
+                        control={form.control}
+                        name="priceNegotiable"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <FormLabel className="text-sm cursor-pointer !mt-0">
+                              {t('priceNegotiable')}
+                            </FormLabel>
+                          </FormItem>
+                        )}
+                      />
                     )}
-                  />
+                  </div>
                 </CardContent>
               </Card>
             )}
@@ -990,15 +1046,14 @@ export default function NewListingPage() {
                       <FormItem>
                         <FormLabel>{t('descriptionLabel')}</FormLabel>
                         <FormControl>
-                          <Textarea
+                          <RichTextEditor
+                            value={field.value}
+                            onChange={field.onChange}
                             placeholder={t('descriptionPlaceholder')}
-                            rows={10}
-                            {...field}
+                            maxLength={5000}
+                            minLength={50}
                           />
                         </FormControl>
-                        <FormDescription>
-                          {t('descriptionCharCount', { count: field.value.length })}
-                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -1173,8 +1228,8 @@ export default function NewListingPage() {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t('priceLabel')}</span>
                       <span className="font-medium">
-                        {values.price ? `${values.price} €` : '-'}
-                        {values.priceNegotiable && ' (VB)'}
+                        {values.price ? `${values.price} €` : (values.noPrice ? t('noPrice') : '-')}
+                        {values.price && values.priceNegotiable && ' (VB)'}
                       </span>
                     </div>
                     <div className="flex justify-between">

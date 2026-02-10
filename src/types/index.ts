@@ -41,7 +41,7 @@ export interface Listing {
   title: string;
   slug: string;
   description: string;
-  price: number;
+  price: number | null;
   priceNegotiable: boolean;
   currency: string;
   yearBuilt: number;

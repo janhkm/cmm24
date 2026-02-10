@@ -80,7 +80,7 @@ export default async function KategorieDetailPage({ params }: KategorieDetailPag
         url: `https://cmm24.de/maschinen/${listing.slug}`,
         offers: {
           '@type': 'Offer',
-          price: listing.price / 100,
+          price: listing.price ? listing.price / 100 : undefined,
           priceCurrency: listing.currency,
         },
       },

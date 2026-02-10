@@ -292,7 +292,7 @@ export function FeatureLocked({
                 {t('teamHelp')}
               </p>
               <Button variant="outline" className="w-full" asChild>
-                <Link href="/kontakt">{t('contactUs')}</Link>
+                <a href="mailto:support@cmm24.com">{t('contactUs')}</a>
               </Button>
             </CardContent>
           </Card>

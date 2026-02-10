@@ -169,7 +169,7 @@ export default async function MaschinenPage({ params, searchParams }: MaschinenP
         },
         offers: {
           '@type': 'Offer',
-          price: listing.price / 100,
+          price: listing.price ? listing.price / 100 : undefined,
           priceCurrency: listing.currency || 'EUR',
           availability: 'https://schema.org/InStock',
         },

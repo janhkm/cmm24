@@ -840,10 +840,12 @@ export default function InquiryDetailPage() {
               </CardHeader>
               <CardContent>
                 <h3 className="font-semibold truncate">{inquiry.listing.title}</h3>
-                {inquiry.listing.price && (
+                {inquiry.listing.price ? (
                   <p className="text-lg font-bold text-primary">
-                    {inquiry.listing.price.toLocaleString(locale)} €
+                    {new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(inquiry.listing.price / 100)}
                   </p>
+                ) : (
+                  <p className="text-lg font-bold text-primary">{t('priceOnRequest') || 'VB'}</p>
                 )}
                 <Button variant="link" className="px-0 h-auto" asChild>
                   <Link href={`/maschinen/${inquiry.listing.slug}`} target="_blank">

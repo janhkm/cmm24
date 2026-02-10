@@ -72,7 +72,7 @@ export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroS
         type: 'listing',
         text: l.title,
         href: `/maschinen/${l.slug}`,
-        subtext: `${l.locationCity} · ${new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(l.price / 100)}`,
+        subtext: `${l.locationCity} · ${l.price ? new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(l.price / 100) : 'VB'}`,
       });
     });
   }

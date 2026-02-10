@@ -11,16 +11,21 @@ import {
   Zap,
   BadgeCheck,
   Handshake,
-  MapPin,
+  Building2,
+  ChevronRight,
+  Ruler,
+  Euro,
+  Factory,
 } from 'lucide-react';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ListingCard } from '@/components/features/listings';
 import { HeroSearch } from '@/components/features/home';
-import { getRandomListings, getPublicListings, getManufacturers, type PublicListing } from '@/lib/actions/listings';
+import { ListingGrid } from '@/components/features/listings';
+import { getPublicListings, getManufacturers, getPublicCompanies, type PublicListing } from '@/lib/actions/listings';
 import type { Listing } from '@/types';
 
 // SEO Metadata
@@ -140,7 +145,7 @@ function buildJsonLd(showcaseListings: PublicListing[], faqs: { question: string
         '@id': 'https://cmm24.de/#featured-listings',
         name: 'Aktuelle Angebote',
         itemListElement: showcaseListings
-          .slice(0, 5)
+          .slice(0, 10)
           .map((listing, index) => ({
             '@type': 'ListItem',
             position: index + 1,
@@ -156,7 +161,7 @@ function buildJsonLd(showcaseListings: PublicListing[], faqs: { question: string
               },
               offers: {
                 '@type': 'Offer',
-                price: listing.price / 100,
+                price: listing.price ? listing.price / 100 : undefined,
                 priceCurrency: listing.currency || 'EUR',
                 availability: 'https://schema.org/InStock',
                 seller: listing.account ? {
@@ -171,7 +176,7 @@ function buildJsonLd(showcaseListings: PublicListing[], faqs: { question: string
   };
 }
 
-// PublicListing → Listing Konvertierung für Komponenten-Kompatibilität
+// PublicListing -> Listing Konvertierung fuer Komponenten-Kompatibilitaet
 function convertToListing(pl: PublicListing): Listing {
   return {
     id: pl.id,
@@ -238,15 +243,32 @@ function convertToListing(pl: PublicListing): Listing {
   };
 }
 
-// Preis-Formatierung (locale-aware)
-function formatPrice(price: number, currency: string = 'EUR', locale: string = 'de') {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(price / 100);
-}
+// Sidebar-Filterdaten (max. 5 pro Kategorie)
+const PRICE_RANGES = [
+  { label: 'Unter 5.000 €', min: 0, max: 5000 },
+  { label: '5.000 – 10.000 €', min: 5000, max: 10000 },
+  { label: '10.000 – 30.000 €', min: 10000, max: 30000 },
+  { label: '30.000 – 50.000 €', min: 30000, max: 50000 },
+  { label: 'Ab 50.000 €', min: 50000, max: 0 },
+];
+
+const MEASURING_RANGES = [
+  { label: '500 × 500 × 500', x: 500, y: 500, z: 500 },
+  { label: '700 × 1000 × 500', x: 700, y: 1000, z: 500 },
+  { label: '1000 × 1000 × 800', x: 1000, y: 1000, z: 800 },
+  { label: '1200 × 2000 × 1000', x: 1200, y: 2000, z: 1000 },
+  { label: '2000 × 4000 × 1500', x: 2000, y: 4000, z: 1500 },
+];
+
+// Top-Hersteller die immer zuerst angezeigt werden
+const PRIORITY_MANUFACTURERS = ['zeiss', 'hexagon', 'mitutoyo'];
+
+const CONDITIONS = [
+  { label: 'Neu', value: 'new' },
+  { label: 'Neuwertig', value: 'like_new' },
+  { label: 'Gut', value: 'good' },
+  { label: 'Gebraucht', value: 'fair' },
+];
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -255,60 +277,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const t = await getTranslations('home');
   const tc = await getTranslations('common');
 
-  // Prozess-Schritte für "So funktioniert CMM24"
-  const processSteps = [
-    {
-      icon: Search,
-      title: t('step1Title'),
-      description: t('step1Desc'),
-    },
-    {
-      icon: MessageSquare,
-      title: t('step2Title'),
-      description: t('step2Desc'),
-    },
-    {
-      icon: Handshake,
-      title: t('step3Title'),
-      description: t('step3Desc'),
-    },
-  ];
-
-  // Vertrauens-Merkmale
-  const trustPoints = [
-    {
-      icon: BadgeCheck,
-      title: t('trustVerified'),
-      description: t('trustVerifiedDesc'),
-    },
-    {
-      icon: MessageSquare,
-      title: t('trustDirect'),
-      description: t('trustDirectDesc'),
-    },
-    {
-      icon: Shield,
-      title: t('trustGdpr'),
-      description: t('trustGdprDesc'),
-    },
-    {
-      icon: Zap,
-      title: t('trustNoCommission'),
-      description: t('trustNoCommissionDesc'),
-    },
-    {
-      icon: Globe,
-      title: t('trustEurope'),
-      description: t('trustEuropeDesc'),
-    },
-    {
-      icon: TrendingUp,
-      title: t('trustFreeStart'),
-      description: t('trustFreeStartDesc'),
-    },
-  ];
-
-  // FAQ-Daten für SEO und Content
+  // FAQ-Daten fuer SEO und Content
   const faqs = [
     { question: t('faq1Q'), answer: t('faq1A') },
     { question: t('faq2Q'), answer: t('faq2A') },
@@ -317,24 +286,48 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     { question: t('faq5Q'), answer: t('faq5A') },
   ];
 
+  // Prozess-Schritte fuer "So funktioniert CMM24"
+  const processSteps = [
+    { icon: Search, title: t('step1Title'), description: t('step1Desc') },
+    { icon: MessageSquare, title: t('step2Title'), description: t('step2Desc') },
+    { icon: Handshake, title: t('step3Title'), description: t('step3Desc') },
+  ];
+
+  // Vertrauens-Merkmale
+  const trustPoints = [
+    { icon: BadgeCheck, title: t('trustVerified'), description: t('trustVerifiedDesc') },
+    { icon: MessageSquare, title: t('trustDirect'), description: t('trustDirectDesc') },
+    { icon: Shield, title: t('trustGdpr'), description: t('trustGdprDesc') },
+    { icon: Zap, title: t('trustNoCommission'), description: t('trustNoCommissionDesc') },
+    { icon: Globe, title: t('trustEurope'), description: t('trustEuropeDesc') },
+    { icon: TrendingUp, title: t('trustFreeStart'), description: t('trustFreeStartDesc') },
+  ];
+
   // Parallele Datenabfrage
-  const [randomResult, manufacturersResult, listingsCountResult] = await Promise.all([
-    getRandomListings(5),
+  const [listingsResult, manufacturersResult, companiesResult] = await Promise.all([
+    getPublicListings({ limit: 20, sortBy: 'newest' }),
     getManufacturers(),
-    getPublicListings({ limit: 1 }),
+    getPublicCompanies(12),
   ]);
 
-  const randomListingsData = randomResult.success ? randomResult.data || [] : [];
-  const manufacturers = manufacturersResult.success ? manufacturersResult.data || [] : [];
-  const totalListings = listingsCountResult.success ? listingsCountResult.data?.total || 0 : 0;
+  const listings = listingsResult.success ? (listingsResult.data?.listings || []) : [];
+  const allManufacturers = manufacturersResult.success ? manufacturersResult.data || [] : [];
+  const companies = companiesResult.success ? companiesResult.data || [] : [];
+  const totalListings = listingsResult.success ? (listingsResult.data?.total || 0) : 0;
 
-  // Konvertierung für ListingCard-Kompatibilität
-  const randomListings = randomListingsData.map(convertToListing);
+  // Hersteller sortieren: Zeiss, Hexagon, Mitutoyo zuerst, dann Rest, max. 5
+  const sortedManufacturers = [
+    ...allManufacturers.filter((m) => PRIORITY_MANUFACTURERS.includes(m.slug.toLowerCase())),
+    ...allManufacturers.filter((m) => !PRIORITY_MANUFACTURERS.includes(m.slug.toLowerCase())),
+  ].slice(0, 5);
+
+  // Konvertierung fuer ListingGrid-Kompatibilitaet
+  const convertedListings = listings.map(convertToListing);
 
   // JSON-LD mit echten Daten
-  const jsonLd = buildJsonLd(randomListingsData, faqs);
+  const jsonLd = buildJsonLd(listings, faqs);
 
-  // Titel-Teile für formatierte Darstellung
+  // Titel-Teile fuer formatierte Darstellung
   const titleParts = t('title', { highlight: '|||' }).split('|||');
 
   return (
@@ -380,8 +373,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               {/* Suchleiste mit Autocomplete */}
               <div className="mt-10">
                 <HeroSearch
-                  featuredManufacturers={manufacturers}
-                  recentListings={randomListings}
+                  featuredManufacturers={allManufacturers}
+                  recentListings={convertedListings.slice(0, 5)}
                 />
               </div>
             </div>
@@ -393,18 +386,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         {/* ============================================ */}
         <section className="border-y bg-card/80 py-10 md:py-12" aria-label="Plattform-Statistiken">
           <div className="container-page">
-            <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
+            <div className="grid grid-cols-3 gap-6 md:gap-8">
               <div className="text-center">
-                <p className="text-2xl font-bold tabular-nums md:text-3xl">
-                  {totalListings > 0 ? `${totalListings}+` : '—'}
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">{t('stats.activeListings')}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold tabular-nums md:text-3xl">
-                  {manufacturers.length > 0 ? `${manufacturers.length}+` : '—'}
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">{t('stats.manufacturers')}</p>
+                <p className="text-2xl font-bold tabular-nums text-primary md:text-3xl">{t('stats.freeListingsValue')}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t('stats.freeListings')}</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold tabular-nums text-primary md:text-3xl">0&nbsp;%</p>
@@ -419,133 +404,234 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
 
         {/* ============================================ */}
-        {/* MASCHINEN-SHOWCASE (max. 5 zufällige)        */}
+        {/* HAUPTBEREICH: SIDEBAR + INSERATE             */}
         {/* ============================================ */}
-        <section className="py-16 md:py-24" aria-labelledby="machines-heading">
+        <section className="py-12 md:py-16" aria-labelledby="browse-heading">
           <div className="container-page">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-10">
-              <div>
-                <h2 id="machines-heading" className="text-2xl font-bold md:text-3xl">
-                  {t('currentMachines')}
-                </h2>
-                <p className="mt-2 max-w-xl text-muted-foreground">
-                  {t('currentMachinesDesc')}
-                </p>
-              </div>
-              <Button variant="outline" className="shrink-0 self-start sm:self-auto" asChild>
-                <Link href="/maschinen">
-                  {t('allMachines')}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
+            <div className="flex flex-col lg:flex-row gap-8">
 
-            {randomListings.length >= 3 ? (
-              /* Bento-Grid: 1 großes Hero-Bild + bis zu 4 Karten */
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {/* Hero-Karte – nimmt auf lg 2 Spalten & 2 Zeilen ein */}
-                {randomListingsData[0] && (
-                  <Link
-                    href={`/maschinen/${randomListingsData[0].slug}`}
-                    className="group relative block overflow-hidden rounded-xl border bg-card sm:col-span-2 lg:row-span-2 transition-shadow duration-300 hover:shadow-xl"
-                  >
-                    <div className="relative aspect-[4/3] sm:aspect-[16/10] lg:aspect-auto lg:h-full lg:min-h-[460px]">
-                      {randomListingsData[0].media[0] ? (
-                        <Image
-                          src={randomListingsData[0].media[0].url}
-                          alt={randomListingsData[0].title}
-                          fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 50vw"
-                          priority
-                        />
-                      ) : (
-                        <div className="flex h-full min-h-[280px] items-center justify-center bg-muted">
-                          <span className="text-muted-foreground">{tc('noImage')}</span>
-                        </div>
+              {/* ---- SIDEBAR (Filter-Navigation) ---- */}
+              <aside className="w-full lg:w-64 xl:w-72 shrink-0">
+                <nav className="space-y-6 lg:sticky lg:top-20">
+
+                  {/* Hersteller */}
+                  <div>
+                    <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                      <Factory className="h-4 w-4" />
+                      Hersteller
+                    </h3>
+                    <ul className="space-y-1">
+                      {sortedManufacturers.map((m) => (
+                        <li key={m.id}>
+                          <Link
+                            href={`/maschinen?hersteller=${m.slug}`}
+                            className="flex items-center justify-between rounded-md px-2.5 py-1.5 text-sm hover:bg-muted transition-colors group"
+                          >
+                            <span className="group-hover:text-primary transition-colors">{m.name}</span>
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                          </Link>
+                        </li>
+                      ))}
+                      {allManufacturers.length > 5 && (
+                        <li>
+                          <Link
+                            href="/hersteller"
+                            className="flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium text-primary hover:underline"
+                          >
+                            Alle anzeigen
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </Link>
+                        </li>
                       )}
-
-                      {/* Gradient-Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
-                      {/* Badges oben links */}
-                      <div className="absolute left-4 top-4 flex flex-col gap-2">
-                        {randomListingsData[0].featured && (
-                          <Badge className="bg-primary/90 text-primary-foreground">Featured</Badge>
-                        )}
-                        {randomListingsData[0].published_at &&
-                          new Date(randomListingsData[0].published_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) && (
-                          <Badge className="bg-white/90 text-foreground">{tc('new')}</Badge>
-                        )}
-                      </div>
-
-                      {/* Inhalt über dem Bild */}
-                      <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
-                        <p className="text-sm font-medium text-white/80">
-                          {randomListingsData[0].manufacturer?.name || tc('unknown')}
-                          {randomListingsData[0].year_built ? ` · Bj. ${randomListingsData[0].year_built}` : ''}
-                        </p>
-                        <h3 className="mt-1 text-xl font-bold text-white md:text-2xl line-clamp-2">
-                          {randomListingsData[0].title}
-                        </h3>
-                        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-                          <span className="text-xl font-bold text-white md:text-2xl">
-                            {formatPrice(randomListingsData[0].price, randomListingsData[0].currency || 'EUR', locale)}
-                          </span>
-                          {randomListingsData[0].price_negotiable && (
-                            <span className="text-sm text-white/60">VB</span>
-                          )}
-                          {randomListingsData[0].location_city && (
-                            <span className="flex items-center gap-1.5 text-sm text-white/70">
-                              <MapPin className="h-3.5 w-3.5" />
-                              {randomListingsData[0].location_city}, {randomListingsData[0].location_country}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                )}
-
-                {/* Übrige Karten (bis zu 4) */}
-                {randomListings.slice(1, 5).map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} showCompare={false} />
-                ))}
-              </div>
-            ) : randomListings.length > 0 ? (
-              /* Einfaches Grid für weniger als 3 Maschinen */
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {randomListings.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} showCompare={false} />
-                ))}
-              </div>
-            ) : (
-              /* Leerer Zustand */
-              <div className="rounded-xl border border-dashed bg-muted/30 py-16 text-center">
-                <div className="mx-auto max-w-sm">
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                    <Search className="h-6 w-6 text-primary" />
+                    </ul>
                   </div>
-                  <h3 className="font-semibold">{t('noListings')}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {t('noListingsDesc')}
-                  </p>
-                  <Button className="mt-6" asChild>
-                    <Link href="/registrieren">
-                      {tc('register')}
+
+                  <Separator />
+
+                  {/* Messgroesse */}
+                  <div>
+                    <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                      <Ruler className="h-4 w-4" />
+                      Messgröße (mm)
+                    </h3>
+                    <ul className="space-y-1">
+                      {MEASURING_RANGES.map((range) => (
+                        <li key={range.label}>
+                          <Link
+                            href={`/maschinen?q=${range.x}+${range.y}+${range.z}`}
+                            className="flex items-center justify-between rounded-md px-2.5 py-1.5 text-sm hover:bg-muted transition-colors group"
+                          >
+                            <span className="group-hover:text-primary transition-colors">{range.label}</span>
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <Separator />
+
+                  {/* Preis */}
+                  <div>
+                    <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                      <Euro className="h-4 w-4" />
+                      Preis
+                    </h3>
+                    <ul className="space-y-1">
+                      {PRICE_RANGES.map((range) => (
+                        <li key={range.label}>
+                          <Link
+                            href={`/maschinen?preis_min=${range.min}${range.max > 0 ? `&preis_max=${range.max}` : ''}`}
+                            className="flex items-center justify-between rounded-md px-2.5 py-1.5 text-sm hover:bg-muted transition-colors group"
+                          >
+                            <span className="group-hover:text-primary transition-colors">{range.label}</span>
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <Separator />
+
+                  {/* Zustand */}
+                  <div>
+                    <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                      <Shield className="h-4 w-4" />
+                      Zustand
+                    </h3>
+                    <ul className="space-y-1">
+                      {CONDITIONS.map((c) => (
+                        <li key={c.value}>
+                          <Link
+                            href={`/maschinen?zustand=${c.value}`}
+                            className="flex items-center justify-between rounded-md px-2.5 py-1.5 text-sm hover:bg-muted transition-colors group"
+                          >
+                            <span className="group-hover:text-primary transition-colors">{c.label}</span>
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </nav>
+              </aside>
+
+              {/* ---- HAUPTBEREICH (Inserate) ---- */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-end justify-between mb-6">
+                  <div>
+                    <h2 id="browse-heading" className="text-2xl font-bold">
+                      Neueste Inserate
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {totalListings} Maschinen verfügbar
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/maschinen">
+                      Alle anzeigen
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
                 </div>
+
+                {convertedListings.length > 0 ? (
+                  <ListingGrid listings={convertedListings} showCompare={false} viewMode="list" />
+                ) : (
+                  <div className="rounded-xl border border-dashed bg-muted/30 py-16 text-center">
+                    <div className="mx-auto max-w-sm">
+                      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                        <Search className="h-6 w-6 text-primary" />
+                      </div>
+                      <h3 className="font-semibold">{t('noListings')}</h3>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {t('noListingsDesc')}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </section>
 
         {/* ============================================ */}
+        {/* UNTERNEHMEN IN DEUTSCHLAND                   */}
+        {/* ============================================ */}
+        {companies.length > 0 && (
+          <section className="border-t bg-muted/20 py-12 md:py-16" aria-labelledby="companies-heading">
+            <div className="container-page">
+              <div className="flex items-end justify-between mb-8">
+                <div>
+                  <h2 id="companies-heading" className="text-xl font-bold md:text-2xl">
+                    Unternehmen auf CMM24
+                  </h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Entdecken Sie verifizierte Händler und Hersteller
+                  </p>
+                </div>
+                <Link
+                  href="/unternehmen"
+                  className="text-sm font-medium text-primary hover:underline hidden sm:flex items-center gap-1"
+                >
+                  Alle anzeigen
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {companies.map((company) => (
+                  <Link
+                    key={company.id}
+                    href={`/unternehmen/${company.slug}`}
+                    className="group flex flex-col items-center gap-3 rounded-xl border bg-card p-4 text-center transition-all hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5"
+                  >
+                    {/* Logo / Initialen */}
+                    <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-muted flex items-center justify-center shrink-0">
+                      {company.logo_url ? (
+                        <Image
+                          src={company.logo_url}
+                          alt={company.company_name}
+                          fill
+                          className="object-contain p-1"
+                          sizes="64px"
+                        />
+                      ) : (
+                        <Building2 className="h-6 w-6 text-muted-foreground/60" />
+                      )}
+                    </div>
+                    <div className="min-w-0 w-full">
+                      <p className="text-sm font-medium leading-tight truncate group-hover:text-primary transition-colors">
+                        {company.company_name}
+                      </p>
+                      {company.address_city && (
+                        <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                          {company.address_city}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Mobile: Alle anzeigen */}
+              <div className="mt-4 text-center sm:hidden">
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/unternehmen">
+                    Alle Unternehmen
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ============================================ */}
         {/* SO FUNKTIONIERT CMM24                        */}
         {/* ============================================ */}
-        <section className="bg-muted/30 py-16 md:py-24" aria-labelledby="how-it-works-heading">
+        <section className="py-16 md:py-24" aria-labelledby="how-it-works-heading">
           <div className="container-page">
             <div className="mb-12 text-center md:mb-16">
               <h2 id="how-it-works-heading" className="text-2xl font-bold md:text-3xl">
@@ -559,34 +645,20 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-3 md:gap-12">
               {processSteps.map((step, index) => (
                 <div key={step.title} className="relative text-center">
-                  {/* Icon */}
                   <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
                     <step.icon className="h-7 w-7 text-primary" />
                   </div>
-
-                  {/* Schritt-Nummer + Titel */}
                   <div className="mb-3 flex items-center justify-center gap-2">
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                       {index + 1}
                     </span>
                     <h3 className="text-lg font-semibold">{step.title}</h3>
                   </div>
-
-                  {/* Beschreibung */}
                   <p className="mx-auto max-w-xs text-sm leading-relaxed text-muted-foreground">
                     {step.description}
                   </p>
                 </div>
               ))}
-            </div>
-
-            <div className="mt-12 text-center">
-              <Button variant="outline" asChild>
-                <Link href="/so-funktionierts">
-                  {tc('more')}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
             </div>
           </div>
         </section>
@@ -594,7 +666,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         {/* ============================================ */}
         {/* VERTRAUEN & VORTEILE                         */}
         {/* ============================================ */}
-        <section className="py-16 md:py-24" aria-labelledby="trust-heading">
+        <section className="bg-muted/30 py-16 md:py-24" aria-labelledby="trust-heading">
           <div className="container-page">
             <div className="mb-12 text-center md:mb-16">
               <h2 id="trust-heading" className="text-2xl font-bold md:text-3xl">
@@ -624,55 +696,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
 
         {/* ============================================ */}
-        {/* HERSTELLER                                   */}
-        {/* ============================================ */}
-        <section className="border-y bg-muted/20 py-16 md:py-24" aria-labelledby="manufacturers-heading">
-          <div className="container-page">
-            <div className="mb-12 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h2 id="manufacturers-heading" className="text-2xl font-bold md:text-3xl">
-                  {t('leadingManufacturers')}
-                </h2>
-                <p className="mt-2 text-muted-foreground">
-                  {t('leadingManufacturersDesc')}
-                </p>
-              </div>
-              <Button variant="outline" className="shrink-0 self-start sm:self-auto" asChild>
-                <Link href="/hersteller">
-                  {t('allManufacturers')}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-
-            {manufacturers.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                {manufacturers.slice(0, 12).map((manufacturer) => (
-                  <Link
-                    key={manufacturer.id}
-                    href={`/hersteller/${manufacturer.slug}`}
-                    className="group relative flex flex-col items-center justify-center gap-3 rounded-xl border bg-card p-6 text-center transition-all duration-200 hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5"
-                  >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/[0.08] transition-colors group-hover:bg-primary/[0.14]">
-                      <span className="text-lg font-bold text-primary/70 group-hover:text-primary transition-colors">
-                        {manufacturer.name.charAt(0)}
-                      </span>
-                    </div>
-                    <span className="text-sm font-medium leading-tight">
-                      {manufacturer.name}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="py-8 text-center">
-                <p className="text-muted-foreground">{t('manufacturersLoading')}</p>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* ============================================ */}
         {/* VERKÄUFER-CTA                                */}
         {/* ============================================ */}
         <section className="py-16 md:py-24" aria-labelledby="seller-cta-heading">
@@ -680,7 +703,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <Card className="overflow-hidden border-0 shadow-lg">
               <CardContent className="p-0">
                 <div className="grid md:grid-cols-5">
-                  {/* Linke Seite: Inhalt */}
                   <div className="p-8 md:col-span-3 md:p-12">
                     <Badge variant="secondary" className="mb-4">
                       {t('sellerCta')}
@@ -716,9 +738,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                     </div>
                   </div>
 
-                  {/* Rechte Seite: Visuelles Element */}
                   <div className="relative hidden md:col-span-2 md:flex md:items-center md:justify-center bg-primary">
-                    {/* Dekorative Elemente */}
                     <div
                       className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(255,255,255,0.12)_0%,transparent_60%)]"
                       aria-hidden="true"
@@ -727,7 +747,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                       className="absolute bottom-0 right-0 h-32 w-32 rounded-tl-full bg-white/5"
                       aria-hidden="true"
                     />
-
                     <div className="relative z-10 p-8 text-center text-primary-foreground">
                       <p className="text-6xl font-bold">0&nbsp;%</p>
                       <p className="mt-2 text-lg font-medium text-primary-foreground/80">{t('stats.commission')}</p>

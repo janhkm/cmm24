@@ -37,17 +37,21 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SearchCommand } from '@/components/shared/search-command';
+import { signOut } from '@/lib/actions/auth';
 
-// Simulate auth state - in real app this would come from auth context
-const isLoggedIn = false;
-const currentUser = {
-  name: 'Sandra Becker',
-  email: 'sandra@beispiel.de',
-  avatar: null,
-};
+interface HeaderProps {
+  user?: {
+    id: string;
+    email: string;
+    fullName: string | null;
+    avatarUrl: string | null;
+  } | null;
+}
 
-export function Header() {
+export function Header({ user }: HeaderProps) {
+  const isLoggedIn = !!user;
   const t = useTranslations('nav');
   const tc = useTranslations('common');
   const th = useTranslations('header');
@@ -149,29 +153,28 @@ export function Header() {
             </DropdownMenu>
 
             {/* Auth Buttons / User Menu */}
-            {isLoggedIn ? (
+            {isLoggedIn && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                      <User className="h-4 w-4" />
-                    </div>
-                    <span className="hidden sm:inline">{currentUser.name}</span>
+                    <Avatar className="h-7 w-7">
+                      <AvatarImage src={user.avatarUrl || undefined} />
+                      <AvatarFallback className="text-xs">
+                        {(user.fullName || user.email || '?').charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden sm:inline max-w-[120px] truncate">
+                      {user.fullName || user.email?.split('@')[0]}
+                    </span>
                     <ChevronDown className="h-3 w-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium">{currentUser.name}</p>
-                    <p className="text-xs text-muted-foreground">{currentUser.email}</p>
+                    <p className="text-sm font-medium">{user.fullName || user.email?.split('@')[0]}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/seller/dashboard" className="cursor-pointer">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      {t('dashboard')}
-                    </Link>
-                  </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/seller/inserate" className="cursor-pointer">
                       <FileText className="mr-2 h-4 w-4" />
@@ -191,7 +194,13 @@ export function Header() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive cursor-pointer">
+                  <DropdownMenuItem
+                    className="text-destructive cursor-pointer"
+                    onClick={async () => {
+                      await signOut();
+                      window.location.href = '/';
+                    }}
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     {tc('logout')}
                   </DropdownMenuItem>
@@ -268,7 +277,58 @@ export function Header() {
                     </div>
 
                     {/* Auth Buttons Mobile */}
-                    {!isLoggedIn && (
+                    {isLoggedIn && user ? (
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-3 px-3 py-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user.avatarUrl || undefined} />
+                            <AvatarFallback className="text-xs">
+                              {(user.fullName || user.email || '?').charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{user.fullName || user.email?.split('@')[0]}</p>
+                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                          </div>
+                        </div>
+                        <Link
+                          href="/seller/inserate"
+                          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <FileText className="h-4 w-4" />
+                          {t('myListings')}
+                        </Link>
+                        <Link
+                          href="/seller/anfragen"
+                          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          {t('inquiries')}
+                        </Link>
+                        <Link
+                          href="/seller/konto"
+                          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <Settings className="h-4 w-4" />
+                          {t('settings')}
+                        </Link>
+                        <Button
+                          variant="outline"
+                          className="text-destructive mt-2"
+                          onClick={async () => {
+                            await signOut();
+                            setMobileMenuOpen(false);
+                            window.location.href = '/';
+                          }}
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          {tc('logout')}
+                        </Button>
+                      </div>
+                    ) : (
                       <div className="flex flex-col gap-2">
                         <Button variant="outline" asChild>
                           <Link href="/login" onClick={() => setMobileMenuOpen(false)}>

@@ -158,9 +158,9 @@ export function ListingCard({
         <div className="mt-4 flex items-center justify-between gap-2">
           <div>
             <p className="text-lg font-bold">
-              {formatPrice(listing.price)}
+              {listing.price ? formatPrice(listing.price) : (t('priceOnRequest') || 'VB')}
             </p>
-            {listing.priceNegotiable && (
+            {!!listing.price && listing.priceNegotiable && (
               <p className="text-xs text-muted-foreground">{t('negotiable')}</p>
             )}
           </div>

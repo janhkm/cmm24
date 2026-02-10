@@ -8,6 +8,23 @@ import { sanitizeText } from '@/lib/validations/sanitize';
 import { validateImageFile, validateDocumentFile } from '@/lib/storage/validate-file';
 import { processImage } from '@/lib/storage/process-image';
 
+/**
+ * Hilfsfunktion: JSONB-Wert sicher als Array parsen.
+ * Faengt doppelt-encoded Strings ab (z.B. von altem JSON.stringify-Bug).
+ */
+function parseJsonbArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed as T[];
+    } catch {
+      // ignorieren
+    }
+  }
+  return [];
+}
+
 type ListingInsert = Database['public']['Tables']['listings']['Insert'];
 type ListingUpdate = Database['public']['Tables']['listings']['Update'];
 type Listing = Database['public']['Tables']['listings']['Row'];
@@ -25,7 +42,7 @@ interface CreateListingData {
   title: string;
   yearBuilt: number;
   condition: 'new' | 'like_new' | 'good' | 'fair';
-  price: number;
+  price: number | null;
   priceNegotiable: boolean;
   measuringRangeX?: number;
   measuringRangeY?: number;
@@ -151,13 +168,14 @@ export async function createListing(data: CreateListingData): Promise<ActionResu
   if (data.modelNameCustom) data.modelNameCustom = sanitizeText(data.modelNameCustom);
   
   // Basis-Validierung
-  if (data.title.length < 10) {
-    return { success: false, error: 'Titel muss mindestens 10 Zeichen lang sein' };
+  if (data.title.length < 1) {
+    return { success: false, error: 'Bitte geben Sie einen Titel ein' };
   }
-  if (data.description.length < 50) {
+  if (data.description.replace(/<[^>]*>/g, '').trim().length < 50) {
     return { success: false, error: 'Beschreibung muss mindestens 50 Zeichen lang sein' };
   }
-  if (data.price <= 0) {
+  // Preis 0 = kein Preis angegeben (VB), nur negative Werte ablehnen
+  if (data.price !== null && data.price !== 0 && data.price < 0) {
     return { success: false, error: 'Preis muss positiv sein' };
   }
 
@@ -173,7 +191,7 @@ export async function createListing(data: CreateListingData): Promise<ActionResu
     slug,
     year_built: data.yearBuilt,
     condition: data.condition,
-    price: data.price,
+    price: data.price as any, // kann null sein (VB/Preis auf Anfrage)
     price_negotiable: data.priceNegotiable,
     measuring_range_x: data.measuringRangeX || null,
     measuring_range_y: data.measuringRangeY || null,
@@ -254,7 +272,7 @@ export async function updateListing(
   if (data.title !== undefined) updateData.title = data.title;
   if (data.yearBuilt !== undefined) updateData.year_built = data.yearBuilt;
   if (data.condition !== undefined) updateData.condition = data.condition;
-  if (data.price !== undefined) updateData.price = data.price;
+  if (data.price !== undefined) updateData.price = data.price as any;
   if (data.priceNegotiable !== undefined) updateData.price_negotiable = data.priceNegotiable;
   if (data.measuringRangeX !== undefined) updateData.measuring_range_x = data.measuringRangeX || null;
   if (data.measuringRangeY !== undefined) updateData.measuring_range_y = data.measuringRangeY || null;
@@ -1541,9 +1559,58 @@ export async function getPublicCompanyBySlug(slug: string): Promise<ActionResult
     success: true,
     data: {
       ...account,
-      gallery_urls: (account.gallery_urls as { url: string; caption?: string }[] | null) || [],
-      certificates: (account.certificates as { name: string; url?: string; issued_by?: string }[] | null) || [],
+      gallery_urls: parseJsonbArray<{ url: string; caption?: string }>(account.gallery_urls),
+      certificates: parseJsonbArray<{ name: string; url?: string; issued_by?: string }>(account.certificates),
       listing_count: count || 0,
     },
+  };
+}
+
+/**
+ * Oeffentliche Unternehmen fuer die Startseite abrufen
+ */
+export async function getPublicCompanies(limit: number = 12): Promise<ActionResult<{
+  id: string;
+  company_name: string;
+  slug: string;
+  logo_url: string | null;
+  address_city: string | null;
+  address_country: string | null;
+  listing_count: number;
+}[]>> {
+  const supabase = await createActionClient();
+
+  const { data: accounts, error } = await supabase
+    .from('accounts')
+    .select('id, company_name, slug, logo_url, address_city, address_country')
+    .eq('status', 'active')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  // Inserate pro Account zaehlen
+  const companiesWithCounts = await Promise.all(
+    (accounts || []).map(async (account) => {
+      const { count } = await supabase
+        .from('listings')
+        .select('id', { count: 'exact', head: true })
+        .eq('account_id', account.id)
+        .eq('status', 'active')
+        .is('deleted_at', null);
+
+      return {
+        ...account,
+        listing_count: count || 0,
+      };
+    })
+  );
+
+  return {
+    success: true,
+    data: companiesWithCounts,
   };
 }

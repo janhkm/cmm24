@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { User, Building2, Bell, Shield, Loader2, CheckCircle, Bot, Crown, Info, Mail, Pen, Eye, AlertCircle, Zap, Plus, Trash2, Edit2, ImageIcon, Award, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { getProfileWithAccount, updateProfile, updateAccount, updatePremiumProfile, type UserProfileData } from '@/lib/actions/account';
+import { getProfileWithAccount, updateProfile, updateAccount, updatePremiumProfile, uploadProfileAvatar, uploadGalleryImage, type UserProfileData } from '@/lib/actions/account';
 import { useSellerAuth } from '@/hooks/use-seller-auth';
 import {
   getMessageTemplates,
@@ -76,6 +76,8 @@ export default function KontoPage() {
   const [companyDescription, setCompanyDescription] = useState('');
   const [isSavingProfile2, setIsSavingProfile2] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
   const [newCertName, setNewCertName] = useState('');
   const [newCertIssuer, setNewCertIssuer] = useState('');
 
@@ -108,8 +110,10 @@ export default function KontoPage() {
       setWebsite(result.data.account.website || '');
       setCompanyPhone(result.data.account.phone || '');
       setEmailSignature(result.data.account.emailSignature || '');
-      setGalleryUrls(result.data.account.galleryUrls || []);
-      setCertificates(result.data.account.certificates || []);
+      const rawGallery = result.data.account.galleryUrls;
+      setGalleryUrls(Array.isArray(rawGallery) ? rawGallery : []);
+      const rawCerts = result.data.account.certificates;
+      setCertificates(Array.isArray(rawCerts) ? rawCerts : []);
       setCompanyDescription(result.data.account.description || '');
     } else {
       setError(result.error || t('errorLoadingProfile'));
@@ -198,36 +202,54 @@ export default function KontoPage() {
     setIsSavingProfile2(false);
   };
 
-  // Galerie-Bild hochladen
+  // Profilbild hochladen (via Server Action)
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+
+    setIsUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const result = await uploadProfileAvatar(formData);
+      if (result.success && result.data) {
+        setProfile((prev) => prev ? { ...prev, avatarUrl: result.data!.url } : prev);
+        toast.success('Profilbild aktualisiert');
+      } else {
+        toast.error(result.error || 'Upload fehlgeschlagen');
+      }
+    } catch (err) {
+      console.error('[handleAvatarUpload] Error:', err);
+      toast.error('Unerwarteter Fehler beim Upload');
+    }
+    setIsUploadingAvatar(false);
+  };
+
+  // Galerie-Bild hochladen (via Server Action)
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !profile?.account?.id) return;
+    if (!file) return;
     e.target.value = '';
 
     setIsUploadingGallery(true);
-    const ext = file.name.split('.').pop() || 'jpg';
-    const path = `${profile.account.id}/gallery/${crypto.randomUUID()}.${ext}`;
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
 
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
-    const { error } = await supabase.storage
-      .from('account-logos')
-      .upload(path, file, { contentType: file.type, upsert: false });
-
-    if (error) {
-      toast.error('Upload fehlgeschlagen');
-      setIsUploadingGallery(false);
-      return;
+      const result = await uploadGalleryImage(formData);
+      if (result.success && result.data) {
+        setGalleryUrls((prev) => [...prev, { url: result.data!.url }]);
+        toast.success(t('premiumProfile.imageUploaded'));
+      } else {
+        toast.error(result.error || 'Upload fehlgeschlagen');
+      }
+    } catch (err) {
+      console.error('[handleGalleryUpload] Error:', err);
+      toast.error('Unerwarteter Fehler beim Upload');
     }
-
-    const { data: publicUrl } = supabase.storage.from('account-logos').getPublicUrl(path);
-    setGalleryUrls((prev) => [...prev, { url: publicUrl.publicUrl }]);
     setIsUploadingGallery(false);
-    toast.success(t('premiumProfile.imageUploaded'));
   };
 
   const handleRemoveGalleryImage = (idx: number) => {
@@ -402,8 +424,25 @@ export default function KontoPage() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <Button variant="outline" size="sm">
-                    {t('profile.changeImage')}
+                  <input
+                    ref={avatarFileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                    disabled={isUploadingAvatar}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => avatarFileInputRef.current?.click()}
+                    disabled={isUploadingAvatar}
+                  >
+                    {isUploadingAvatar ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Wird hochgeladen...</>
+                    ) : (
+                      t('profile.changeImage')
+                    )}
                   </Button>
                   <p className="text-xs text-muted-foreground mt-1">
                     {t('profile.imageHint')}
@@ -582,7 +621,7 @@ export default function KontoPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-                  {galleryUrls.map((img, idx) => (
+                  {(Array.isArray(galleryUrls) ? galleryUrls : []).map((img, idx) => (
                     <div key={idx} className="relative aspect-[4/3] overflow-hidden rounded-lg border group">
                       <img
                         src={img.url}
@@ -597,7 +636,7 @@ export default function KontoPage() {
                       </button>
                     </div>
                   ))}
-                  {galleryUrls.length < 6 && (
+                  {(Array.isArray(galleryUrls) ? galleryUrls : []).length < 6 && (
                     <label className="aspect-[4/3] flex flex-col items-center justify-center rounded-lg border-2 border-dashed cursor-pointer hover:border-primary transition-colors">
                       <input
                         type="file"
@@ -618,7 +657,7 @@ export default function KontoPage() {
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t('premiumProfile.galleryHint', { count: galleryUrls.length, max: 6 })}
+                  {t('premiumProfile.galleryHint', { count: (Array.isArray(galleryUrls) ? galleryUrls : []).length, max: 6 })}
                 </p>
               </CardContent>
             </Card>

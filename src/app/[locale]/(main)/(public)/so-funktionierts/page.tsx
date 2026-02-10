@@ -1,17 +1,17 @@
 import { Link } from '@/i18n/navigation';
 import { 
   Search, 
-  FileText, 
-  MessageSquare, 
   Handshake,
-  CheckCircle,
-  Shield,
-  Clock,
-  Users,
   ArrowRight,
   Building2,
+  Send,
+  Eye,
+  UserPlus,
+  PenLine,
+  ShieldCheck,
+  Inbox,
+  ShoppingCart,
   CreditCard,
-  BarChart3,
 } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,6 @@ export default async function SoFunktioniertPage({ params }: { params: Promise<{
   setRequestLocale(locale);
 
   const t = await getTranslations({ locale, namespace: 'howItWorks' });
-  const tc = await getTranslations({ locale, namespace: 'common' });
 
   const buyerSteps = [
     {
@@ -45,12 +44,12 @@ export default async function SoFunktioniertPage({ params }: { params: Promise<{
       description: t('buyerStep1Desc'),
     },
     {
-      icon: FileText,
+      icon: Eye,
       title: t('buyerStep2Title'),
       description: t('buyerStep2Desc'),
     },
     {
-      icon: MessageSquare,
+      icon: Send,
       title: t('buyerStep3Title'),
       description: t('buyerStep3Desc'),
     },
@@ -63,52 +62,44 @@ export default async function SoFunktioniertPage({ params }: { params: Promise<{
 
   const sellerSteps = [
     {
-      icon: Building2,
+      icon: UserPlus,
       title: t('sellerStep1Title'),
       description: t('sellerStep1Desc'),
     },
     {
-      icon: FileText,
+      icon: PenLine,
       title: t('sellerStep2Title'),
       description: t('sellerStep2Desc'),
     },
     {
-      icon: CheckCircle,
+      icon: ShieldCheck,
       title: t('sellerStep3Title'),
       description: t('sellerStep3Desc'),
     },
     {
-      icon: MessageSquare,
+      icon: Inbox,
       title: t('sellerStep4Title'),
       description: t('sellerStep4Desc'),
     },
   ];
 
-  const benefits = [
+  const summaryItems = [
     {
-      icon: Shield,
-      title: t('benefit1Title'),
-      description: t('benefit1Desc'),
+      icon: ShoppingCart,
+      title: t('summaryBuyer'),
+      description: t('summaryBuyerDesc'),
     },
     {
-      icon: Clock,
-      title: t('benefit2Title'),
-      description: t('benefit2Desc'),
-    },
-    {
-      icon: Users,
-      title: t('benefit3Title'),
-      description: t('benefit3Desc'),
+      icon: Building2,
+      title: t('summarySeller'),
+      description: t('summarySellerDesc'),
     },
     {
       icon: CreditCard,
-      title: t('benefit4Title'),
-      description: t('benefit4Desc'),
+      title: t('summaryFree'),
+      description: t('summaryFreeDesc'),
     },
   ];
-
-  // AUSKOMMENTIERT: Pricing-Plans (alles ist jetzt Free)
-  // const plans = [...];  // Alte Plan-Definitionen entfernt
 
   return (
     <main>
@@ -135,8 +126,25 @@ export default async function SoFunktioniertPage({ params }: { params: Promise<{
         </div>
       </section>
 
-      {/* For Buyers Section */}
+      {/* Intro / Das Prinzip */}
       <section className="py-16 md:py-24">
+        <div className="container-page">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-3xl font-bold mb-6">
+              {t('introTitle')}
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed mb-4">
+              {t('introP1')}
+            </p>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              {t('introP2')}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* For Buyers Section */}
+      <section className="py-16 md:py-24 bg-muted/30">
         <div className="container-page">
           <div className="flex items-center gap-3 mb-4">
             <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -182,11 +190,11 @@ export default async function SoFunktioniertPage({ params }: { params: Promise<{
       </section>
 
       {/* For Sellers Section */}
-      <section className="py-16 md:py-24 bg-muted/30">
+      <section className="py-16 md:py-24">
         <div className="container-page">
           <div className="flex items-center gap-3 mb-4">
             <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <BarChart3 className="h-5 w-5 text-primary" />
+              <Building2 className="h-5 w-5 text-primary" />
             </div>
             <span className="text-sm font-medium text-primary uppercase tracking-wide">
               {t('forSellers')}
@@ -227,91 +235,29 @@ export default async function SoFunktioniertPage({ params }: { params: Promise<{
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-16 md:py-24">
-        <div className="container-page">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">
-              {t('whyTitle')}
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t('whyDesc')}
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {benefits.map((benefit) => (
-              <Card key={benefit.title}>
-                <CardHeader>
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                    <benefit.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg">{benefit.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{benefit.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section - VEREINFACHT: Alles ist jetzt kostenlos */}
+      {/* Summary Section */}
       <section className="py-16 md:py-24 bg-muted/30">
         <div className="container-page">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">
-              {t('pricingTitle')}
+              {t('summaryTitle')}
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t('pricingDesc')}
-            </p>
           </div>
 
-          <div className="max-w-lg mx-auto">
-            <Card className="border-primary shadow-lg">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl">Free</CardTitle>
-                <div className="mt-2">
-                  <span className="text-4xl font-bold">0 €</span>
-                  <span className="text-muted-foreground"> / {tc('free')}</span>
-                </div>
-                <p className="text-sm font-medium text-primary mt-2">
-                  {t('allFeaturesIncluded') || 'Alle Features inklusive'}
-                </p>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 mb-6">
-                  <li className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
-                    {t('freeFeatureListings') || 'Unbegrenzte Inserate'}
-                  </li>
-                  <li className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
-                    {t('freeFeatureInquiries') || 'Anfragen empfangen & beantworten'}
-                  </li>
-                  <li className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
-                    {t('freeFeatureMessaging') || 'Nachrichten-System'}
-                  </li>
-                  <li className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
-                    {t('freeFeatureTeam') || 'Team-Verwaltung'}
-                  </li>
-                  <li className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
-                    {t('freeFeatureContacts') || 'Kontakte & CRM'}
-                  </li>
-                </ul>
-                <Button className="w-full" asChild>
-                  <Link href="/registrieren">
-                    {t('getStartedFree') || 'Kostenlos starten'}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {summaryItems.map((item) => (
+              <Card key={item.title}>
+                <CardHeader>
+                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <item.icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg">{item.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{item.description}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>

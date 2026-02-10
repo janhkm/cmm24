@@ -115,7 +115,7 @@ export default async function FAQPage({ params }: { params: Promise<{ locale: st
                 {t('ctaDesc')}
               </p>
               <Button asChild className="mt-4">
-                <Link href="/kontakt">{t('ctaButton')}</Link>
+                <a href="mailto:support@cmm24.com">{t('ctaButton')}</a>
               </Button>
             </CardContent>
           </Card>

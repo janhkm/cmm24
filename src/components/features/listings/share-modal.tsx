@@ -36,7 +36,7 @@ export function ShareModal({ listing, trigger }: ShareModalProps) {
     : `https://cmm24.de/maschinen/${listing.slug}`;
 
   const title = listing.title;
-  const text = `${listing.title} - ${(listing.price / 100).toLocaleString('de-DE')} € auf CMM24`;
+  const text = `${listing.title} - ${listing.price ? `${(listing.price / 100).toLocaleString('de-DE')} €` : 'VB'} auf CMM24`;
 
   const copyToClipboard = async () => {
     try {

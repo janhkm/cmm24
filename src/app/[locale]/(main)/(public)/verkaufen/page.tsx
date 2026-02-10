@@ -3,19 +3,18 @@ import {
   ArrowRight, 
   CheckCircle, 
   Shield, 
-  TrendingUp, 
-  Users,
-  FileText,
-  MessageSquare,
-  BarChart3,
   Globe,
   Clock,
-  Star,
+  UserPlus,
+  PenLine,
+  Inbox,
+  XCircle,
+  BadgeCheck,
+  CreditCard,
 } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { stats } from '@/data/constants';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -41,7 +40,7 @@ export default async function VerkaufenPage({ params }: { params: Promise<{ loca
 
   const benefits = [
     {
-      icon: Globe,
+      icon: CreditCard,
       title: t('benefit1Title'),
       description: t('benefit1Desc'),
     },
@@ -51,7 +50,7 @@ export default async function VerkaufenPage({ params }: { params: Promise<{ loca
       description: t('benefit2Desc'),
     },
     {
-      icon: TrendingUp,
+      icon: Globe,
       title: t('benefit3Title'),
       description: t('benefit3Desc'),
     },
@@ -64,49 +63,47 @@ export default async function VerkaufenPage({ params }: { params: Promise<{ loca
 
   const steps = [
     {
-      number: '01',
+      icon: UserPlus,
       title: t('step1Title'),
       description: t('step1Desc'),
-      icon: Users,
     },
     {
-      number: '02',
+      icon: PenLine,
       title: t('step2Title'),
       description: t('step2Desc'),
-      icon: FileText,
     },
     {
-      number: '03',
+      icon: Inbox,
       title: t('step3Title'),
       description: t('step3Desc'),
-      icon: MessageSquare,
-    },
-    {
-      number: '04',
-      title: t('step4Title'),
-      description: t('step4Desc'),
-      icon: CheckCircle,
     },
   ];
 
-  const testimonials = [
+  const comparisonRows = [
     {
-      quote: t('testimonial1'),
-      author: 'Michael H.',
-      company: 'CMM-Trade GmbH',
-      role: 'Geschäftsführer',
+      feature: t('comparisonFeature1'),
+      us: t('comparisonUs1'),
+      other: t('comparisonOther1'),
     },
     {
-      quote: t('testimonial2'),
-      author: 'Sandra B.',
-      company: 'Precision Parts AG',
-      role: 'Vertriebsleiterin',
+      feature: t('comparisonFeature2'),
+      us: t('comparisonUs2'),
+      other: t('comparisonOther2'),
     },
     {
-      quote: t('testimonial3'),
-      author: 'Thomas M.',
-      company: 'Messtechnik Weber KG',
-      role: 'Inhaber',
+      feature: t('comparisonFeature3'),
+      us: t('comparisonUs3'),
+      other: t('comparisonOther3'),
+    },
+    {
+      feature: t('comparisonFeature4'),
+      us: t('comparisonUs4'),
+      other: t('comparisonOther4'),
+    },
+    {
+      feature: t('comparisonFeature5'),
+      us: t('comparisonUs5'),
+      other: t('comparisonOther5'),
     },
   ];
 
@@ -123,12 +120,12 @@ export default async function VerkaufenPage({ params }: { params: Promise<{ loca
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-primary/10 py-20 md:py-32">
         <div className="container-page relative z-10">
           <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 text-sm font-medium text-primary mb-4">
-              <Star className="h-4 w-4 fill-primary" />
+            <span className="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400 mb-6">
+              <CheckCircle className="h-4 w-4" />
               {t('badge')}
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-              {t('title').split('erfolgreich')[0]}<span className="text-primary">erfolgreich</span>
+              {t('title')}
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed mb-8">
               {t('description')}
@@ -154,32 +151,23 @@ export default async function VerkaufenPage({ params }: { params: Promise<{ loca
         </div>
       </section>
 
-      {/* Stats Bar */}
-      <section className="border-y bg-muted/30">
-        <div className="container-page py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-primary">{stat.value}</div>
-                <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
-              </div>
-            ))}
+      {/* Warum kostenlos? */}
+      <section className="py-16 md:py-24">
+        <div className="container-page">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl font-bold mb-6">
+              {t('highlightTitle')}
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              {t('highlightDesc')}
+            </p>
           </div>
         </div>
       </section>
 
       {/* Benefits Section */}
-      <section className="py-16 md:py-24">
+      <section className="py-16 md:py-24 bg-muted/30">
         <div className="container-page">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">
-              {t('whyTitle')}
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t('whyDesc')}
-            </p>
-          </div>
-
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {benefits.map((benefit) => (
               <Card key={benefit.title} className="text-center">
@@ -196,8 +184,8 @@ export default async function VerkaufenPage({ params }: { params: Promise<{ loca
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-16 md:py-24 bg-muted/30">
+      {/* How It Works - 3 Steps */}
+      <section className="py-16 md:py-24">
         <div className="container-page">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">
@@ -208,11 +196,11 @@ export default async function VerkaufenPage({ params }: { params: Promise<{ loca
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {steps.map((step, index) => (
-              <div key={step.number} className="relative text-center">
+              <div key={step.title} className="relative text-center">
                 {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-12 left-[calc(50%+3rem)] w-[calc(100%-6rem)] h-0.5 bg-border" />
+                  <div className="hidden md:block absolute top-12 left-[calc(50%+3rem)] w-[calc(100%-6rem)] h-0.5 bg-border" />
                 )}
                 <div className="relative inline-flex items-center justify-center w-24 h-24 rounded-full bg-primary/10 mb-6">
                   <step.icon className="h-10 w-10 text-primary" />
@@ -237,42 +225,56 @@ export default async function VerkaufenPage({ params }: { params: Promise<{ loca
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-16 md:py-24">
+      {/* Comparison Table */}
+      <section className="py-16 md:py-24 bg-muted/30">
         <div className="container-page">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">
-              {t('testimonialsTitle')}
+              {t('comparisonTitle')}
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial) => (
-              <Card key={testimonial.author}>
-                <CardContent className="pt-6">
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  <blockquote className="text-muted-foreground mb-4">
-                    &ldquo;{testimonial.quote}&rdquo;
-                  </blockquote>
-                  <div>
-                    <div className="font-semibold">{testimonial.author}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {testimonial.role}, {testimonial.company}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="max-w-3xl mx-auto">
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-4 font-medium text-muted-foreground"></th>
+                        <th className="p-4 font-semibold text-primary text-center">CMM24</th>
+                        <th className="p-4 font-medium text-muted-foreground text-center">Andere</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {comparisonRows.map((row, index) => (
+                        <tr key={row.feature} className={index < comparisonRows.length - 1 ? 'border-b' : ''}>
+                          <td className="p-4 font-medium text-sm">{row.feature}</td>
+                          <td className="p-4 text-center">
+                            <div className="flex items-center justify-center gap-2 text-sm">
+                              <BadgeCheck className="h-4 w-4 text-green-600 shrink-0" />
+                              <span className="font-medium text-green-700 dark:text-green-400">{row.us}</span>
+                            </div>
+                          </td>
+                          <td className="p-4 text-center">
+                            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                              <XCircle className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+                              <span>{row.other}</span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-16 md:py-24 bg-muted/30">
+      <section className="py-16 md:py-24">
         <div className="container-page">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">
@@ -296,7 +298,7 @@ export default async function VerkaufenPage({ params }: { params: Promise<{ loca
               {t('faqMore').split('Alle FAQ ansehen')[0]}
               <Link href="/faq" className="text-primary hover:underline">{tn('faq')}</Link>
               {' '}{tc('or')}{' '}
-              <Link href="/kontakt" className="text-primary hover:underline">{tn('contact')}</Link>
+              <a href="mailto:support@cmm24.com" className="text-primary hover:underline">support@cmm24.com</a>
             </p>
           </div>
         </div>
@@ -306,7 +308,6 @@ export default async function VerkaufenPage({ params }: { params: Promise<{ loca
       <section className="py-16 md:py-24">
         <div className="container-page">
           <div className="bg-primary rounded-2xl p-8 md:p-12 text-center text-primary-foreground">
-            <BarChart3 className="h-12 w-12 mx-auto mb-6 opacity-80" />
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               {t('readyTitle')}
             </h2>

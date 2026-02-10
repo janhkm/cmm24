@@ -22,6 +22,8 @@ import {
   Calendar,
   Ruler,
   Crown,
+  LogIn,
+  UserPlus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -46,6 +48,9 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { Listing } from '@/types';
 import { createInquiry } from '@/lib/actions/inquiries';
+import { getCurrentUser } from '@/lib/actions/auth';
+import { useRouter } from '@/i18n/navigation';
+import { RichTextContent } from '@/components/ui/rich-text-editor';
 
 interface ListingDetailClientProps {
   listing: Listing;
@@ -63,9 +68,12 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
   // View-Tracking: einmal pro Mount, dedupliziert serverseitig
   useTrackView(listing.id);
 
+  const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [inquiryDialogOpen, setInquiryDialogOpen] = useState(false);
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
 
   // Inquiry form state
   const [inquiryForm, setInquiryForm] = useState({
@@ -117,6 +125,31 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
       toast.error(ti('tryAgain'));
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Auth-Check bevor der Dialog geoeffnet wird
+  const handleInquiryClick = async () => {
+    setIsCheckingAuth(true);
+    try {
+      const user = await getCurrentUser();
+      if (!user) {
+        // Nicht eingeloggt: Auth-Dialog anzeigen
+        setAuthDialogOpen(true);
+        return;
+      }
+      // User eingeloggt: Formular mit Daten vorbefuellen
+      setInquiryForm((prev) => ({
+        ...prev,
+        name: user.fullName || prev.name,
+        email: user.email || prev.email,
+      }));
+      setInquiryDialogOpen(true);
+    } catch {
+      // Fehler beim Auth-Check: Auth-Dialog anzeigen
+      setAuthDialogOpen(true);
+    } finally {
+      setIsCheckingAuth(false);
     }
   };
 
@@ -217,10 +250,12 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
               </p>
               <h1 className="mt-1 text-2xl font-bold">{listing.title}</h1>
               <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-2xl font-bold">{formatPrice(listing.price)}</span>
-                <span className="text-sm text-muted-foreground">
-                  {tm('vatExcl')}{listing.priceNegotiable && ` · ${tm('negotiable')}`}
-                </span>
+                <span className="text-2xl font-bold">{listing.price ? formatPrice(listing.price) : (tm('priceOnRequest') || 'VB')}</span>
+                {!!listing.price && (
+                  <span className="text-sm text-muted-foreground">
+                    {tm('vatExcl')}{listing.priceNegotiable && ` · ${tm('negotiable')}`}
+                  </span>
+                )}
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Badge className={cn('font-medium', conditionColors[listing.condition])}>
@@ -370,14 +405,10 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
             {/* Beschreibung */}
             <section id="beschreibung">
               <h2 className="text-lg font-semibold mb-4">{t('description')}</h2>
-              <div className="prose prose-sm max-w-none dark:prose-invert prose-p:leading-relaxed">
-                {listing.description
-                  .split('\n')
-                  .filter((p) => p.trim())
-                  .map((paragraph, index) => (
-                    <p key={index}>{paragraph}</p>
-                  ))}
-              </div>
+              <RichTextContent
+                content={listing.description}
+                className="prose-sm prose-p:leading-relaxed"
+              />
             </section>
 
             {/* Dokumente */}
@@ -465,10 +496,14 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
 
                   {/* Preis */}
                   <div>
-                    <p className="text-3xl font-bold hidden lg:block">{formatPrice(listing.price)}</p>
-                    <p className="text-sm text-muted-foreground mt-0.5 hidden lg:block">
-                      {tm('vatExcl')}{listing.priceNegotiable && ` · ${tm('negotiableFull')}`}
+                    <p className="text-3xl font-bold hidden lg:block">
+                      {listing.price ? formatPrice(listing.price) : (tm('priceOnRequest') || 'VB')}
                     </p>
+                    {!!listing.price && (
+                      <p className="text-sm text-muted-foreground mt-0.5 hidden lg:block">
+                        {tm('vatExcl')}{listing.priceNegotiable && ` · ${tm('negotiableFull')}`}
+                      </p>
+                    )}
                   </div>
 
                   {/* Kurzinfos */}
@@ -511,6 +546,17 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
 
                   {/* CTA Buttons */}
                   <div className="mt-6 space-y-3">
+                    <Button
+                      className="w-full"
+                      size="lg"
+                      disabled={listing.status === 'sold' || isCheckingAuth}
+                      onClick={handleInquiryClick}
+                    >
+                      {isCheckingAuth ? (
+                        <span className="animate-spin mr-2">⏳</span>
+                      ) : null}
+                      {ti('title')}
+                    </Button>
                     <Dialog
                       open={inquiryDialogOpen}
                       onOpenChange={(open) => {
@@ -518,11 +564,6 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
                         if (!open) resetInquiryForm();
                       }}
                     >
-                      <DialogTrigger asChild>
-                        <Button className="w-full" size="lg" disabled={listing.status === 'sold'}>
-                          {ti('title')}
-                        </Button>
-                      </DialogTrigger>
                       <DialogContent className="sm:max-w-[500px]">
                         <DialogHeader>
                           <DialogTitle>{ti('titleToSeller')}</DialogTitle>
@@ -638,12 +679,54 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
                       </DialogContent>
                     </Dialog>
 
+                    {/* Auth-Dialog fuer nicht eingeloggte User */}
+                    <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
+                      <DialogContent className="sm:max-w-[420px]">
+                        <DialogHeader>
+                          <DialogTitle className="text-center">{ti('loginRequiredTitle')}</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-6 text-center">
+                          <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                            <LogIn className="h-7 w-7 text-primary" />
+                          </div>
+                          <p className="text-muted-foreground text-sm leading-relaxed px-2">
+                            {ti('loginRequiredDesc')}
+                          </p>
+                          <div className="mt-6 space-y-3">
+                            <Button
+                              className="w-full"
+                              size="lg"
+                              onClick={() => {
+                                setAuthDialogOpen(false);
+                                router.push('/login' as any);
+                              }}
+                            >
+                              <LogIn className="mr-2 h-4 w-4" />
+                              {ti('loginNow')}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="w-full"
+                              size="lg"
+                              onClick={() => {
+                                setAuthDialogOpen(false);
+                                router.push('/registrieren' as any);
+                              }}
+                            >
+                              <UserPlus className="mr-2 h-4 w-4" />
+                              {ti('registerFree')}
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
                     <div className="flex gap-2">
                       <PdfExportButton listing={listing} className="flex-1" />
                       <ShareDialog
                         url={`/maschinen/${listing.slug}`}
                         title={listing.title}
-                        description={`${listing.manufacturer.name} ${listing.title} - ${formatPrice(listing.price)}`}
+                        description={`${listing.manufacturer.name} ${listing.title} - ${listing.price ? formatPrice(listing.price) : 'VB'}`}
                       />
                       <Button
                         variant="outline"
@@ -865,7 +948,7 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
       {listing.status !== 'sold' && (
         <StickyMobileCTA
           primaryLabel={ti('title')}
-          onPrimaryClick={() => setInquiryDialogOpen(true)}
+          onPrimaryClick={handleInquiryClick}
           showPhone={false}
           showScrollTop={false}
         />

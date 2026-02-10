@@ -16,7 +16,8 @@ import da from '../messages/da.json';
 import pt from '../messages/pt.json';
 import ro from '../messages/ro.json';
 
-const messages: Record<string, typeof de> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const messages: Record<string, any> = {
   de,
   en,
   pl,

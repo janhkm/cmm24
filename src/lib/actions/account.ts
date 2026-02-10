@@ -12,6 +12,23 @@ import { sendPasswordChangedEmail } from '@/lib/email/send';
 type Account = Database['public']['Tables']['accounts']['Row'];
 
 /**
+ * Hilfsfunktion: JSONB-Wert sicher als Array parsen.
+ * Faengt doppelt-encoded Strings ab (z.B. von altem JSON.stringify-Bug).
+ */
+function parseJsonbArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed as T[];
+    } catch {
+      // ignorieren
+    }
+  }
+  return [];
+}
+
+/**
  * Get the current user's account
  */
 export async function getMyAccount(): Promise<ActionResult<Account>> {
@@ -123,12 +140,14 @@ export async function updatePremiumProfile(data: {
     }
 
     // Max. 6 Galerie-Bilder
-    if (data.gallery_urls.length > 6) {
+    const galleryArr = Array.isArray(data.gallery_urls) ? data.gallery_urls : [];
+    if (galleryArr.length > 6) {
       return { success: false, error: 'Maximal 6 Galerie-Bilder erlaubt', code: 'VALIDATION_ERROR' };
     }
 
     // Max. 10 Zertifikate
-    if (data.certificates.length > 10) {
+    const certsArr = Array.isArray(data.certificates) ? data.certificates : [];
+    if (certsArr.length > 10) {
       return { success: false, error: 'Maximal 10 Zertifikate erlaubt', code: 'VALIDATION_ERROR' };
     }
 
@@ -136,8 +155,8 @@ export async function updatePremiumProfile(data: {
       .from('accounts')
       .update({
         description: data.description?.trim() || null,
-        gallery_urls: JSON.stringify(data.gallery_urls),
-        certificates: JSON.stringify(data.certificates),
+        gallery_urls: galleryArr,
+        certificates: certsArr,
       })
       .eq('owner_id', user.id)
       .is('deleted_at', null)
@@ -285,6 +304,154 @@ export async function uploadAccountLogo(formData: FormData): Promise<ActionResul
     return { success: true, data: { url: publicUrl } };
   } catch (error) {
     console.error('[uploadAccountLogo] Unexpected error:', error);
+    return { success: false, error: ErrorMessages.SERVER_ERROR, code: 'SERVER_ERROR' };
+  }
+}
+
+/**
+ * Profilbild (Avatar) hochladen - Server Action
+ */
+export async function uploadProfileAvatar(formData: FormData): Promise<ActionResult<{ url: string }>> {
+  try {
+    const supabase = await createActionClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return { success: false, error: ErrorMessages.UNAUTHORIZED, code: 'UNAUTHORIZED' };
+    }
+    
+    const file = formData.get('file') as File;
+    if (!file) {
+      return { success: false, error: 'Keine Datei angegeben', code: 'VALIDATION_ERROR' };
+    }
+    
+    if (file.size > 2 * 1024 * 1024) {
+      return { success: false, error: ErrorMessages.FILE_TOO_LARGE + ' (max. 2MB)', code: 'VALIDATION_ERROR' };
+    }
+    
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      return { success: false, error: ErrorMessages.INVALID_FILE_TYPE, code: 'VALIDATION_ERROR' };
+    }
+    
+    // Altes Avatar loeschen falls vorhanden
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', user.id)
+      .single();
+    
+    if (profileData?.avatar_url) {
+      const oldPath = profileData.avatar_url.split('/account-logos/')[1];
+      if (oldPath) {
+        await supabase.storage.from('account-logos').remove([oldPath]);
+      }
+    }
+    
+    // Account ID holen fuer den Storage-Pfad
+    const { data: account } = await supabase
+      .from('accounts')
+      .select('id')
+      .eq('owner_id', user.id)
+      .is('deleted_at', null)
+      .single();
+    
+    if (!account) {
+      return { success: false, error: ErrorMessages.ACCOUNT_NOT_FOUND, code: 'NOT_FOUND' };
+    }
+    
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const filename = `${account.id}/avatar-${Date.now()}.${ext}`;
+    
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('account-logos')
+      .upload(filename, file, { upsert: true, cacheControl: '31536000' });
+    
+    if (uploadError) {
+      console.error('[uploadProfileAvatar] Upload error:', uploadError);
+      return { success: false, error: 'Upload fehlgeschlagen', code: 'SERVER_ERROR' };
+    }
+    
+    const { data: { publicUrl } } = supabase.storage
+      .from('account-logos')
+      .getPublicUrl(uploadData.path);
+    
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ avatar_url: publicUrl })
+      .eq('id', user.id);
+    
+    if (updateError) {
+      console.error('[uploadProfileAvatar] Update error:', updateError);
+      await supabase.storage.from('account-logos').remove([uploadData.path]);
+      return { success: false, error: 'Fehler beim Speichern', code: 'SERVER_ERROR' };
+    }
+    
+    revalidatePath('/seller/konto');
+    return { success: true, data: { url: publicUrl } };
+  } catch (error) {
+    console.error('[uploadProfileAvatar] Unexpected error:', error);
+    return { success: false, error: ErrorMessages.SERVER_ERROR, code: 'SERVER_ERROR' };
+  }
+}
+
+/**
+ * Galerie-Bild hochladen - Server Action
+ */
+export async function uploadGalleryImage(formData: FormData): Promise<ActionResult<{ url: string }>> {
+  try {
+    const supabase = await createActionClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return { success: false, error: ErrorMessages.UNAUTHORIZED, code: 'UNAUTHORIZED' };
+    }
+    
+    const { data: account } = await supabase
+      .from('accounts')
+      .select('id')
+      .eq('owner_id', user.id)
+      .is('deleted_at', null)
+      .single();
+    
+    if (!account) {
+      return { success: false, error: ErrorMessages.ACCOUNT_NOT_FOUND, code: 'NOT_FOUND' };
+    }
+    
+    const file = formData.get('file') as File;
+    if (!file) {
+      return { success: false, error: 'Keine Datei angegeben', code: 'VALIDATION_ERROR' };
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      return { success: false, error: ErrorMessages.FILE_TOO_LARGE + ' (max. 5MB)', code: 'VALIDATION_ERROR' };
+    }
+    
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      return { success: false, error: ErrorMessages.INVALID_FILE_TYPE, code: 'VALIDATION_ERROR' };
+    }
+    
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const filename = `${account.id}/gallery/${crypto.randomUUID()}.${ext}`;
+    
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('account-logos')
+      .upload(filename, file, { upsert: false, cacheControl: '31536000' });
+    
+    if (uploadError) {
+      console.error('[uploadGalleryImage] Upload error:', uploadError);
+      return { success: false, error: 'Upload fehlgeschlagen', code: 'SERVER_ERROR' };
+    }
+    
+    const { data: { publicUrl } } = supabase.storage
+      .from('account-logos')
+      .getPublicUrl(uploadData.path);
+    
+    revalidatePath('/seller/konto');
+    return { success: true, data: { url: publicUrl } };
+  } catch (error) {
+    console.error('[uploadGalleryImage] Unexpected error:', error);
     return { success: false, error: ErrorMessages.SERVER_ERROR, code: 'SERVER_ERROR' };
   }
 }
@@ -516,8 +683,8 @@ export async function getProfileWithAccount(): Promise<ActionResult<UserProfileD
           logoUrl: account.logo_url,
           emailSignature: account.email_signature,
           isVerified: account.is_verified || false,
-          galleryUrls: (account.gallery_urls as { url: string; caption?: string }[] | null) || [],
-          certificates: (account.certificates as { name: string; url?: string; issued_by?: string }[] | null) || [],
+          galleryUrls: parseJsonbArray<{ url: string; caption?: string }>(account.gallery_urls),
+          certificates: parseJsonbArray<{ name: string; url?: string; issued_by?: string }>(account.certificates),
         },
         plan: {
           slug: plan.slug,
@@ -537,6 +704,7 @@ export async function getProfileWithAccount(): Promise<ActionResult<UserProfileD
 export async function updateProfile(data: {
   full_name?: string;
   phone?: string;
+  avatar_url?: string;
 }): Promise<ActionResult> {
   try {
     const supabase = await createActionClient();
@@ -549,6 +717,7 @@ export async function updateProfile(data: {
     const updateData: Record<string, string | null> = {};
     if (data.full_name !== undefined) updateData.full_name = data.full_name || null;
     if (data.phone !== undefined) updateData.phone = data.phone || null;
+    if (data.avatar_url !== undefined) updateData.avatar_url = data.avatar_url || null;
     
     const { error } = await supabase
       .from('profiles')

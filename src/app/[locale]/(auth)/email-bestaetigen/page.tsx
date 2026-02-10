@@ -115,9 +115,9 @@ export default function EmailBestaetigungenPage() {
 
         <p className="text-xs text-muted-foreground text-center pt-2">
           {t('problems')}{' '}
-          <Link href="/kontakt" className="text-primary hover:underline">
+          <a href="mailto:support@cmm24.com" className="text-primary hover:underline">
             {t('contactUs')}
-          </Link>
+          </a>
         </p>
       </CardContent>
     </Card>

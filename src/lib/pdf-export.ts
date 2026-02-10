@@ -187,8 +187,8 @@ export function generateListingPdfContent(listing: Listing): string {
         <div class="manufacturer">${listing.manufacturer.name}</div>
         <h1>${listing.title}</h1>
         <div class="price">
-          ${formatPrice(listing.price)}
-          ${listing.priceNegotiable ? '<span class="price-note"> (VB)</span>' : ''}
+          ${listing.price ? formatPrice(listing.price) : 'VB'}
+          ${listing.price && listing.priceNegotiable ? '<span class="price-note"> (VB)</span>' : ''}
         </div>
       </div>
 
@@ -293,7 +293,7 @@ export function generateComparisonPdfContent(listings: Listing[]): string {
   });
 
   const specs = [
-    { key: 'price', label: 'Preis', format: (l: Listing) => formatPrice(l.price, l.currency) + (l.priceNegotiable ? ' (VB)' : '') },
+    { key: 'price', label: 'Preis', format: (l: Listing) => (l.price ? formatPrice(l.price, l.currency) + (l.priceNegotiable ? ' (VB)' : '') : 'VB') },
     { key: 'yearBuilt', label: 'Baujahr', format: (l: Listing) => l.yearBuilt.toString() },
     { key: 'condition', label: 'Zustand', format: (l: Listing) => conditionLabels[l.condition] },
     { key: 'measuringRange', label: 'Messbereich', format: (l: Listing) => `${l.measuringRangeX} × ${l.measuringRangeY} × ${l.measuringRangeZ} mm` },
