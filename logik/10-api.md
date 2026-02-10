@@ -8,7 +8,7 @@ Die CMM24 REST API ist ein **Business-Tier Feature** und ermöglicht externen Sy
 - Anfragen (Read, Update Status)
 - Account-Statistiken
 
-**Basis-URL:** `https://api.cmm24.de/v1`
+**Basis-URL:** `https://api.cmm24.com/v1`
 
 ---
 
@@ -31,7 +31,7 @@ API Keys werden im Seller Portal unter **Einstellungen > API** generiert.
 ```bash
 # Header-Authentifizierung
 curl -H "Authorization: Bearer cmm24_sk_live_xxxxxxxxxxxx" \
-     https://api.cmm24.de/v1/listings
+     https://api.cmm24.com/v1/listings
 ```
 
 ### API Key Format
@@ -194,8 +194,8 @@ GET /v1/listings/{id}
       {
         "id": "...",
         "type": "image",
-        "url": "https://storage.cmm24.de/...",
-        "thumbnail_url": "https://storage.cmm24.de/...",
+        "url": "https://storage.cmm24.com/...",
+        "thumbnail_url": "https://storage.cmm24.com/...",
         "is_primary": true
       }
     ],

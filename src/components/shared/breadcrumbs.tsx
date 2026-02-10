@@ -22,7 +22,7 @@ interface BreadcrumbsProps {
 export function Breadcrumbs({ 
   items, 
   className, 
-  baseUrl = 'https://cmm24.de',
+  baseUrl = 'https://cmm24.com',
   includeSchema = true 
 }: BreadcrumbsProps) {
   const t = useTranslations('breadcrumb');

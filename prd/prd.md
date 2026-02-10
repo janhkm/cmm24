@@ -839,8 +839,8 @@ jobs:
   
   deploy:
     - Preview (PR) → Vercel Preview
-    - Staging (develop) → staging.cmm24.de
-    - Production (main) → cmm24.de
+    - Staging (develop) → staging.cmm24.com
+    - Production (main) → cmm24.com
 ```
 
 ---
@@ -853,8 +853,8 @@ jobs:
 |-------------|--------|-----|----------|--------|
 | Local | - | localhost:3000 | Local (Docker) | Test Mode |
 | Preview | PR branches | pr-123.vercel.app | Staging Project | Test Mode |
-| Staging | `develop` | staging.cmm24.de | Staging Project | Test Mode |
-| Production | `main` | cmm24.de | Production Project | Live Mode |
+| Staging | `develop` | staging.cmm24.com | Staging Project | Test Mode |
+| Production | `main` | cmm24.com | Production Project | Live Mode |
 
 ### Environment Variables
 
@@ -877,10 +877,10 @@ STRIPE_WEBHOOK_SECRET=
 
 # Resend (E-Mail)
 RESEND_API_KEY=
-EMAIL_FROM=noreply@cmm24.de
+EMAIL_FROM=noreply@cmm24.com
 
 # Analytics
-NEXT_PUBLIC_PLAUSIBLE_DOMAIN=cmm24.de
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN=cmm24.com
 
 # Sentry
 NEXT_PUBLIC_SENTRY_DSN=
@@ -2986,7 +2986,7 @@ Anzeige:
 │  └─────────────────────────────────────────────────────────┘   │
 │                                                                 │
 │  Oder kopieren Sie diesen Link:                                │
-│  https://cmm24.de/...                                          │
+│  https://cmm24.com/...                                          │
 │                                                                 │
 │  Mit freundlichen Grüßen,                                      │
 │  Ihr CMM24-Team                                                │
@@ -3112,7 +3112,7 @@ Betreff: Neue Anfrage für Ihre Zeiss Contura 10/12/6
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  Dieses Angebot wurde über CMM24.de erstellt.                              │
-│  Direktlink: https://cmm24.de/maschinen/zeiss-contura-xyz                  │
+│  Direktlink: https://cmm24.com/maschinen/zeiss-contura-xyz                  │
 │                                                                             │
 │  [QR-Code]                                                                 │
 │                                                                             │
@@ -3499,7 +3499,7 @@ const supabase = createClient(url, key, {
 ├────────────────────────────────────────────────────────────┤
 │                                                            │
 │  ┌─────────────────────────────────────────────────────┐  │
-│  │ https://cmm24.de/maschinen/zeiss-contura-xyz  [📋] │  │
+│  │ https://cmm24.com/maschinen/zeiss-contura-xyz  [📋] │  │
 │  └─────────────────────────────────────────────────────┘  │
 │                                                            │
 │  ─────────────────────────────────────────────────────────│
@@ -3520,7 +3520,7 @@ const handleShare = async () => {
   const shareData = {
     title: 'Zeiss Contura 10/12/6 auf CMM24',
     text: 'Gebrauchte Messmaschine: Zeiss Contura 10/12/6 für 45.000 €',
-    url: 'https://cmm24.de/maschinen/zeiss-contura-xyz',
+    url: 'https://cmm24.com/maschinen/zeiss-contura-xyz',
   };
 
   if (navigator.share && navigator.canShare(shareData)) {

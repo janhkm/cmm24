@@ -138,9 +138,9 @@ export default async function HerstellerDetailPage({ params }: HerstellerDetailP
   const brandSchema = {
     '@context': 'https://schema.org',
     '@type': 'Brand',
-    '@id': `https://cmm24.de/hersteller/${manufacturer.slug}#brand`,
+    '@id': `https://cmm24.com/hersteller/${manufacturer.slug}#brand`,
     name: manufacturer.name,
-    url: `https://cmm24.de/hersteller/${manufacturer.slug}`,
+    url: `https://cmm24.com/hersteller/${manufacturer.slug}`,
   };
 
   // JSON-LD for ItemList
@@ -155,7 +155,7 @@ export default async function HerstellerDetailPage({ params }: HerstellerDetailP
       item: {
         '@type': 'Product',
         name: listing.title,
-        url: `https://cmm24.de/maschinen/${listing.slug}`,
+        url: `https://cmm24.com/maschinen/${listing.slug}`,
         offers: {
           '@type': 'Offer',
           price: (listing.price || 0) / 100,

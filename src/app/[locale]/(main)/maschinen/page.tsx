@@ -45,7 +45,7 @@ export async function generateMetadata({ params, searchParams }: MaschinenPagePr
   // Build dynamic title and description
   let title: string;
   let description: string;
-  let canonical = 'https://cmm24.de/maschinen';
+  let canonical = 'https://cmm24.com/maschinen';
 
   if (query) {
     title = t('searchTitle', { query });
@@ -54,7 +54,7 @@ export async function generateMetadata({ params, searchParams }: MaschinenPagePr
   } else if (manufacturerNames) {
     title = t('manufacturerTitle', { manufacturers: manufacturerNames, count: filteredCount });
     description = t('manufacturerDesc', { count: filteredCount, manufacturers: manufacturerNames });
-    canonical = `https://cmm24.de/maschinen?hersteller=${herstellerParam}`;
+    canonical = `https://cmm24.com/maschinen?hersteller=${herstellerParam}`;
   } else {
     title = t('defaultTitle', { count: filteredCount });
     description = t('defaultDesc', { count: filteredCount });
@@ -161,7 +161,7 @@ export default async function MaschinenPage({ params, searchParams }: MaschinenP
       item: {
         '@type': 'Product',
         name: listing.title,
-        url: `https://cmm24.de/maschinen/${listing.slug}`,
+        url: `https://cmm24.com/maschinen/${listing.slug}`,
         image: listing.media[0]?.url,
         brand: {
           '@type': 'Brand',
@@ -186,7 +186,7 @@ export default async function MaschinenPage({ params, searchParams }: MaschinenP
         '@type': 'ListItem',
         position: 1,
         name: tBreadcrumb('home'),
-        item: 'https://cmm24.de',
+        item: 'https://cmm24.com',
       },
       {
         '@type': 'ListItem',
@@ -194,7 +194,7 @@ export default async function MaschinenPage({ params, searchParams }: MaschinenP
         name: manufacturerNames 
           ? t('manufacturerMachines', { manufacturers: manufacturerNames })
           : tBreadcrumb('machines'),
-        ...(manufacturerNames ? {} : { item: 'https://cmm24.de/maschinen' }),
+        ...(manufacturerNames ? {} : { item: 'https://cmm24.com/maschinen' }),
       },
     ],
   };

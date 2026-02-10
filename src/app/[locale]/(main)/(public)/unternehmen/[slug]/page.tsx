@@ -147,9 +147,9 @@ export default async function CompanyProfilePage({ params }: CompanyProfilePageP
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    '@id': `https://cmm24.de/unternehmen/${company.slug}#organization`,
+    '@id': `https://cmm24.com/unternehmen/${company.slug}#organization`,
     name: company.company_name,
-    url: `https://cmm24.de/unternehmen/${company.slug}`,
+    url: `https://cmm24.com/unternehmen/${company.slug}`,
     ...(company.logo_url ? { logo: company.logo_url } : {}),
     ...(company.website ? { sameAs: [company.website] } : {}),
     ...(company.address_city ? {

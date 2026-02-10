@@ -60,7 +60,7 @@ export default function AGBPage() {
           <h2 className="text-xl font-semibold mb-4">§ 2 Begriffsbestimmungen</h2>
           <p>Im Sinne dieser AGB gelten die folgenden Begriffsbestimmungen:</p>
           <ul className="list-disc pl-6 mt-4 space-y-2">
-            <li><strong>Plattform:</strong> Die unter der Domain cmm24.de erreichbare Online-Plattform einschließlich aller Unterseiten, Funktionen und der über die Plattform bereitgestellten API.</li>
+            <li><strong>Plattform:</strong> Die unter der Domain cmm24.com erreichbare Online-Plattform einschließlich aller Unterseiten, Funktionen und der über die Plattform bereitgestellten API.</li>
             <li><strong>Nutzer:</strong> Jede natürliche oder juristische Person, die die Plattform nutzt, unabhängig davon, ob ein Nutzerkonto besteht.</li>
             <li><strong>Buyer (Käufer):</strong> Ein Nutzer, der die Plattform nutzt, um Maschinen zu suchen, zu vergleichen und Anfragen an Seller zu senden.</li>
             <li><strong>Seller (Verkäufer):</strong> Ein registrierter gewerblicher Nutzer im Sinne der P2B-Verordnung, der über einen Firmen-Account Inserate für Maschinen auf der Plattform einstellt.</li>

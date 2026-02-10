@@ -33,7 +33,7 @@ export function ShareModal({ listing, trigger }: ShareModalProps) {
 
   const url = typeof window !== 'undefined' 
     ? `${window.location.origin}/maschinen/${listing.slug}`
-    : `https://cmm24.de/maschinen/${listing.slug}`;
+    : `https://cmm24.com/maschinen/${listing.slug}`;
 
   const title = listing.title;
   const text = `${listing.title} - ${listing.price ? `${(listing.price / 100).toLocaleString('de-DE')} €` : 'VB'} auf CMM24`;

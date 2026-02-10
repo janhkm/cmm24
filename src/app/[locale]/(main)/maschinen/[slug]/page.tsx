@@ -151,7 +151,7 @@ export async function generateMetadata({ params }: ListingDetailPageProps): Prom
     openGraph: {
       title: t('ogTitle', { manufacturer: manufacturerName, model: listing.title }),
       description,
-      url: `https://cmm24.de/maschinen/${listing.slug}`,
+      url: `https://cmm24.com/maschinen/${listing.slug}`,
       siteName: 'CMM24',
       locale,
       type: 'website',
@@ -175,7 +175,7 @@ export async function generateMetadata({ params }: ListingDetailPageProps): Prom
       })(),
     },
     alternates: {
-      canonical: `https://cmm24.de/maschinen/${listing.slug}`,
+      canonical: `https://cmm24.com/maschinen/${listing.slug}`,
     },
     robots: listing.status === 'sold' 
       ? { index: false, follow: true } 
@@ -222,7 +222,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   };
 
   const schemaCondition = getSchemaCondition(listing.condition);
-  const canonicalUrl = `https://cmm24.de/${locale}/maschinen/${listing.slug}`;
+  const canonicalUrl = `https://cmm24.com/${locale}/maschinen/${listing.slug}`;
 
   // JSON-LD Product Schema (per SEO documentation section 6.4, erweitert fuer Google Merchant Center)
   const productSchema = {
@@ -235,7 +235,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     brand: {
       '@type': 'Brand',
       name: manufacturerName,
-      '@id': `https://cmm24.de/${locale}/hersteller/${manufacturerSlug}#brand`,
+      '@id': `https://cmm24.com/${locale}/hersteller/${manufacturerSlug}#brand`,
     },
     manufacturer: {
       '@type': 'Organization',
@@ -382,19 +382,19 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         '@type': 'ListItem',
         position: 1,
         name: tBreadcrumb('home'),
-        item: `https://cmm24.de/${locale}`,
+        item: `https://cmm24.com/${locale}`,
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: tBreadcrumb('machines'),
-        item: `https://cmm24.de/${locale}/maschinen`,
+        item: `https://cmm24.com/${locale}/maschinen`,
       },
       {
         '@type': 'ListItem',
         position: 3,
         name: manufacturerName,
-        item: `https://cmm24.de/${locale}/maschinen?hersteller=${manufacturerSlug}`,
+        item: `https://cmm24.com/${locale}/maschinen?hersteller=${manufacturerSlug}`,
       },
       {
         '@type': 'ListItem',

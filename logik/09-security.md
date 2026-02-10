@@ -444,7 +444,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Access-Control-Allow-Origin',
-            value: process.env.NEXT_PUBLIC_APP_URL || 'https://cmm24.de',
+            value: process.env.NEXT_PUBLIC_APP_URL || 'https://cmm24.com',
           },
           {
             key: 'Access-Control-Allow-Methods',

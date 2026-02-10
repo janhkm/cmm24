@@ -71,11 +71,11 @@ export default async function GlossarDetailPage({ params }: GlossarDetailPagePro
     '@type': 'DefinedTerm',
     name: entry.term,
     description: entry.fullDefinition,
-    url: `https://cmm24.de/glossar/${entry.slug}`,
+    url: `https://cmm24.com/glossar/${entry.slug}`,
     inDefinedTermSet: {
       '@type': 'DefinedTermSet',
       name: 'CMM24 Glossar',
-      url: 'https://cmm24.de/glossar',
+      url: 'https://cmm24.com/glossar',
     },
   };
 

@@ -258,7 +258,7 @@ export function generateListingPdfContent(listing: Listing): string {
       ` : ''}
 
       <div class="footer">
-        <p>Dieses Angebot wurde erstellt auf <a href="https://cmm24.de">CMM24.de</a></p>
+        <p>Dieses Angebot wurde erstellt auf <a href="https://cmm24.com">CMM24.de</a></p>
         <p>Der führende Marktplatz für gebrauchte Koordinatenmessmaschinen</p>
         <p style="margin-top: 10px;">Angebots-ID: CMM24-${listing.id}</p>
       </div>
@@ -444,7 +444,7 @@ export function generateComparisonPdfContent(listings: Listing[]): string {
       </table>
 
       <div class="footer">
-        <p>Dieser Vergleich wurde erstellt auf <a href="https://cmm24.de">CMM24.de</a></p>
+        <p>Dieser Vergleich wurde erstellt auf <a href="https://cmm24.com">CMM24.de</a></p>
         <p>Der führende Marktplatz für gebrauchte Koordinatenmessmaschinen</p>
       </div>
     </body>

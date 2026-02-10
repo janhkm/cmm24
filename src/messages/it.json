@@ -846,7 +846,7 @@
     "description": "Ci dispiace, ma si è verificato un errore imprevisto. Il nostro team è stato notificato.",
     "retry": "Riprova",
     "backToHome": "Torna alla home",
-    "persistsNote": "Se il problema persiste, contattaci su support@cmm24.de"
+    "persistsNote": "Se il problema persiste, contattaci su support@cmm24.com"
   },
   "notFound": {
     "title": "Pagina non trovata",

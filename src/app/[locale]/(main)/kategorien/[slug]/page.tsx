@@ -77,7 +77,7 @@ export default async function KategorieDetailPage({ params }: KategorieDetailPag
       item: {
         '@type': 'Product',
         name: listing.title,
-        url: `https://cmm24.de/maschinen/${listing.slug}`,
+        url: `https://cmm24.com/maschinen/${listing.slug}`,
         offers: {
           '@type': 'Offer',
           price: listing.price ? listing.price / 100 : undefined,

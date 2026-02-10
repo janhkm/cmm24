@@ -7,8 +7,8 @@
 
 const ALLOWED_ORIGINS = [
   process.env.NEXT_PUBLIC_APP_URL,
-  'https://cmm24.de',
-  'https://www.cmm24.de',
+  'https://cmm24.com',
+  'https://www.cmm24.com',
 ].filter(Boolean) as string[];
 
 /**

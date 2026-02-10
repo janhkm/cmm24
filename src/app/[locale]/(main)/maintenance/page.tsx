@@ -65,9 +65,9 @@ export default async function MaintenancePage() {
               {t('urgentDescription')}
             </p>
             <Button variant="outline" asChild>
-              <a href="mailto:support@cmm24.de">
+              <a href="mailto:support@cmm24.com">
                 <Mail className="mr-2 h-4 w-4" />
-                support@cmm24.de
+                support@cmm24.com
               </a>
             </Button>
           </div>

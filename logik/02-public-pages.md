@@ -377,8 +377,8 @@ glossary_entries
 #### Option A: Email senden (kein DB-Eintrag)
 ```typescript
 await resend.emails.send({
-  from: 'CMM24 <kontakt@cmm24.de>',
-  to: 'kontakt@cmm24.de',
+  from: 'CMM24 <kontakt@cmm24.com>',
+  to: 'kontakt@cmm24.com',
   subject: `Kontaktanfrage von ${name}`,
   html: `...`
 })

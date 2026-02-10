@@ -38,8 +38,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   icons: {
-    icon: '/favicon.png',
-    apple: '/favicon.png',
+    icon: [
+      { url: '/favicon.ico', sizes: '16x16 32x32 48x48' },
+      { url: '/favicon.png?v=2', type: 'image/png', sizes: '500x500' },
+    ],
+    apple: { url: '/favicon.png?v=2', sizes: '180x180' },
   },
   title: {
     default: 'CMM24 - Gebrauchte Koordinatenmessmaschinen kaufen & verkaufen',

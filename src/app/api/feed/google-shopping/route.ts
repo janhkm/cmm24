@@ -67,7 +67,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Feed generation failed' }, { status: 500 });
     }
 
-    const baseUrl = 'https://cmm24.de';
+    const baseUrl = 'https://cmm24.com';
     const items = (listings || []).map((listing) => {
       const manufacturer = listing.manufacturers as { id: string; name: string; slug: string } | null;
       const manufacturerName = manufacturer?.name || 'Unbekannt';

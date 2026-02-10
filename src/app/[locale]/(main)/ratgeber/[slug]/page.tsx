@@ -93,12 +93,12 @@ export default async function RatgeberDetailPage({ params }: RatgeberDetailPageP
       name: 'CMM24',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://cmm24.de/logo.png',
+        url: 'https://cmm24.com/logo.png',
       },
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://cmm24.de/ratgeber/${article.slug}`,
+      '@id': `https://cmm24.com/ratgeber/${article.slug}`,
     },
   };
 

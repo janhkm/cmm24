@@ -179,7 +179,7 @@ Deno.serve(async (req) => {
 // =============================================================================
 
 function buildEmailHtml(reply: PendingReply): string {
-  const baseUrl = Deno.env.get('NEXT_PUBLIC_APP_URL') || 'https://cmm24.de';
+  const baseUrl = Deno.env.get('NEXT_PUBLIC_APP_URL') || 'https://cmm24.com';
   
   // Build message with line breaks preserved
   const messageHtml = reply.message
@@ -303,7 +303,7 @@ async function sendEmail(params: {
 }): Promise<{ success: boolean; error?: string }> {
   const { to, subject, html, resendApiKey } = params;
   
-  const fromEmail = Deno.env.get('EMAIL_FROM') || 'CMM24 <noreply@cmm24.de>';
+  const fromEmail = Deno.env.get('EMAIL_FROM') || 'CMM24 <noreply@cmm24.com>';
   
   try {
     const response = await fetch('https://api.resend.com/emails', {

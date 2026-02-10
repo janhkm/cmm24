@@ -32,8 +32,9 @@ export function ListingCard({
 
   const primaryImage = listing.media.find((m) => m.isPrimary) || listing.media[0];
   const isSold = listing.status === 'sold';
-  const isNew = listing.publishedAt && 
-    new Date(listing.publishedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const referenceDate = listing.publishedAt || listing.createdAt;
+  const isNew = referenceDate && 
+    new Date(referenceDate) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(locale, {
@@ -47,7 +48,7 @@ export function ListingCard({
   return (
     <Card
       className={cn(
-        'group overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-1',
+        'group overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-1 border-2 border-neutral-300 dark:border-neutral-600',
         isSold && 'opacity-75',
         className
       )}

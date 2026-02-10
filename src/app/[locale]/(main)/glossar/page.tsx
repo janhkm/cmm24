@@ -36,7 +36,7 @@ const glossarySchema = {
     '@type': 'DefinedTerm',
     name: entry.term,
     description: entry.shortDefinition,
-    url: `https://cmm24.de/glossar/${entry.slug}`,
+    url: `https://cmm24.com/glossar/${entry.slug}`,
   })),
 };
 

@@ -224,8 +224,8 @@ export default function CookieRichtliniePage() {
         <h2 className="text-xl font-semibold mt-8 mb-4">Kontakt</h2>
         <p className="text-muted-foreground">
           Bei Fragen zu unserer Cookie-Richtlinie kontaktieren Sie uns unter:{' '}
-          <a href="mailto:datenschutz@cmm24.de" className="text-primary hover:underline">
-            datenschutz@cmm24.de
+          <a href="mailto:datenschutz@cmm24.com" className="text-primary hover:underline">
+            datenschutz@cmm24.com
           </a>
         </p>
 

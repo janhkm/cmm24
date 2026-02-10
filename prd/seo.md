@@ -155,7 +155,7 @@ cmm software vergleich
 
 ```
 Grundstruktur:
-https://cmm24.de/{locale}/{content-type}/{slug}
+https://cmm24.com/{locale}/{content-type}/{slug}
 
 Beispiele:
 /de/                                    → Startseite (DE)
@@ -305,7 +305,7 @@ Disallow: /*/registrieren
 Disallow: /*/passwort-vergessen
 
 # Sitemaps
-Sitemap: https://cmm24.de/sitemap.xml
+Sitemap: https://cmm24.com/sitemap.xml
 ```
 
 #### Meta Robots Tags
@@ -340,23 +340,23 @@ Sitemap: https://cmm24.de/sitemap.xml
 <?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
-    <loc>https://cmm24.de/sitemap-static.xml</loc>
+    <loc>https://cmm24.com/sitemap-static.xml</loc>
     <lastmod>2026-01-21</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://cmm24.de/sitemap-listings-1.xml</loc>
+    <loc>https://cmm24.com/sitemap-listings-1.xml</loc>
     <lastmod>2026-01-21</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://cmm24.de/sitemap-listings-2.xml</loc>
+    <loc>https://cmm24.com/sitemap-listings-2.xml</loc>
     <lastmod>2026-01-21</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://cmm24.de/sitemap-manufacturers.xml</loc>
+    <loc>https://cmm24.com/sitemap-manufacturers.xml</loc>
     <lastmod>2026-01-21</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://cmm24.de/sitemap-content.xml</loc>
+    <loc>https://cmm24.com/sitemap-content.xml</loc>
     <lastmod>2026-01-21</lastmod>
   </sitemap>
 </sitemapindex>
@@ -370,18 +370,18 @@ Sitemap: https://cmm24.de/sitemap.xml
         xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://cmm24.de/de/maschinen/zeiss-contura-10-12-6-abc123</loc>
+    <loc>https://cmm24.com/de/maschinen/zeiss-contura-10-12-6-abc123</loc>
     <lastmod>2026-01-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <!-- hreflang für alle Sprachen -->
-    <xhtml:link rel="alternate" hreflang="de" href="https://cmm24.de/de/maschinen/zeiss-contura-10-12-6-abc123"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://cmm24.de/en/machines/zeiss-contura-10-12-6-abc123"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://cmm24.de/fr/machines/zeiss-contura-10-12-6-abc123"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://cmm24.de/de/maschinen/zeiss-contura-10-12-6-abc123"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://cmm24.com/de/maschinen/zeiss-contura-10-12-6-abc123"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cmm24.com/en/machines/zeiss-contura-10-12-6-abc123"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cmm24.com/fr/machines/zeiss-contura-10-12-6-abc123"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cmm24.com/de/maschinen/zeiss-contura-10-12-6-abc123"/>
     <!-- Bilder -->
     <image:image>
-      <image:loc>https://cmm24.de/images/listings/abc123/main.jpg</image:loc>
+      <image:loc>https://cmm24.com/images/listings/abc123/main.jpg</image:loc>
       <image:title>Zeiss Contura 10/12/6 Koordinatenmessmaschine</image:title>
     </image:image>
   </url>
@@ -407,7 +407,7 @@ Sitemap: https://cmm24.de/sitemap.xml
 
 ```html
 <!-- Jede Seite braucht einen Canonical -->
-<link rel="canonical" href="https://cmm24.de/de/maschinen/zeiss-contura-10-12-6-abc123" />
+<link rel="canonical" href="https://cmm24.com/de/maschinen/zeiss-contura-10-12-6-abc123" />
 
 <!-- Regel: Canonical zeigt auf sich selbst ODER auf die Hauptversion -->
 ```
@@ -479,8 +479,8 @@ module.exports = {
       // www zu non-www
       {
         source: '/:path*',
-        has: [{ type: 'host', value: 'www.cmm24.de' }],
-        destination: 'https://cmm24.de/:path*',
+        has: [{ type: 'host', value: 'www.cmm24.com' }],
+        destination: 'https://cmm24.com/:path*',
         permanent: true,
       },
       // Alte URL-Struktur
@@ -783,17 +783,17 @@ Validierung: Google Rich Results Test + Schema.org Validator
 {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  "@id": "https://cmm24.de/#website",
+  "@id": "https://cmm24.com/#website",
   "name": "CMM24",
   "alternateName": "CMM24 - Marktplatz für Koordinatenmessmaschinen",
-  "url": "https://cmm24.de",
+  "url": "https://cmm24.com",
   "description": "Der führende B2B-Marktplatz für gebrauchte Koordinatenmessmaschinen in Europa.",
   "inLanguage": ["de", "en", "fr", "nl", "it", "es", "pl"],
   "potentialAction": {
     "@type": "SearchAction",
     "target": {
       "@type": "EntryPoint",
-      "urlTemplate": "https://cmm24.de/de/maschinen?q={search_term_string}"
+      "urlTemplate": "https://cmm24.com/de/maschinen?q={search_term_string}"
     },
     "query-input": "required name=search_term_string"
   }
@@ -806,17 +806,17 @@ Validierung: Google Rich Results Test + Schema.org Validator
 {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "@id": "https://cmm24.de/#organization",
+  "@id": "https://cmm24.com/#organization",
   "name": "CMM24",
   "legalName": "CMM24 GmbH",
-  "url": "https://cmm24.de",
+  "url": "https://cmm24.com",
   "logo": {
     "@type": "ImageObject",
-    "url": "https://cmm24.de/logo.png",
+    "url": "https://cmm24.com/logo.png",
     "width": 600,
     "height": 60
   },
-  "image": "https://cmm24.de/og-image.jpg",
+  "image": "https://cmm24.com/og-image.jpg",
   "description": "CMM24 ist der führende B2B-Marktplatz für gebrauchte Koordinatenmessmaschinen in Europa. Wir verbinden Käufer und Verkäufer von Messtechnik.",
   "foundingDate": "2026",
   "founders": [
@@ -836,7 +836,7 @@ Validierung: Google Rich Results Test + Schema.org Validator
     {
       "@type": "ContactPoint",
       "contactType": "customer service",
-      "email": "kontakt@cmm24.de",
+      "email": "kontakt@cmm24.com",
       "availableLanguage": ["German", "English"]
     }
   ],
@@ -853,18 +853,18 @@ Validierung: Google Rich Results Test + Schema.org Validator
 {
   "@context": "https://schema.org",
   "@type": "Product",
-  "@id": "https://cmm24.de/de/maschinen/zeiss-contura-10-12-6-abc123#product",
+  "@id": "https://cmm24.com/de/maschinen/zeiss-contura-10-12-6-abc123#product",
   "name": "Zeiss Contura 10/12/6",
   "description": "Gebrauchte Koordinatenmessmaschine Zeiss Contura 10/12/6, Baujahr 2019, in sehr gutem Zustand. Messbereich 1000 x 1200 x 600 mm, Genauigkeit MPEE 1.8 + L/350 µm. Inklusive Software Calypso 6.8 und Tasterkopf VAST XXT.",
   "image": [
-    "https://cmm24.de/images/listings/abc123/1.jpg",
-    "https://cmm24.de/images/listings/abc123/2.jpg",
-    "https://cmm24.de/images/listings/abc123/3.jpg"
+    "https://cmm24.com/images/listings/abc123/1.jpg",
+    "https://cmm24.com/images/listings/abc123/2.jpg",
+    "https://cmm24.com/images/listings/abc123/3.jpg"
   ],
   "brand": {
     "@type": "Brand",
     "name": "Zeiss",
-    "@id": "https://cmm24.de/de/hersteller/zeiss#brand"
+    "@id": "https://cmm24.com/de/hersteller/zeiss#brand"
   },
   "manufacturer": {
     "@type": "Organization",
@@ -880,8 +880,8 @@ Validierung: Google Rich Results Test + Schema.org Validator
   "itemCondition": "https://schema.org/UsedCondition",
   "offers": {
     "@type": "Offer",
-    "@id": "https://cmm24.de/de/maschinen/zeiss-contura-10-12-6-abc123#offer",
-    "url": "https://cmm24.de/de/maschinen/zeiss-contura-10-12-6-abc123",
+    "@id": "https://cmm24.com/de/maschinen/zeiss-contura-10-12-6-abc123#offer",
+    "url": "https://cmm24.com/de/maschinen/zeiss-contura-10-12-6-abc123",
     "priceCurrency": "EUR",
     "price": "45000",
     "priceValidUntil": "2026-12-31",
@@ -890,7 +890,7 @@ Validierung: Google Rich Results Test + Schema.org Validator
     "seller": {
       "@type": "Organization",
       "name": "CMM-Trade GmbH",
-      "url": "https://cmm24.de/de/verkaeufer/cmm-trade",
+      "url": "https://cmm24.com/de/verkaeufer/cmm-trade",
       "address": {
         "@type": "PostalAddress",
         "addressLocality": "München",
@@ -992,8 +992,8 @@ Validierung: Google Rich Results Test + Schema.org Validator
       "item": {
         "@type": "Product",
         "name": "Zeiss Contura 10/12/6",
-        "url": "https://cmm24.de/de/maschinen/zeiss-contura-10-12-6-abc123",
-        "image": "https://cmm24.de/images/listings/abc123/thumb.jpg",
+        "url": "https://cmm24.com/de/maschinen/zeiss-contura-10-12-6-abc123",
+        "image": "https://cmm24.com/images/listings/abc123/thumb.jpg",
         "offers": {
           "@type": "Offer",
           "price": "45000",
@@ -1007,8 +1007,8 @@ Validierung: Google Rich Results Test + Schema.org Validator
       "item": {
         "@type": "Product",
         "name": "Hexagon Global S 9.15.9",
-        "url": "https://cmm24.de/de/maschinen/hexagon-global-s-def456",
-        "image": "https://cmm24.de/images/listings/def456/thumb.jpg",
+        "url": "https://cmm24.com/de/maschinen/hexagon-global-s-def456",
+        "image": "https://cmm24.com/images/listings/def456/thumb.jpg",
         "offers": {
           "@type": "Offer",
           "price": "38000",
@@ -1031,19 +1031,19 @@ Validierung: Google Rich Results Test + Schema.org Validator
       "@type": "ListItem",
       "position": 1,
       "name": "Startseite",
-      "item": "https://cmm24.de/de"
+      "item": "https://cmm24.com/de"
     },
     {
       "@type": "ListItem",
       "position": 2,
       "name": "Maschinen",
-      "item": "https://cmm24.de/de/maschinen"
+      "item": "https://cmm24.com/de/maschinen"
     },
     {
       "@type": "ListItem",
       "position": 3,
       "name": "Zeiss",
-      "item": "https://cmm24.de/de/maschinen?hersteller=zeiss"
+      "item": "https://cmm24.com/de/maschinen?hersteller=zeiss"
     },
     {
       "@type": "ListItem",
@@ -1097,7 +1097,7 @@ Validierung: Google Rich Results Test + Schema.org Validator
   "@type": "HowTo",
   "name": "Koordinatenmessmaschine kaufen: Schritt-für-Schritt Anleitung",
   "description": "So finden und kaufen Sie die richtige gebrauchte Koordinatenmessmaschine für Ihr Unternehmen.",
-  "image": "https://cmm24.de/images/ratgeber/cmm-kaufen.jpg",
+  "image": "https://cmm24.com/images/ratgeber/cmm-kaufen.jpg",
   "totalTime": "P1D",
   "estimatedCost": {
     "@type": "MonetaryAmount",
@@ -1109,36 +1109,36 @@ Validierung: Google Rich Results Test + Schema.org Validator
       "@type": "HowToStep",
       "name": "Anforderungen definieren",
       "text": "Bestimmen Sie den benötigten Messbereich, die erforderliche Genauigkeit und die gewünschte Software.",
-      "image": "https://cmm24.de/images/ratgeber/step1.jpg",
-      "url": "https://cmm24.de/de/ratgeber/messmaschine-kaufen#anforderungen"
+      "image": "https://cmm24.com/images/ratgeber/step1.jpg",
+      "url": "https://cmm24.com/de/ratgeber/messmaschine-kaufen#anforderungen"
     },
     {
       "@type": "HowToStep",
       "name": "Angebote vergleichen",
       "text": "Nutzen Sie die Filter auf CMM24, um passende Maschinen zu finden und die Vergleichsfunktion für bis zu 5 Maschinen.",
-      "image": "https://cmm24.de/images/ratgeber/step2.jpg",
-      "url": "https://cmm24.de/de/ratgeber/messmaschine-kaufen#vergleichen"
+      "image": "https://cmm24.com/images/ratgeber/step2.jpg",
+      "url": "https://cmm24.com/de/ratgeber/messmaschine-kaufen#vergleichen"
     },
     {
       "@type": "HowToStep",
       "name": "Verkäufer kontaktieren",
       "text": "Senden Sie eine Anfrage über CMM24. Fragen Sie nach dem Kalibrierprotokoll, der Wartungshistorie und einem Termin zur Besichtigung.",
-      "image": "https://cmm24.de/images/ratgeber/step3.jpg",
-      "url": "https://cmm24.de/de/ratgeber/messmaschine-kaufen#kontakt"
+      "image": "https://cmm24.com/images/ratgeber/step3.jpg",
+      "url": "https://cmm24.com/de/ratgeber/messmaschine-kaufen#kontakt"
     },
     {
       "@type": "HowToStep",
       "name": "Maschine besichtigen und testen",
       "text": "Vereinbaren Sie einen Termin beim Verkäufer, um die Maschine vor Ort zu prüfen und Testmessungen durchzuführen.",
-      "image": "https://cmm24.de/images/ratgeber/step4.jpg",
-      "url": "https://cmm24.de/de/ratgeber/messmaschine-kaufen#besichtigung"
+      "image": "https://cmm24.com/images/ratgeber/step4.jpg",
+      "url": "https://cmm24.com/de/ratgeber/messmaschine-kaufen#besichtigung"
     },
     {
       "@type": "HowToStep",
       "name": "Kaufvertrag abschließen",
       "text": "Verhandeln Sie den Preis, klären Sie Transport und Installation, und schließen Sie den Kaufvertrag ab.",
-      "image": "https://cmm24.de/images/ratgeber/step5.jpg",
-      "url": "https://cmm24.de/de/ratgeber/messmaschine-kaufen#kauf"
+      "image": "https://cmm24.com/images/ratgeber/step5.jpg",
+      "url": "https://cmm24.com/de/ratgeber/messmaschine-kaufen#kauf"
     }
   ]
 }
@@ -1150,11 +1150,11 @@ Validierung: Google Rich Results Test + Schema.org Validator
 {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
-  "@id": "https://cmm24.de/de/verkaeufer/cmm-trade#business",
+  "@id": "https://cmm24.com/de/verkaeufer/cmm-trade#business",
   "name": "CMM-Trade GmbH",
   "description": "Spezialist für gebrauchte Koordinatenmessmaschinen. Verkauf, Wartung und Service.",
-  "url": "https://cmm24.de/de/verkaeufer/cmm-trade",
-  "image": "https://cmm24.de/images/verkaeufer/cmm-trade-logo.jpg",
+  "url": "https://cmm24.com/de/verkaeufer/cmm-trade",
+  "image": "https://cmm24.com/images/verkaeufer/cmm-trade-logo.jpg",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "Industriestraße 10",
@@ -1322,7 +1322,7 @@ module.exports = {
   // Image Optimization
   images: {
     formats: ['image/avif', 'image/webp'],
-    domains: ['supabase.co', 'cmm24.de'],
+    domains: ['supabase.co', 'cmm24.com'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
@@ -1379,9 +1379,9 @@ Primärsprache: Deutsch (de)
 Fallback: Deutsch (x-default)
 
 URL-Struktur: Subdirectory
-https://cmm24.de/de/... (Deutsch)
-https://cmm24.de/en/... (Englisch)
-https://cmm24.de/fr/... (Französisch)
+https://cmm24.com/de/... (Deutsch)
+https://cmm24.com/en/... (Englisch)
+https://cmm24.com/fr/... (Französisch)
 ...
 ```
 
@@ -1392,38 +1392,38 @@ https://cmm24.de/fr/... (Französisch)
 ```html
 <head>
   <!-- Selbstreferenz -->
-  <link rel="alternate" hreflang="de" href="https://cmm24.de/de/maschinen" />
+  <link rel="alternate" hreflang="de" href="https://cmm24.com/de/maschinen" />
   
   <!-- Alle anderen Sprachen -->
-  <link rel="alternate" hreflang="en" href="https://cmm24.de/en/machines" />
-  <link rel="alternate" hreflang="fr" href="https://cmm24.de/fr/machines" />
-  <link rel="alternate" hreflang="nl" href="https://cmm24.de/nl/machines" />
-  <link rel="alternate" hreflang="it" href="https://cmm24.de/it/macchine" />
-  <link rel="alternate" hreflang="es" href="https://cmm24.de/es/maquinas" />
-  <link rel="alternate" hreflang="pl" href="https://cmm24.de/pl/maszyny" />
-  <link rel="alternate" hreflang="cs" href="https://cmm24.de/cs/stroje" />
-  <link rel="alternate" hreflang="sk" href="https://cmm24.de/sk/stroje" />
-  <link rel="alternate" hreflang="hu" href="https://cmm24.de/hu/gepek" />
-  <link rel="alternate" hreflang="ro" href="https://cmm24.de/ro/masini" />
-  <link rel="alternate" hreflang="bg" href="https://cmm24.de/bg/mashini" />
-  <link rel="alternate" hreflang="el" href="https://cmm24.de/el/michanimata" />
-  <link rel="alternate" hreflang="tr" href="https://cmm24.de/tr/makineler" />
-  <link rel="alternate" hreflang="hr" href="https://cmm24.de/hr/strojevi" />
-  <link rel="alternate" hreflang="sr" href="https://cmm24.de/sr/masine" />
-  <link rel="alternate" hreflang="bs" href="https://cmm24.de/bs/masine" />
-  <link rel="alternate" hreflang="sl" href="https://cmm24.de/sl/stroji" />
-  <link rel="alternate" hreflang="sq" href="https://cmm24.de/sq/makina" />
-  <link rel="alternate" hreflang="mk" href="https://cmm24.de/mk/mashini" />
-  <link rel="alternate" hreflang="sv" href="https://cmm24.de/sv/maskiner" />
-  <link rel="alternate" hreflang="da" href="https://cmm24.de/da/maskiner" />
-  <link rel="alternate" hreflang="et" href="https://cmm24.de/et/masinad" />
-  <link rel="alternate" hreflang="lv" href="https://cmm24.de/lv/masinas" />
-  <link rel="alternate" hreflang="lt" href="https://cmm24.de/lt/masinos" />
-  <link rel="alternate" hreflang="pt" href="https://cmm24.de/pt/maquinas" />
-  <link rel="alternate" hreflang="ka" href="https://cmm24.de/ka/mankanebi" />
+  <link rel="alternate" hreflang="en" href="https://cmm24.com/en/machines" />
+  <link rel="alternate" hreflang="fr" href="https://cmm24.com/fr/machines" />
+  <link rel="alternate" hreflang="nl" href="https://cmm24.com/nl/machines" />
+  <link rel="alternate" hreflang="it" href="https://cmm24.com/it/macchine" />
+  <link rel="alternate" hreflang="es" href="https://cmm24.com/es/maquinas" />
+  <link rel="alternate" hreflang="pl" href="https://cmm24.com/pl/maszyny" />
+  <link rel="alternate" hreflang="cs" href="https://cmm24.com/cs/stroje" />
+  <link rel="alternate" hreflang="sk" href="https://cmm24.com/sk/stroje" />
+  <link rel="alternate" hreflang="hu" href="https://cmm24.com/hu/gepek" />
+  <link rel="alternate" hreflang="ro" href="https://cmm24.com/ro/masini" />
+  <link rel="alternate" hreflang="bg" href="https://cmm24.com/bg/mashini" />
+  <link rel="alternate" hreflang="el" href="https://cmm24.com/el/michanimata" />
+  <link rel="alternate" hreflang="tr" href="https://cmm24.com/tr/makineler" />
+  <link rel="alternate" hreflang="hr" href="https://cmm24.com/hr/strojevi" />
+  <link rel="alternate" hreflang="sr" href="https://cmm24.com/sr/masine" />
+  <link rel="alternate" hreflang="bs" href="https://cmm24.com/bs/masine" />
+  <link rel="alternate" hreflang="sl" href="https://cmm24.com/sl/stroji" />
+  <link rel="alternate" hreflang="sq" href="https://cmm24.com/sq/makina" />
+  <link rel="alternate" hreflang="mk" href="https://cmm24.com/mk/mashini" />
+  <link rel="alternate" hreflang="sv" href="https://cmm24.com/sv/maskiner" />
+  <link rel="alternate" hreflang="da" href="https://cmm24.com/da/maskiner" />
+  <link rel="alternate" hreflang="et" href="https://cmm24.com/et/masinad" />
+  <link rel="alternate" hreflang="lv" href="https://cmm24.com/lv/masinas" />
+  <link rel="alternate" hreflang="lt" href="https://cmm24.com/lt/masinos" />
+  <link rel="alternate" hreflang="pt" href="https://cmm24.com/pt/maquinas" />
+  <link rel="alternate" hreflang="ka" href="https://cmm24.com/ka/mankanebi" />
   
   <!-- x-default für Sprachauswahl/Fallback -->
-  <link rel="alternate" hreflang="x-default" href="https://cmm24.de/de/maschinen" />
+  <link rel="alternate" hreflang="x-default" href="https://cmm24.com/de/maschinen" />
 </head>
 ```
 
@@ -2364,10 +2364,10 @@ Metriken:
 
 ```
 Brand Anchors: 40%
-  "CMM24", "cmm24.de"
+  "CMM24", "cmm24.com"
 
 URL Anchors: 20%
-  "https://cmm24.de", "cmm24.de/maschinen"
+  "https://cmm24.com", "cmm24.com/maschinen"
 
 Generic Anchors: 15%
   "hier", "Website", "Quelle"
@@ -2481,11 +2481,11 @@ Auf Verkäufer-Profilen implementieren
 
 ```
 1. Property einrichten
-   - Domain-Property (empfohlen): cmm24.de
+   - Domain-Property (empfohlen): cmm24.com
    - Verifizierung: DNS-Eintrag
 
 2. Sitemap einreichen
-   - https://cmm24.de/sitemap.xml
+   - https://cmm24.com/sitemap.xml
 
 3. Wichtige Berichte:
    - Leistung (Klicks, Impressionen, CTR, Position)
@@ -2504,13 +2504,13 @@ Auf Verkäufer-Profilen implementieren
 // Beispiel: Täglicher Check für kritische SEO-Metriken
 
 // 1. Indexierte Seiten zählen
-site:cmm24.de → Anzahl merken
+site:cmm24.com → Anzahl merken
 
 // 2. robots.txt erreichbar?
-fetch('https://cmm24.de/robots.txt')
+fetch('https://cmm24.com/robots.txt')
 
 // 3. Sitemap erreichbar?
-fetch('https://cmm24.de/sitemap.xml')
+fetch('https://cmm24.com/sitemap.xml')
 
 // 4. Core Web Vitals API
 // PageSpeed Insights API für Stichproben
@@ -2590,7 +2590,7 @@ Tracking:
 
 ```
 Woche 1:
-□ Indexierung prüfen (site:cmm24.de)
+□ Indexierung prüfen (site:cmm24.com)
 □ Crawl-Fehler in GSC beheben
 □ 404-Fehler finden und beheben
 □ Erste Rankings tracken

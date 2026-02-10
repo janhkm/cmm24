@@ -312,7 +312,7 @@ export async function sendNewInquiryEmail(data: {
   const inquiryUrl = `${process.env.NEXT_PUBLIC_APP_URL}/seller/anfragen/${data.inquiryId}`;
   
   return resend.emails.send({
-    from: 'CMM24 <anfragen@cmm24.de>',
+    from: 'CMM24 <anfragen@cmm24.com>',
     to: data.to,
     subject: `Neue Anfrage zu ${data.listingTitle}`,
     react: NewInquiryEmail({
@@ -484,7 +484,7 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'CMM24 <noreply@cmm24.de>',
+          from: 'CMM24 <noreply@cmm24.com>',
           to: inquiry.contact_email,
           subject: `Re: Ihre Anfrage zu ${inquiry.listings.title}`,
           text: inquiry.accounts.auto_reply_message,

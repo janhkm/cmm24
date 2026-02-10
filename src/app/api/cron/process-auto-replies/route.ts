@@ -209,7 +209,7 @@ async function handleRequest(request: NextRequest) {
 // =============================================================================
 
 function buildEmailHtml(reply: PendingReply): string {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cmm24.de';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cmm24.com';
   
   // Build message with line breaks preserved
   const messageHtml = reply.message
@@ -333,7 +333,7 @@ async function sendEmail(params: {
 }): Promise<{ success: boolean; error?: string }> {
   const { to, subject, html, resendApiKey } = params;
   
-  const fromEmail = process.env.EMAIL_FROM || 'CMM24 <noreply@cmm24.de>';
+  const fromEmail = process.env.EMAIL_FROM || 'CMM24 <noreply@cmm24.com>';
   
   try {
     const response = await fetch('https://api.resend.com/emails', {

@@ -104,8 +104,9 @@ function ListingListItem({
 
   const primaryImage = listing.media.find((m) => m.isPrimary) || listing.media[0];
   const isSold = listing.status === 'sold';
-  const isNew = listing.publishedAt &&
-    new Date(listing.publishedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const referenceDate = listing.publishedAt || listing.createdAt;
+  const isNew = referenceDate &&
+    new Date(referenceDate) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(locale, {
@@ -120,7 +121,7 @@ function ListingListItem({
 
   return (
     <div className={cn(
-      'group flex flex-col sm:flex-row gap-0 sm:gap-0 rounded-xl border bg-card overflow-hidden transition-all hover:shadow-lg',
+      'group flex flex-col sm:flex-row gap-0 sm:gap-0 rounded-xl border-2 border-neutral-300 dark:border-neutral-600 bg-card overflow-hidden transition-all hover:shadow-lg',
       isSold && 'opacity-75'
     )}>
       {/* Bild-Bereich */}

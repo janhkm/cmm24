@@ -39,7 +39,7 @@ export default function DatenschutzPage() {
             können Sie sich jederzeit an unseren Datenschutzbeauftragten wenden:
           </p>
           <address className="not-italic mt-4">
-            <p>E-Mail: <a href="mailto:datenschutz@cmm24.de" className="text-primary hover:underline">datenschutz@cmm24.de</a></p>
+            <p>E-Mail: <a href="mailto:datenschutz@cmm24.com" className="text-primary hover:underline">datenschutz@cmm24.com</a></p>
             <p className="mt-2">{companyInfo.name}</p>
             <p>z. Hd. Datenschutzbeauftragter</p>
             <p>{companyInfo.street}</p>
@@ -94,7 +94,7 @@ export default function DatenschutzPage() {
           </ul>
           <p className="mt-4">
             Zur Ausübung Ihrer Rechte wenden Sie sich bitte an unseren Datenschutzbeauftragten 
-            unter <a href="mailto:datenschutz@cmm24.de" className="text-primary hover:underline">datenschutz@cmm24.de</a> oder 
+            unter <a href="mailto:datenschutz@cmm24.com" className="text-primary hover:underline">datenschutz@cmm24.com</a> oder 
             an <a href={`mailto:${companyInfo.email}`} className="text-primary hover:underline">{companyInfo.email}</a>. 
             Wir werden Ihre Anfrage unverzüglich, spätestens jedoch innerhalb eines Monats bearbeiten 
             (Art. 12 Abs. 3 DSGVO). In komplexen Fällen kann die Frist um weitere zwei Monate 

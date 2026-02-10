@@ -44,7 +44,7 @@ interface NavItem {
 // Mock admin user
 const adminUser = {
   name: 'Admin User',
-  email: 'admin@cmm24.de',
+  email: 'admin@cmm24.com',
   role: 'super_admin' as const,
 };
 

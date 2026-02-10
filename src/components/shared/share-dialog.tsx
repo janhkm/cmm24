@@ -35,7 +35,7 @@ export function ShareDialog({ url, title, description, trigger }: ShareDialogPro
 
   const fullUrl = typeof window !== 'undefined' 
     ? `${window.location.origin}${url}` 
-    : `https://cmm24.de${url}`;
+    : `https://cmm24.com${url}`;
 
   const shareText = description || title;
 

@@ -115,8 +115,8 @@ export default function WiderrufsbelehrungPage() {
         <h2 className="text-xl font-semibold mt-8 mb-4">Kontakt</h2>
         <p className="text-muted-foreground">
           Bei Fragen zum Widerruf erreichen Sie uns unter:{' '}
-          <a href="mailto:widerruf@cmm24.de" className="text-primary hover:underline">
-            widerruf@cmm24.de
+          <a href="mailto:widerruf@cmm24.com" className="text-primary hover:underline">
+            widerruf@cmm24.com
           </a>
         </p>
 

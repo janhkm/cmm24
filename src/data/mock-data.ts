@@ -918,7 +918,7 @@ export const companyInfo = {
   postalCode: '80331',
   city: 'München',
   country: 'Deutschland',
-  email: 'kontakt@cmm24.de',
+  email: 'kontakt@cmm24.com',
   phone: '+49 89 123456',
   managingDirector: 'Jan Hemkemeier',
   registerCourt: 'Amtsgericht München',

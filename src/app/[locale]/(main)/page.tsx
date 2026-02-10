@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     openGraph: {
       title: t('homeTitle'),
       description: t('homeDescription'),
-      url: 'https://cmm24.de',
+      url: 'https://cmm24.com',
       siteName: 'CMM24',
       locale,
       type: 'website',
@@ -60,7 +60,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       images: ['/og-image.svg'],
     },
     alternates: {
-      canonical: 'https://cmm24.de',
+      canonical: 'https://cmm24.com',
     },
     robots: {
       index: true,
@@ -76,17 +76,17 @@ function buildJsonLd(showcaseListings: PublicListing[], faqs: { question: string
     '@graph': [
       {
         '@type': 'Organization',
-        '@id': 'https://cmm24.de/#organization',
+        '@id': 'https://cmm24.com/#organization',
         name: 'CMM24',
         legalName: 'Kneissl Messtechnik GmbH',
-        url: 'https://cmm24.de',
+        url: 'https://cmm24.com',
         logo: {
           '@type': 'ImageObject',
-          url: 'https://cmm24.de/logo.svg',
+          url: 'https://cmm24.com/logo.svg',
           width: 200,
           height: 50,
         },
-        image: 'https://cmm24.de/og-image.svg',
+        image: 'https://cmm24.com/og-image.svg',
         description: 'CMM24 ist der führende B2B-Marktplatz für gebrauchte Koordinatenmessmaschinen in Europa. Wir verbinden Käufer und Verkäufer von Messtechnik.',
         foundingDate: '2026',
         address: {
@@ -110,27 +110,27 @@ function buildJsonLd(showcaseListings: PublicListing[], faqs: { question: string
       },
       {
         '@type': 'WebSite',
-        '@id': 'https://cmm24.de/#website',
-        url: 'https://cmm24.de',
+        '@id': 'https://cmm24.com/#website',
+        url: 'https://cmm24.com',
         name: 'CMM24',
         alternateName: 'CMM24 - Marktplatz für Koordinatenmessmaschinen',
         description: 'Der führende B2B-Marktplatz für gebrauchte Koordinatenmessmaschinen in Europa.',
         inLanguage: ['de', 'en', 'fr', 'nl', 'it', 'es', 'pl'],
         publisher: {
-          '@id': 'https://cmm24.de/#organization',
+          '@id': 'https://cmm24.com/#organization',
         },
         potentialAction: {
           '@type': 'SearchAction',
           target: {
             '@type': 'EntryPoint',
-            urlTemplate: 'https://cmm24.de/maschinen?q={search_term_string}',
+            urlTemplate: 'https://cmm24.com/maschinen?q={search_term_string}',
           },
           'query-input': 'required name=search_term_string',
         },
       },
       {
         '@type': 'FAQPage',
-        '@id': 'https://cmm24.de/#faq',
+        '@id': 'https://cmm24.com/#faq',
         mainEntity: faqs.map((faq) => ({
           '@type': 'Question',
           name: faq.question,
@@ -142,7 +142,7 @@ function buildJsonLd(showcaseListings: PublicListing[], faqs: { question: string
       },
       {
         '@type': 'ItemList',
-        '@id': 'https://cmm24.de/#featured-listings',
+        '@id': 'https://cmm24.com/#featured-listings',
         name: 'Aktuelle Angebote',
         itemListElement: showcaseListings
           .slice(0, 10)
@@ -153,7 +153,7 @@ function buildJsonLd(showcaseListings: PublicListing[], faqs: { question: string
               '@type': 'Product',
               name: listing.title,
               description: listing.description.slice(0, 200),
-              url: `https://cmm24.de/maschinen/${listing.slug}`,
+              url: `https://cmm24.com/maschinen/${listing.slug}`,
               image: listing.media[0]?.url,
               brand: {
                 '@type': 'Brand',
