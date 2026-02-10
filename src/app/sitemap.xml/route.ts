@@ -1,4 +1,3 @@
-import type { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { locales } from '@/i18n/routing';
 import { categoryPages } from '@/data/content/categories';
@@ -11,7 +10,6 @@ const DEFAULT_LOCALE = 'de';
 
 /**
  * Supabase-Client fuer Build-Time-Abfragen (Service Role, umgeht RLS).
- * Wird nur waehrend der Sitemap-Generierung aufgerufen.
  */
 function getSupabaseClient() {
   return createClient<Database>(
@@ -26,9 +24,24 @@ function getSupabaseClient() {
   );
 }
 
+// ============================================
+// Types
+// ============================================
+
+interface SitemapEntry {
+  url: string;
+  lastModified: string;
+  changeFrequency: string;
+  priority: number;
+  alternates?: Record<string, string>;
+}
+
+// ============================================
+// Hilfsfunktionen
+// ============================================
+
 /**
  * Erzeugt hreflang-Alternates fuer eine gegebene Pfad-Struktur.
- * Default-Locale (de) hat keinen Prefix, alle anderen bekommen /locale/ vorangestellt.
  */
 function buildAlternates(path: string): Record<string, string> {
   const languages: Record<string, string> = {};
@@ -41,107 +54,136 @@ function buildAlternates(path: string): Record<string, string> {
     }
   }
 
-  // x-default zeigt auf die Default-Locale (de)
   languages['x-default'] = `${SITE_URL}${path}`;
-
   return languages;
 }
 
 /**
- * Generiert die komplette Sitemap mit:
- * - Statischen Seiten (Homepage, Uebersichtsseiten etc.)
- * - Dynamischen Listings aus Supabase
- * - Dynamischen Herstellern aus Supabase
- * - Dynamischen Unternehmensprofilen aus Supabase
- * - Statischen Kategorien, Ratgebern und Glossar-Eintraegen
+ * Escaped XML-Sonderzeichen in URLs.
  */
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+/**
+ * Generiert einen einzelnen <url>-Block als formatiertes XML.
+ */
+function buildUrlEntry(entry: SitemapEntry): string {
+  const lines: string[] = [];
+  lines.push('  <url>');
+  lines.push(`    <loc>${escapeXml(entry.url)}</loc>`);
+  lines.push(`    <lastmod>${entry.lastModified}</lastmod>`);
+  lines.push(`    <changefreq>${entry.changeFrequency}</changefreq>`);
+  lines.push(`    <priority>${entry.priority.toFixed(1)}</priority>`);
+
+  if (entry.alternates) {
+    for (const [lang, href] of Object.entries(entry.alternates)) {
+      lines.push(
+        `    <xhtml:link rel="alternate" hreflang="${escapeXml(lang)}" href="${escapeXml(href)}" />`
+      );
+    }
+  }
+
+  lines.push('  </url>');
+  return lines.join('\n');
+}
+
+// ============================================
+// Sitemap-Daten sammeln
+// ============================================
+
+async function getSitemapEntries(): Promise<SitemapEntry[]> {
   const supabase = getSupabaseClient();
   const now = new Date().toISOString();
 
   // --- Statische Seiten ---
-  const staticPages: MetadataRoute.Sitemap = [
+  const staticPages: SitemapEntry[] = [
     {
       url: SITE_URL,
       lastModified: now,
       changeFrequency: 'daily',
       priority: 1.0,
-      alternates: { languages: buildAlternates('') },
+      alternates: buildAlternates(''),
     },
     {
       url: `${SITE_URL}/maschinen`,
       lastModified: now,
       changeFrequency: 'daily',
       priority: 0.9,
-      alternates: { languages: buildAlternates('/maschinen') },
+      alternates: buildAlternates('/maschinen'),
     },
     {
       url: `${SITE_URL}/hersteller`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.8,
-      alternates: { languages: buildAlternates('/hersteller') },
+      alternates: buildAlternates('/hersteller'),
     },
     {
       url: `${SITE_URL}/kategorien`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.8,
-      alternates: { languages: buildAlternates('/kategorien') },
+      alternates: buildAlternates('/kategorien'),
     },
     {
       url: `${SITE_URL}/ratgeber`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.8,
-      alternates: { languages: buildAlternates('/ratgeber') },
+      alternates: buildAlternates('/ratgeber'),
     },
     {
       url: `${SITE_URL}/glossar`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.7,
-      alternates: { languages: buildAlternates('/glossar') },
+      alternates: buildAlternates('/glossar'),
     },
     {
       url: `${SITE_URL}/vergleich`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.6,
-      alternates: { languages: buildAlternates('/vergleich') },
+      alternates: buildAlternates('/vergleich'),
     },
     {
       url: `${SITE_URL}/ueber-uns`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.5,
-      alternates: { languages: buildAlternates('/ueber-uns') },
+      alternates: buildAlternates('/ueber-uns'),
     },
     {
       url: `${SITE_URL}/faq`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.5,
-      alternates: { languages: buildAlternates('/faq') },
+      alternates: buildAlternates('/faq'),
     },
     {
       url: `${SITE_URL}/so-funktionierts`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.5,
-      alternates: { languages: buildAlternates('/so-funktionierts') },
+      alternates: buildAlternates('/so-funktionierts'),
     },
     {
       url: `${SITE_URL}/verkaufen`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.6,
-      alternates: { languages: buildAlternates('/verkaufen') },
+      alternates: buildAlternates('/verkaufen'),
     },
   ];
 
   // --- Dynamische Listings aus Supabase ---
-  let listingPages: MetadataRoute.Sitemap = [];
+  let listingPages: SitemapEntry[] = [];
   try {
     const { data: listings } = await supabase
       .from('listings')
@@ -154,9 +196,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       listingPages = listings.map((listing) => ({
         url: `${SITE_URL}/maschinen/${listing.slug}`,
         lastModified: listing.updated_at || listing.published_at || now,
-        changeFrequency: 'weekly' as const,
+        changeFrequency: 'weekly',
         priority: 0.8,
-        alternates: { languages: buildAlternates(`/maschinen/${listing.slug}`) },
+        alternates: buildAlternates(`/maschinen/${listing.slug}`),
       }));
     }
   } catch (error) {
@@ -164,7 +206,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // --- Dynamische Hersteller aus Supabase ---
-  let manufacturerPages: MetadataRoute.Sitemap = [];
+  let manufacturerPages: SitemapEntry[] = [];
   try {
     const { data: manufacturers } = await supabase
       .from('manufacturers')
@@ -175,9 +217,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       manufacturerPages = manufacturers.map((m) => ({
         url: `${SITE_URL}/hersteller/${m.slug}`,
         lastModified: m.updated_at || now,
-        changeFrequency: 'weekly' as const,
+        changeFrequency: 'weekly',
         priority: 0.8,
-        alternates: { languages: buildAlternates(`/hersteller/${m.slug}`) },
+        alternates: buildAlternates(`/hersteller/${m.slug}`),
       }));
     }
   } catch (error) {
@@ -185,7 +227,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // --- Dynamische Unternehmensprofile aus Supabase ---
-  let companyPages: MetadataRoute.Sitemap = [];
+  let companyPages: SitemapEntry[] = [];
   try {
     const { data: companies } = await supabase
       .from('accounts')
@@ -198,9 +240,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       companyPages = companies.map((c) => ({
         url: `${SITE_URL}/unternehmen/${c.slug}`,
         lastModified: c.updated_at || now,
-        changeFrequency: 'monthly' as const,
+        changeFrequency: 'monthly',
         priority: 0.6,
-        alternates: { languages: buildAlternates(`/unternehmen/${c.slug}`) },
+        alternates: buildAlternates(`/unternehmen/${c.slug}`),
       }));
     }
   } catch (error) {
@@ -208,30 +250,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // --- Statische Kategorien ---
-  const categoryEntries: MetadataRoute.Sitemap = categoryPages.map((category) => ({
+  const categoryEntries: SitemapEntry[] = categoryPages.map((category) => ({
     url: `${SITE_URL}/kategorien/${category.slug}`,
     lastModified: now,
-    changeFrequency: 'weekly' as const,
+    changeFrequency: 'weekly',
     priority: 0.8,
-    alternates: { languages: buildAlternates(`/kategorien/${category.slug}`) },
+    alternates: buildAlternates(`/kategorien/${category.slug}`),
   }));
 
   // --- Statische Ratgeber-Artikel ---
-  const articleEntries: MetadataRoute.Sitemap = articles.map((article) => ({
+  const articleEntries: SitemapEntry[] = articles.map((article) => ({
     url: `${SITE_URL}/ratgeber/${article.slug}`,
     lastModified: article.updatedAt || now,
-    changeFrequency: 'monthly' as const,
+    changeFrequency: 'monthly',
     priority: 0.7,
-    alternates: { languages: buildAlternates(`/ratgeber/${article.slug}`) },
+    alternates: buildAlternates(`/ratgeber/${article.slug}`),
   }));
 
   // --- Statische Glossar-Eintraege ---
-  const glossarEntries: MetadataRoute.Sitemap = glossaryEntries.map((entry) => ({
+  const glossarEntries: SitemapEntry[] = glossaryEntries.map((entry) => ({
     url: `${SITE_URL}/glossar/${entry.slug}`,
     lastModified: now,
-    changeFrequency: 'monthly' as const,
+    changeFrequency: 'monthly',
     priority: 0.6,
-    alternates: { languages: buildAlternates(`/glossar/${entry.slug}`) },
+    alternates: buildAlternates(`/glossar/${entry.slug}`),
   }));
 
   return [
@@ -243,4 +285,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...articleEntries,
     ...glossarEntries,
   ];
+}
+
+// ============================================
+// Route Handler
+// ============================================
+
+export async function GET() {
+  const entries = await getSitemapEntries();
+
+  const xml = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">',
+    ...entries.map(buildUrlEntry),
+    '</urlset>',
+  ].join('\n');
+
+  return new Response(xml, {
+    headers: {
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
+    },
+  });
 }
