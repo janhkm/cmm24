@@ -14,7 +14,10 @@ type RateLimitAction =
   | 'listingCreate'
   | 'imageUpload'
   | 'contact'
-  | 'api';
+  | 'api'
+  | 'report'
+  | 'message'
+  | 'trackView';
 
 interface RateLimitResult {
   success: boolean;
@@ -72,6 +75,9 @@ function getLimiters() {
       imageUpload: createLimiter('image-upload', 50, '1 h'),
       contact: createLimiter('contact', 3, '1 h'),
       api: createLimiter('api', 1000, '1 h'),
+      report: createLimiter('report', 5, '1 h'),
+      message: createLimiter('message', 20, '15 m'),
+      trackView: createLimiter('track-view', 100, '1 m'),
     };
   }
   return _limiters;
@@ -90,6 +96,9 @@ const RATE_LIMIT_MESSAGES: Record<RateLimitAction, string> = {
   imageUpload: 'Zu viele Uploads. Bitte warten Sie eine Stunde.',
   contact: 'Zu viele Kontaktanfragen. Bitte versuchen Sie es spaeter.',
   api: 'API Rate Limit erreicht. Bitte warten Sie.',
+  report: 'Zu viele Meldungen. Bitte versuchen Sie es spaeter.',
+  message: 'Zu viele Nachrichten. Bitte warten Sie einen Moment.',
+  trackView: 'Zu viele Aufrufe.',
 };
 
 /**

@@ -942,14 +942,20 @@ export type Database = {
           currency: string | null
           deleted_at: string | null
           description: string
+          dimension_length_mm: number | null
+          dimension_width_mm: number | null
+          dimension_height_mm: number | null
           featured: boolean | null
           featured_until: string | null
+          google_product_category: string | null
+          gtin: string | null
           id: string
           latitude: number | null
           location_city: string
           location_country: string
           location_postal_code: string
           longitude: number | null
+          machine_type: string | null
           manufacturer_id: string
           measuring_range_x: number | null
           measuring_range_y: number | null
@@ -958,6 +964,7 @@ export type Database = {
           meta_title: string | null
           model_id: string | null
           model_name_custom: string | null
+          mpn: string | null
           price: number
           price_negotiable: boolean | null
           probe_system: string | null
@@ -966,6 +973,7 @@ export type Database = {
           rejected_by: string | null
           rejection_reason: string | null
           search_vector: unknown
+          serial_number: string | null
           slug: string
           software: string | null
           sold_at: string | null
@@ -973,6 +981,7 @@ export type Database = {
           title: string
           updated_at: string | null
           views_count: number | null
+          weight_kg: number | null
           year_built: number
         }
         Insert: {
@@ -984,14 +993,20 @@ export type Database = {
           currency?: string | null
           deleted_at?: string | null
           description: string
+          dimension_length_mm?: number | null
+          dimension_width_mm?: number | null
+          dimension_height_mm?: number | null
           featured?: boolean | null
           featured_until?: string | null
+          google_product_category?: string | null
+          gtin?: string | null
           id?: string
           latitude?: number | null
           location_city: string
           location_country: string
           location_postal_code: string
           longitude?: number | null
+          machine_type?: string | null
           manufacturer_id: string
           measuring_range_x?: number | null
           measuring_range_y?: number | null
@@ -1000,6 +1015,7 @@ export type Database = {
           meta_title?: string | null
           model_id?: string | null
           model_name_custom?: string | null
+          mpn?: string | null
           price: number
           price_negotiable?: boolean | null
           probe_system?: string | null
@@ -1008,6 +1024,7 @@ export type Database = {
           rejected_by?: string | null
           rejection_reason?: string | null
           search_vector?: unknown
+          serial_number?: string | null
           slug: string
           software?: string | null
           sold_at?: string | null
@@ -1015,6 +1032,7 @@ export type Database = {
           title: string
           updated_at?: string | null
           views_count?: number | null
+          weight_kg?: number | null
           year_built: number
         }
         Update: {
@@ -1026,14 +1044,20 @@ export type Database = {
           currency?: string | null
           deleted_at?: string | null
           description?: string
+          dimension_length_mm?: number | null
+          dimension_width_mm?: number | null
+          dimension_height_mm?: number | null
           featured?: boolean | null
           featured_until?: string | null
+          google_product_category?: string | null
+          gtin?: string | null
           id?: string
           latitude?: number | null
           location_city?: string
           location_country?: string
           location_postal_code?: string
           longitude?: number | null
+          machine_type?: string | null
           manufacturer_id?: string
           measuring_range_x?: number | null
           measuring_range_y?: number | null
@@ -1042,6 +1066,7 @@ export type Database = {
           meta_title?: string | null
           model_id?: string | null
           model_name_custom?: string | null
+          mpn?: string | null
           price?: number
           price_negotiable?: boolean | null
           probe_system?: string | null
@@ -1050,6 +1075,7 @@ export type Database = {
           rejected_by?: string | null
           rejection_reason?: string | null
           search_vector?: unknown
+          serial_number?: string | null
           slug?: string
           software?: string | null
           sold_at?: string | null
@@ -1057,6 +1083,7 @@ export type Database = {
           title?: string
           updated_at?: string | null
           views_count?: number | null
+          weight_kg?: number | null
           year_built?: number
         }
         Relationships: [
@@ -1198,6 +1225,53 @@ export type Database = {
             columns: ["manufacturer_id"]
             isOneToOne: false
             referencedRelation: "manufacturers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          id: string
+          profile_id: string
+          email_inquiries: boolean
+          email_messages: boolean
+          email_listing_updates: boolean
+          email_product_updates: boolean
+          email_newsletter: boolean
+          email_marketing: boolean
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          email_inquiries?: boolean
+          email_messages?: boolean
+          email_listing_updates?: boolean
+          email_product_updates?: boolean
+          email_newsletter?: boolean
+          email_marketing?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          email_inquiries?: boolean
+          email_messages?: boolean
+          email_listing_updates?: boolean
+          email_product_updates?: boolean
+          email_newsletter?: boolean
+          email_marketing?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

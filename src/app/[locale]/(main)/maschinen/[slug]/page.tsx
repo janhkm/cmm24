@@ -47,6 +47,16 @@ function convertToListing(pl: PublicListing & { similar?: PublicListing[] }, loc
     software: pl.software || undefined,
     controller: pl.controller || undefined,
     probeSystem: pl.probe_system || undefined,
+    // Google Merchant Center Felder
+    machineType: pl.machine_type || undefined,
+    weightKg: pl.weight_kg || undefined,
+    dimensionLengthMm: pl.dimension_length_mm || undefined,
+    dimensionWidthMm: pl.dimension_width_mm || undefined,
+    dimensionHeightMm: pl.dimension_height_mm || undefined,
+    mpn: pl.mpn || undefined,
+    gtin: pl.gtin || undefined,
+    serialNumber: pl.serial_number || undefined,
+    googleProductCategory: pl.google_product_category || undefined,
     locationCountry: pl.location_country,
     locationCity: pl.location_city,
     locationPostalCode: pl.location_postal_code,
@@ -195,42 +205,76 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   const manufacturerName = listingData.manufacturer?.name || tCommon('unknown');
   const manufacturerSlug = listingData.manufacturer?.slug || '';
 
-  // JSON-LD Product Schema (per SEO documentation section 6.4)
+  // Hilfsfunktion: Condition auf Schema.org Wert mappen
+  const getSchemaCondition = (condition: string) => {
+    switch (condition) {
+      case 'new': return 'https://schema.org/NewCondition';
+      case 'like_new': return 'https://schema.org/UsedCondition';
+      case 'good': return 'https://schema.org/UsedCondition';
+      case 'fair': return 'https://schema.org/UsedCondition';
+      default: return 'https://schema.org/UsedCondition';
+    }
+  };
+
+  // Hilfsfunktion: Condition fuer Google Merchant Center mappen
+  const getGoogleCondition = (condition: string) => {
+    return condition === 'new' ? 'new' : 'used';
+  };
+
+  const schemaCondition = getSchemaCondition(listing.condition);
+  const canonicalUrl = `https://cmm24.de/${locale}/maschinen/${listing.slug}`;
+
+  // JSON-LD Product Schema (per SEO documentation section 6.4, erweitert fuer Google Merchant Center)
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    '@id': `https://cmm24.de/maschinen/${listing.slug}#product`,
+    '@id': `${canonicalUrl}#product`,
     name: `${manufacturerName} ${listing.title}`,
-    description: listing.description.slice(0, 500),
+    description: listing.description.replace(/<[^>]*>/g, '').slice(0, 500),
     image: listing.media.filter((m) => m.type === 'image').map((m) => m.url),
     brand: {
       '@type': 'Brand',
       name: manufacturerName,
-      '@id': `https://cmm24.de/hersteller/${manufacturerSlug}#brand`,
+      '@id': `https://cmm24.de/${locale}/hersteller/${manufacturerSlug}#brand`,
     },
     manufacturer: {
       '@type': 'Organization',
       name: manufacturerName,
     },
     model: listing.title,
-    mpn: `${manufacturerName}-${listing.title}`.replace(/\s+/g, '-').substring(0, 70),
+    mpn: listing.mpn || `${manufacturerName}-${listing.title}`.replace(/\s+/g, '-').substring(0, 70),
+    ...(listing.gtin ? { gtin: listing.gtin } : {}),
     productionDate: listing.yearBuilt.toString(),
-    category: t('category'),
+    releaseDate: listing.yearBuilt.toString(),
+    category: listing.googleProductCategory || 'Business & Industrial > Industrial Equipment',
     sku: `CMM24-${listing.id}`,
-    itemCondition: listing.condition === 'new'
-      ? 'https://schema.org/NewCondition'
-      : 'https://schema.org/UsedCondition',
+    ...((!listing.mpn && !listing.gtin) ? { identifier_exists: false } : {}),
+    itemCondition: schemaCondition,
+    ...(listing.weightKg ? {
+      weight: {
+        '@type': 'QuantitativeValue',
+        value: listing.weightKg,
+        unitCode: 'KGM',
+        unitText: 'kg',
+      },
+    } : {}),
+    ...(listing.dimensionLengthMm && listing.dimensionWidthMm && listing.dimensionHeightMm ? {
+      depth: { '@type': 'QuantitativeValue', value: listing.dimensionLengthMm, unitCode: 'MMT', unitText: 'mm' },
+      width: { '@type': 'QuantitativeValue', value: listing.dimensionWidthMm, unitCode: 'MMT', unitText: 'mm' },
+      height: { '@type': 'QuantitativeValue', value: listing.dimensionHeightMm, unitCode: 'MMT', unitText: 'mm' },
+    } : {}),
     offers: {
       '@type': 'Offer',
-      '@id': `https://cmm24.de/maschinen/${listing.slug}#offer`,
-      url: `https://cmm24.de/maschinen/${listing.slug}`,
+      '@id': `${canonicalUrl}#offer`,
+      url: canonicalUrl,
       priceCurrency: listing.currency,
-      price: listing.price ? listing.price / 100 : undefined,
+      // Preis nur setzen wenn vorhanden (nicht bei "Preis auf Anfrage")
+      ...(listing.price && listing.price > 0 ? { price: (listing.price / 100).toFixed(2) } : {}),
       priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
       availability: listing.status === 'active' 
         ? 'https://schema.org/InStock' 
         : 'https://schema.org/SoldOut',
-      itemCondition: 'https://schema.org/UsedCondition',
+      itemCondition: schemaCondition,
       seller: listing.seller ? {
         '@type': 'Organization',
         name: listing.seller.companyName,
@@ -240,29 +284,52 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           addressCountry: listing.seller.addressCountry === 'Deutschland' ? 'DE' : listing.seller.addressCountry,
         },
       } : undefined,
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingDestination: {
+          '@type': 'DefinedRegion',
+          addressCountry: ['DE', 'AT', 'CH'],
+        },
+        deliveryTime: {
+          '@type': 'ShippingDeliveryTime',
+          handlingTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 1,
+            maxValue: 5,
+            unitCode: 'DAY',
+          },
+          transitTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 3,
+            maxValue: 14,
+            unitCode: 'DAY',
+          },
+        },
+      },
     },
     additionalProperty: [
-      {
+      // Messbereiche nur wenn vorhanden
+      ...(listing.measuringRangeX ? [{
         '@type': 'PropertyValue',
         name: 'Messbereich X',
         value: listing.measuringRangeX,
         unitCode: 'MMT',
         unitText: 'mm',
-      },
-      {
+      }] : []),
+      ...(listing.measuringRangeY ? [{
         '@type': 'PropertyValue',
         name: 'Messbereich Y',
         value: listing.measuringRangeY,
         unitCode: 'MMT',
         unitText: 'mm',
-      },
-      {
+      }] : []),
+      ...(listing.measuringRangeZ ? [{
         '@type': 'PropertyValue',
         name: 'Messbereich Z',
         value: listing.measuringRangeZ,
         unitCode: 'MMT',
         unitText: 'mm',
-      },
+      }] : []),
       ...(listing.accuracyUm ? [{
         '@type': 'PropertyValue',
         name: 'Genauigkeit (MPEE)',
@@ -283,6 +350,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         name: 'Tastsystem',
         value: listing.probeSystem,
       }] : []),
+      ...(listing.serialNumber ? [{
+        '@type': 'PropertyValue',
+        name: 'Seriennummer',
+        value: listing.serialNumber,
+      }] : []),
       {
         '@type': 'PropertyValue',
         name: 'Baujahr',
@@ -293,6 +365,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         name: 'Zustand',
         value: tConditions(listing.condition),
       },
+      ...(listing.machineType ? [{
+        '@type': 'PropertyValue',
+        name: 'Maschinentyp',
+        value: listing.machineType,
+      }] : []),
     ],
   };
 
@@ -305,19 +382,19 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         '@type': 'ListItem',
         position: 1,
         name: tBreadcrumb('home'),
-        item: 'https://cmm24.de',
+        item: `https://cmm24.de/${locale}`,
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: tBreadcrumb('machines'),
-        item: 'https://cmm24.de/maschinen',
+        item: `https://cmm24.de/${locale}/maschinen`,
       },
       {
         '@type': 'ListItem',
         position: 3,
         name: manufacturerName,
-        item: `https://cmm24.de/maschinen?hersteller=${manufacturerSlug}`,
+        item: `https://cmm24.de/${locale}/maschinen?hersteller=${manufacturerSlug}`,
       },
       {
         '@type': 'ListItem',

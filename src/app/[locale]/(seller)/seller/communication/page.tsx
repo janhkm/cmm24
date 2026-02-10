@@ -434,7 +434,7 @@ export default function CommunicationPage() {
                       <DialogDescription>{tContacts('createDescription')}</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>{tContacts('firstName')}</Label>
                           <Input
@@ -469,7 +469,7 @@ export default function CommunicationPage() {
                           onChange={(e) => setNewContactData(prev => ({ ...prev, companyName: e.target.value }))}
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>{tContacts('phone')}</Label>
                           <Input
@@ -503,29 +503,29 @@ export default function CommunicationPage() {
 
             {/* Stats Cards */}
             {contactStats && (
-              <div className="grid gap-4 md:grid-cols-4">
+              <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardDescription>{tContacts('totalContacts')}</CardDescription>
-                    <CardTitle className="text-3xl">{contactStats.total}</CardTitle>
+                  <CardHeader className="p-3 sm:p-6 pb-2">
+                    <CardDescription className="text-xs sm:text-sm">{tContacts('totalContacts')}</CardDescription>
+                    <CardTitle className="text-xl sm:text-3xl">{contactStats.total}</CardTitle>
                   </CardHeader>
                 </Card>
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardDescription>{tContacts('newThisMonth')}</CardDescription>
-                    <CardTitle className="text-3xl text-blue-600">+{contactStats.newThisMonth}</CardTitle>
+                  <CardHeader className="p-3 sm:p-6 pb-2">
+                    <CardDescription className="text-xs sm:text-sm">{tContacts('newThisMonth')}</CardDescription>
+                    <CardTitle className="text-xl sm:text-3xl text-blue-600">+{contactStats.newThisMonth}</CardTitle>
                   </CardHeader>
                 </Card>
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardDescription>{tContacts('qualified')}</CardDescription>
-                    <CardTitle className="text-3xl text-green-600">{contactStats.byStatus.qualified || 0}</CardTitle>
+                  <CardHeader className="p-3 sm:p-6 pb-2">
+                    <CardDescription className="text-xs sm:text-sm">{tContacts('qualified')}</CardDescription>
+                    <CardTitle className="text-xl sm:text-3xl text-green-600">{contactStats.byStatus.qualified || 0}</CardTitle>
                   </CardHeader>
                 </Card>
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardDescription>{tContacts('inNegotiation')}</CardDescription>
-                    <CardTitle className="text-3xl text-purple-600">{contactStats.byStatus.negotiation || 0}</CardTitle>
+                  <CardHeader className="p-3 sm:p-6 pb-2">
+                    <CardDescription className="text-xs sm:text-sm">{tContacts('inNegotiation')}</CardDescription>
+                    <CardTitle className="text-xl sm:text-3xl text-purple-600">{contactStats.byStatus.negotiation || 0}</CardTitle>
                   </CardHeader>
                 </Card>
               </div>
@@ -555,8 +555,98 @@ export default function CommunicationPage() {
               </Select>
             </div>
 
-            {/* Contacts Table */}
-            <Card>
+            {/* Contacts — Mobile Cards */}
+            <div className="space-y-3 md:hidden">
+              {isLoadingContacts ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <Card key={i}><CardHeader><Skeleton className="h-12 w-full" /></CardHeader></Card>
+                ))
+              ) : contacts.length === 0 ? (
+                <Card>
+                  <CardHeader className="text-center py-12">
+                    <UserCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground text-sm">
+                      {contactSearch || statusFilter !== 'all'
+                        ? tContacts('noContactsFound')
+                        : tContacts('noContactsYet')}
+                    </p>
+                    {!contactSearch && statusFilter === 'all' && (
+                      <Button variant="outline" size="sm" onClick={() => setIsCreateDialogOpen(true)} className="mt-2 mx-auto">
+                        <Plus className="mr-2 h-4 w-4" />
+                        {tContacts('createFirst')}
+                      </Button>
+                    )}
+                  </CardHeader>
+                </Card>
+              ) : (
+                contacts.map((contact) => {
+                  const colors = statusColors[contact.lead_status];
+                  const statusLabel = getStatusLabel(contact.lead_status);
+                  const fullName = [contact.first_name, contact.last_name].filter(Boolean).join(' ') || contact.email;
+                  return (
+                    <Card
+                      key={contact.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => router.push(`/seller/kontakte/${contact.id}`)}
+                    >
+                      <CardHeader className="p-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-medium">
+                            {(contact.first_name?.[0] || contact.email[0]).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-sm truncate">{fullName}</p>
+                              <Badge variant="secondary" className={cn(colors.bg, colors.color, 'border-0 text-[10px] shrink-0')}>
+                                {statusLabel}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground truncate">{contact.email}</p>
+                            {contact.company_name && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                <Building2 className="h-3 w-3" />{contact.company_name}
+                              </p>
+                            )}
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/seller/kontakte/${contact.id}`); }}>
+                                {tContacts('showDetails')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.location.href = `mailto:${contact.email}`; }}>
+                                <Mail className="mr-2 h-4 w-4" />{tContacts('sendEmail')}
+                              </DropdownMenuItem>
+                              {contact.phone && (
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${contact.phone}`; }}>
+                                  <Phone className="mr-2 h-4 w-4" />{tContacts('call')}
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-destructive" onClick={(e) => { e.stopPropagation(); handleDeleteContact(contact.id); }}>
+                                {tContacts('delete')}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  );
+                })
+              )}
+              {contactsTotal > 0 && (
+                <p className="text-sm text-muted-foreground text-center py-2">
+                  {tContacts('ofTotal', { count: contacts.length, total: contactsTotal })}
+                </p>
+              )}
+            </div>
+
+            {/* Contacts — Desktop Table */}
+            <Card className="hidden md:block">
               <Table>
                 <TableHeader>
                   <TableRow>

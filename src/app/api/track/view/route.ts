@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createHash } from 'crypto';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -64,6 +65,12 @@ export async function POST(request: NextRequest) {
 
     if (!listingId || typeof listingId !== 'string') {
       return NextResponse.json({ error: 'listingId required' }, { status: 400 });
+    }
+
+    // Rate Limiting
+    const rateLimit = await checkRateLimit('trackView');
+    if (!rateLimit.success) {
+      return NextResponse.json({ ok: false, error: 'Rate limit exceeded' }, { status: 429 });
     }
 
     // Bot-Erkennung via User-Agent

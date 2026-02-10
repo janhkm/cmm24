@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { User, Building2, Bell, Shield, Loader2, CheckCircle, Bot, Crown, Info, Mail, Pen, Eye, AlertCircle, Zap, Plus, Trash2, Edit2, ImageIcon, Award, Upload } from 'lucide-react';
+import { User, Building2, Bell, Shield, Loader2, CheckCircle, Bot, Crown, Info, Mail, Pen, Eye, AlertCircle, Zap, Plus, Trash2, Edit2, ImageIcon, Award, Upload, Download, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { getProfileWithAccount, updateProfile, updateAccount, updatePremiumProfile, uploadProfileAvatar, uploadGalleryImage, type UserProfileData } from '@/lib/actions/account';
+import { getProfileWithAccount, updateProfile, updateAccount, updatePremiumProfile, uploadProfileAvatar, uploadGalleryImage, deleteAccount, exportUserData, type UserProfileData } from '@/lib/actions/account';
+import { getNotificationPreferences, updateNotificationPreferences, type NotificationPreferences } from '@/lib/actions/notification-preferences';
 import { useSellerAuth } from '@/hooks/use-seller-auth';
 import {
   getMessageTemplates,
@@ -81,6 +82,14 @@ export default function KontoPage() {
   const [newCertName, setNewCertName] = useState('');
   const [newCertIssuer, setNewCertIssuer] = useState('');
 
+  // DSGVO / Datenschutz States
+  const [notifPrefs, setNotifPrefs] = useState<NotificationPreferences | null>(null);
+  const [isSavingNotifPrefs, setIsSavingNotifPrefs] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   // ALLES IST JETZT FREE - alle Features freigeschaltet
   // AUSKOMMENTIERT: const featureFlags = plan?.feature_flags as Record<string, boolean> | null;
   const hasTemplatesFeature = true;
@@ -88,7 +97,15 @@ export default function KontoPage() {
 
   useEffect(() => {
     loadProfile();
+    loadNotifPrefs();
   }, []);
+
+  const loadNotifPrefs = async () => {
+    const result = await getNotificationPreferences();
+    if (result.success && result.data) {
+      setNotifPrefs(result.data);
+    }
+  };
 
   const loadProfile = async () => {
     setIsLoading(true);
@@ -357,21 +374,21 @@ export default function KontoPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">{t('title')}</h1>
-        <p className="text-muted-foreground">
+    <div className="p-4 sm:p-6">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold">{t('title')}</h1>
+        <p className="text-sm text-muted-foreground">
           {t('subtitle')}
         </p>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="flex flex-wrap h-auto gap-1">
-          <TabsTrigger value="profile" className="gap-2">
+      <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
+        <TabsList className="flex flex-wrap h-auto gap-1 w-full">
+          <TabsTrigger value="profile" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">{t('tabs.profile')}</span>
           </TabsTrigger>
-          <TabsTrigger value="company" className="gap-2">
+          <TabsTrigger value="company" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3">
             <Building2 className="h-4 w-4" />
             <span className="hidden sm:inline">{t('tabs.company')}</span>
           </TabsTrigger>
@@ -381,20 +398,24 @@ export default function KontoPage() {
             <span className="hidden sm:inline">{t('tabs.email')}</span>
           </TabsTrigger>
           */}
-          <TabsTrigger value="security" className="gap-2">
+          <TabsTrigger value="security" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3">
             <Shield className="h-4 w-4" />
             <span className="hidden sm:inline">{t('tabs.security')}</span>
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-2">
+          <TabsTrigger value="notifications" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3">
             <Bell className="h-4 w-4" />
             <span className="hidden sm:inline">{t('tabs.notifications')}</span>
           </TabsTrigger>
           {hasTemplatesFeature && (
-            <TabsTrigger value="templates" className="gap-2">
+            <TabsTrigger value="templates" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3">
               <Zap className="h-4 w-4" />
               <span className="hidden sm:inline">{t('tabs.templates')}</span>
             </TabsTrigger>
           )}
+          <TabsTrigger value="privacy" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3">
+            <Shield className="h-4 w-4" />
+            <span className="hidden sm:inline">{t('tabs.privacy')}</span>
+          </TabsTrigger>
           {/* AUSKOMMENTIERT: Premium-Profil Tab (zusammengefuehrt mit Firma)
           {hasPremiumProfile && (
             <TabsTrigger value="premium-profile" className="gap-2">
@@ -967,6 +988,237 @@ export default function KontoPage() {
           </TabsContent>
         )}
         {/* AUSKOMMENTIERT: Premium-Profil Tab (zusammengefuehrt mit Firma-Tab oben) */}
+
+        {/* ============ Datenschutz / Privacy Tab ============ */}
+        <TabsContent value="privacy">
+          <div className="space-y-6">
+            {/* Benachrichtigungseinstellungen */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  E-Mail-Benachrichtigungen
+                </CardTitle>
+                <CardDescription>
+                  Legen Sie fest, welche E-Mails Sie von uns erhalten möchten (Art. 21 DSGVO — Widerspruchsrecht).
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {notifPrefs ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">Neue Anfragen</Label>
+                        <p className="text-xs text-muted-foreground">Benachrichtigung bei neuen Kaufanfragen</p>
+                      </div>
+                      <Switch
+                        checked={notifPrefs.emailInquiries}
+                        onCheckedChange={(checked) => setNotifPrefs(prev => prev ? { ...prev, emailInquiries: checked } : prev)}
+                      />
+                    </div>
+                    <Separator />
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">Neue Nachrichten</Label>
+                        <p className="text-xs text-muted-foreground">Benachrichtigung bei neuen Chat-Nachrichten</p>
+                      </div>
+                      <Switch
+                        checked={notifPrefs.emailMessages}
+                        onCheckedChange={(checked) => setNotifPrefs(prev => prev ? { ...prev, emailMessages: checked } : prev)}
+                      />
+                    </div>
+                    <Separator />
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">Inserat-Updates</Label>
+                        <p className="text-xs text-muted-foreground">Status-Updates zu Ihren Inseraten</p>
+                      </div>
+                      <Switch
+                        checked={notifPrefs.emailListingUpdates}
+                        onCheckedChange={(checked) => setNotifPrefs(prev => prev ? { ...prev, emailListingUpdates: checked } : prev)}
+                      />
+                    </div>
+                    <Separator />
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">Produkt-Neuigkeiten</Label>
+                        <p className="text-xs text-muted-foreground">Infos zu neuen Features und Updates</p>
+                      </div>
+                      <Switch
+                        checked={notifPrefs.emailProductUpdates}
+                        onCheckedChange={(checked) => setNotifPrefs(prev => prev ? { ...prev, emailProductUpdates: checked } : prev)}
+                      />
+                    </div>
+                    <Separator />
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">Newsletter</Label>
+                        <p className="text-xs text-muted-foreground">Branchennews und Marktübersichten</p>
+                      </div>
+                      <Switch
+                        checked={notifPrefs.emailNewsletter}
+                        onCheckedChange={(checked) => setNotifPrefs(prev => prev ? { ...prev, emailNewsletter: checked } : prev)}
+                      />
+                    </div>
+                    <Separator />
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">Marketing-E-Mails</Label>
+                        <p className="text-xs text-muted-foreground">Angebote, Aktionen und Werbung</p>
+                      </div>
+                      <Switch
+                        checked={notifPrefs.emailMarketing}
+                        onCheckedChange={(checked) => setNotifPrefs(prev => prev ? { ...prev, emailMarketing: checked } : prev)}
+                      />
+                    </div>
+                    <div className="pt-4">
+                      <Button 
+                        onClick={async () => {
+                          if (!notifPrefs) return;
+                          setIsSavingNotifPrefs(true);
+                          const result = await updateNotificationPreferences(notifPrefs);
+                          if (result.success) {
+                            toast.success('Benachrichtigungseinstellungen gespeichert');
+                          } else {
+                            toast.error(result.error || 'Fehler beim Speichern');
+                          }
+                          setIsSavingNotifPrefs(false);
+                        }}
+                        disabled={isSavingNotifPrefs}
+                      >
+                        {isSavingNotifPrefs ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        Einstellungen speichern
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-3">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Datenexport */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Download className="h-5 w-5" />
+                  Datenexport (Art. 15 + Art. 20 DSGVO)
+                </CardTitle>
+                <CardDescription>
+                  Laden Sie eine Kopie aller Ihrer personenbezogenen Daten im maschinenlesbaren JSON-Format herunter.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    setIsExporting(true);
+                    try {
+                      const result = await exportUserData();
+                      if (result.success && result.data) {
+                        const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `cmm24-datenexport-${new Date().toISOString().split('T')[0]}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        toast.success('Datenexport wurde heruntergeladen');
+                      } else {
+                        toast.error(result.error || 'Fehler beim Export');
+                      }
+                    } finally {
+                      setIsExporting(false);
+                    }
+                  }}
+                  disabled={isExporting}
+                >
+                  {isExporting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+                  Meine Daten herunterladen
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Account-Loeschung */}
+            <Card className="border-destructive/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-destructive">
+                  <AlertTriangle className="h-5 w-5" />
+                  Account löschen (Art. 17 DSGVO)
+                </CardTitle>
+                <CardDescription>
+                  Löschen Sie Ihren Account und alle damit verbundenen Daten unwiderruflich. 
+                  Ihre Inserate, Nachrichten und Firmendaten werden anonymisiert oder gelöscht.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {!showDeleteConfirm ? (
+                  <Button
+                    variant="destructive"
+                    onClick={() => setShowDeleteConfirm(true)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Account endgültig löschen
+                  </Button>
+                ) : (
+                  <div className="space-y-4">
+                    <Alert variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>Achtung:</strong> Diese Aktion kann nicht rückgängig gemacht werden. 
+                        Alle Ihre Daten werden unwiderruflich gelöscht oder anonymisiert.
+                      </AlertDescription>
+                    </Alert>
+                    <div className="space-y-2">
+                      <Label>Geben Sie <strong>LOESCHEN</strong> ein, um die Löschung zu bestätigen</Label>
+                      <Input
+                        value={deleteConfirmText}
+                        onChange={(e) => setDeleteConfirmText(e.target.value)}
+                        placeholder="LOESCHEN"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="destructive"
+                        onClick={async () => {
+                          setIsDeletingAccount(true);
+                          try {
+                            const result = await deleteAccount(deleteConfirmText);
+                            if (result.success) {
+                              toast.success('Account wurde gelöscht. Sie werden abgemeldet.');
+                              // Nach Loeschung weiterleiten
+                              window.location.href = '/';
+                            } else {
+                              toast.error(result.error || 'Fehler bei der Löschung');
+                            }
+                          } finally {
+                            setIsDeletingAccount(false);
+                          }
+                        }}
+                        disabled={deleteConfirmText !== 'LOESCHEN' || isDeletingAccount}
+                      >
+                        {isDeletingAccount ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                        Unwiderruflich löschen
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
+                      >
+                        Abbrechen
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
       </Tabs>
     </div>
   );

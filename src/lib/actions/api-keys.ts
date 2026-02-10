@@ -156,6 +156,21 @@ export async function createApiKey(params: {
     if (!params.name || params.name.length < 3) {
       return { success: false, error: 'Name muss mindestens 3 Zeichen haben' };
     }
+
+    if (params.name.length > 100) {
+      return { success: false, error: 'Name darf maximal 100 Zeichen haben' };
+    }
+    
+    // Permissions gegen erlaubte Werte validieren
+    const validPermissions = ['read', 'write', 'listings:read', 'listings:write', 'inquiries:read', 'inquiries:write', 'stats:read'];
+    if (!Array.isArray(params.permissions) || params.permissions.length === 0) {
+      return { success: false, error: 'Mindestens eine Berechtigung ist erforderlich' };
+    }
+    
+    const invalidPermission = params.permissions.find(p => !validPermissions.includes(p));
+    if (invalidPermission) {
+      return { success: false, error: `Ungueltige Berechtigung: ${invalidPermission}` };
+    }
     
     // Generate the API key
     const { key: secretKey, hash, prefix } = generateApiKey();
@@ -230,6 +245,12 @@ export async function createApiKey(params: {
 
 export async function revokeApiKey(keyId: string): Promise<ActionResult<void>> {
   try {
+    // UUID-Validierung
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(keyId)) {
+      return { success: false, error: 'Ungueltige Key-ID' };
+    }
+
     const userAccount = await getCurrentUserAccount();
     if (!userAccount) {
       return { success: false, error: 'Nicht angemeldet' };
@@ -270,6 +291,12 @@ export async function revokeApiKey(keyId: string): Promise<ActionResult<void>> {
 
 export async function deleteApiKey(keyId: string): Promise<ActionResult<void>> {
   try {
+    // UUID-Validierung
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(keyId)) {
+      return { success: false, error: 'Ungueltige Key-ID' };
+    }
+
     const userAccount = await getCurrentUserAccount();
     if (!userAccount) {
       return { success: false, error: 'Nicht angemeldet' };

@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import type { Database } from '@/types/supabase';
 
@@ -54,10 +55,34 @@ export async function createActionClient() {
           return cookieStore.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // setAll kann aus einer Server Component aufgerufen werden,
+            // wenn createActionClient dort verwendet wird. Das ist unbedenklich,
+            // da die Middleware die Session-Tokens ohnehin aktualisiert.
+          }
         },
+      },
+    }
+  );
+}
+
+/**
+ * Supabase Admin-Client mit Service-Role-Key.
+ * Umgeht RLS-Policies – nur für serverseitige Operationen verwenden,
+ * bei denen der Zugriff anderweitig abgesichert ist (z.B. Token-basiert).
+ */
+export function createServiceRoleClient() {
+  return createSupabaseClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
       },
     }
   );

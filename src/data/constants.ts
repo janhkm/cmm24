@@ -20,12 +20,9 @@ export const countries = [
 
 // Maschinenkategorien (entspricht DB-Enum machine_category)
 export const categories = [
-  { value: 'portal', label: 'Portal-Messmaschine' },
-  { value: 'cantilever', label: 'Ausleger-Messmaschine' },
-  { value: 'horizontal_arm', label: 'Horizontal-Arm' },
-  { value: 'gantry', label: 'Gantry' },
-  { value: 'optical', label: 'Optisches System' },
-  { value: 'other', label: 'Sonstige' },
+  { value: 'cmm', label: '3D-Koordinatenmessmaschine' },
+  { value: 'optical', label: 'Optisches Messsystem' },
+  { value: 'other', label: 'Sonstiges' },
 ];
 
 // Zustand-Labels (entspricht DB-Enum listing_condition)

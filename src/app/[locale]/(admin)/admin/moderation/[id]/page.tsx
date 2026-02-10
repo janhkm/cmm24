@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, use } from 'react';
+import { useState, use, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 import {
   ArrowLeft,
   CheckCircle,
@@ -327,7 +328,7 @@ export default function ModerationDetailPage({ params }: ModerationDetailPagePro
               <CardTitle>Beschreibung</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: listing.description }} />
+              <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeHtml(listing.description) }} />
             </CardContent>
           </Card>
         </div>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { ChevronDown, X, SlidersHorizontal } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,16 +14,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetFooter,
-} from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { categories, conditions, countries } from '@/data/constants';
 import type { ListingFilters } from '@/types';
@@ -141,9 +132,9 @@ export function ListingFiltersSidebar({
     }).format(price);
   };
 
-  const FilterContent = () => (
+  const FilterContent = ({ defaultOpen = ['manufacturer', 'price'] }: { defaultOpen?: string[] }) => (
     <>
-      <Accordion type="multiple" defaultValue={['manufacturer', 'price']} className="w-full">
+      <Accordion type="multiple" defaultValue={defaultOpen} className="w-full">
         {/* Manufacturer Filter */}
         <AccordionItem value="manufacturer">
           <AccordionTrigger className="text-sm font-medium">
@@ -431,43 +422,24 @@ export function ListingFiltersSidebar({
         </div>
       </aside>
 
-      {/* Mobile Filter Sheet */}
-      <div className="lg:hidden">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <SlidersHorizontal className="h-4 w-4" />
-              {t('title')}
-              {activeFiltersCount > 0 && (
-                <Badge variant="secondary">{activeFiltersCount}</Badge>
-              )}
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="h-[90vh] rounded-t-xl">
-            <SheetHeader>
-              <SheetTitle className="flex items-center justify-between">
-                <span>{t('title')}</span>
-                {activeFiltersCount > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearFilters}
-                  >
-                    {t('reset')}
-                  </Button>
-                )}
-              </SheetTitle>
-            </SheetHeader>
-            <ScrollArea className="h-[calc(90vh-140px)] mt-4">
-              <FilterContent />
-            </ScrollArea>
-            <SheetFooter className="mt-4">
-              <Button className="w-full">
-                {t('showResults', { count: totalResults })}
+      {/* Mobile Inline Filter (eingeklappt) */}
+      <div className="lg:hidden w-full px-4">
+        <div className="rounded-lg border bg-card p-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-semibold">{t('title')}</h2>
+            {activeFiltersCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="h-auto py-1 px-2 text-xs"
+              >
+                {t('reset')}
               </Button>
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
+            )}
+          </div>
+          <FilterContent defaultOpen={[]} />
+        </div>
       </div>
     </>
   );

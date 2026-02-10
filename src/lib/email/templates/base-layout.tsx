@@ -59,6 +59,13 @@ export function BaseLayout({ preview, children }: BaseLayoutProps) {
               {' • '}
               <Link href={`${baseUrl}/impressum`} style={link}>Impressum</Link>
             </Text>
+            <Text style={unsubscribeText}>
+              <Link href={`${baseUrl}/seller/konto?tab=privacy`} style={unsubscribeLink}>
+                E-Mail-Einstellungen verwalten
+              </Link>
+              {' • '}
+              Sie erhalten diese E-Mail, weil Sie ein CMM24-Konto besitzen.
+            </Text>
             <Text style={footerAddress}>
               Kneissl Messtechnik GmbH • Mühlstr. 41 • 71229 Leonberg • Deutschland
             </Text>
@@ -133,6 +140,20 @@ const footerAddress = {
 const link = {
   color: '#556cd6',
   textDecoration: 'none',
+};
+
+const unsubscribeText = {
+  color: '#aab7c4',
+  fontSize: '11px',
+  lineHeight: '16px',
+  textAlign: 'center' as const,
+  margin: '12px 0 0',
+};
+
+const unsubscribeLink = {
+  color: '#556cd6',
+  fontSize: '11px',
+  textDecoration: 'underline',
 };
 
 export default BaseLayout;

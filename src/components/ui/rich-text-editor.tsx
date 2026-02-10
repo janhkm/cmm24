@@ -6,6 +6,7 @@ import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
 import TipTapLink from '@tiptap/extension-link';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 // Farb-Extensions deaktiviert — Standardfarbe schwarz/weiss
 // import { TextStyle } from '@tiptap/extension-text-style';
 // import Color from '@tiptap/extension-color';
@@ -332,8 +333,11 @@ export function RichTextContent({
     );
   }
 
-  // Inline color-Styles entfernen — Text soll standardmaessig schwarz/weiss sein
-  const sanitizedContent = content.replace(/\s*color:\s*[^;"']+;?/gi, '').replace(/\s*style="\s*"/gi, '');
+  // HTML sanitieren mit DOMPurify um XSS zu verhindern,
+  // dann Inline-Color-Styles entfernen — Text soll standardmaessig schwarz/weiss sein
+  const sanitizedContent = sanitizeHtml(content)
+    .replace(/\s*color:\s*[^;"']+;?/gi, '')
+    .replace(/\s*style="\s*"/gi, '');
 
   return (
     <div

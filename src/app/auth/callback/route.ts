@@ -4,11 +4,27 @@ import { sendWelcomeEmail } from '@/lib/email/send';
 import { sendWelcomeNotification } from '@/lib/actions/notifications';
 import { log } from '@/lib/logger';
 
+/**
+ * Validiert einen Redirect-Pfad gegen Open-Redirect-Angriffe.
+ * Nur relative Pfade ohne Protokoll-Handler sind erlaubt.
+ */
+function isValidRedirectPath(path: string): boolean {
+  // Muss mit / beginnen, darf nicht mit // starten (Protocol-relative URL)
+  if (!path.startsWith('/') || path.startsWith('//')) return false;
+  // Kein Protokoll-Handler (z.B. javascript:, data:, http:)
+  if (/[a-zA-Z][a-zA-Z0-9+.-]*:/.test(path)) return false;
+  // Keine Backslashes (Browser normalisieren \ zu /)
+  if (path.includes('\\')) return false;
+  return true;
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const token_hash = searchParams.get('token_hash');
-  const next = searchParams.get('next') ?? '/seller/dashboard';
+  const rawNext = searchParams.get('next') ?? '/seller/dashboard';
+  // Open-Redirect-Schutz: nur sichere relative Pfade erlauben
+  const next = isValidRedirectPath(rawNext) ? rawNext : '/seller/dashboard';
   const type = searchParams.get('type'); // 'recovery', 'signup', 'magiclink'
 
   const supabase = await createClient();
@@ -58,6 +74,16 @@ export async function GET(request: Request) {
         .from('profiles')
         .update({ email_verified_at: new Date().toISOString() })
         .eq('id', user.id);
+
+      // Double-Opt-In: Marketing-Einwilligung erst jetzt aktivieren (§ 7 UWG)
+      // Der Marketing-Wunsch wurde bei der Registrierung als user_metadata gespeichert
+      const marketingPending = user.user_metadata?.marketing_pending === true;
+      if (marketingPending) {
+        await supabase
+          .from('profiles')
+          .update({ accepted_marketing: true })
+          .eq('id', user.id);
+      }
 
       // Account-Daten fuer Welcome-Email laden
       const { data: account } = await supabase

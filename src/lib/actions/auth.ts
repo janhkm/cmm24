@@ -146,6 +146,9 @@ export async function signUp(data: RegisterData): Promise<ActionResult> {
       emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
       data: {
         full_name: data.fullName,
+        // Marketing-Wunsch als Metadatum speichern fuer Double-Opt-In.
+        // Wird erst nach E-Mail-Bestaetigung (auth/callback) aktiviert.
+        marketing_pending: data.acceptedMarketing,
       },
     },
   });
@@ -196,7 +199,8 @@ export async function signUp(data: RegisterData): Promise<ActionResult> {
       p_full_name: data.fullName,
       p_phone: data.phone || null,
       p_accepted_terms: data.acceptedTerms,
-      p_accepted_marketing: data.acceptedMarketing,
+      // Marketing erst nach E-Mail-Bestaetigung aktivieren (Double-Opt-In, § 7 UWG)
+      p_accepted_marketing: false,
       p_onboarding_intent: data.userIntent || null,
       p_machine_count: data.machineCount || null,
       p_company_name: data.companyName || null,
@@ -214,9 +218,8 @@ export async function signUp(data: RegisterData): Promise<ActionResult> {
     // Falls regResult ein String ist (JSON), parsen
     const parsed = typeof regResult === 'string' ? JSON.parse(regResult) : regResult;
     accountId = parsed?.account_id || null;
-    console.log('[signUp] complete_registration result:', JSON.stringify(parsed), '-> accountId:', accountId);
   } else {
-    console.log('[signUp] complete_registration returned null/undefined');
+    // Registrierung ohne Account-Erstellung (Buyer-Only)
   }
 
   revalidatePath('/', 'layout');

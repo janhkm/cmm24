@@ -85,10 +85,10 @@ export default function DatenschutzPage() {
           <ul className="list-disc pl-6 mt-4 space-y-2">
             <li><strong>Auskunftsrecht (Art. 15 DSGVO):</strong> Sie haben das Recht, eine Bestätigung darüber zu verlangen, ob betreffende Daten verarbeitet werden, und auf Auskunft über diese Daten sowie auf weitere Informationen und Kopie der Daten.</li>
             <li><strong>Recht auf Berichtigung (Art. 16 DSGVO):</strong> Sie haben das Recht, die Vervollständigung der Sie betreffenden Daten oder die Berichtigung der Sie betreffenden unrichtigen Daten zu verlangen.</li>
-            <li><strong>Recht auf Löschung (Art. 17 DSGVO):</strong> Sie haben das Recht zu verlangen, dass betreffende Daten unverzüglich gelöscht werden. Alternativ können Sie nach Art. 18 DSGVO eine Einschränkung der Datenverarbeitung verlangen.</li>
+            <li><strong>Recht auf Löschung (Art. 17 DSGVO):</strong> Sie haben das Recht zu verlangen, dass betreffende Daten unverzüglich gelöscht werden. Sie können Ihren Account direkt in den Kontoeinstellungen löschen — dabei werden alle personenbezogenen Daten anonymisiert oder gelöscht.</li>
             <li><strong>Recht auf Einschränkung der Verarbeitung (Art. 18 DSGVO):</strong> Sie haben das Recht, die Einschränkung der Verarbeitung Ihrer Daten zu verlangen, wenn eine der in Art. 18 DSGVO genannten Voraussetzungen gegeben ist.</li>
-            <li><strong>Recht auf Datenübertragbarkeit (Art. 20 DSGVO):</strong> Sie haben das Recht, die Sie betreffenden Daten, die Sie uns bereitgestellt haben, in einem strukturierten, gängigen und maschinenlesbaren Format zu erhalten.</li>
-            <li><strong>Widerspruchsrecht (Art. 21 DSGVO):</strong> Sie haben das Recht, aus Gründen, die sich aus Ihrer besonderen Situation ergeben, jederzeit gegen die Verarbeitung der Sie betreffenden personenbezogenen Daten Widerspruch einzulegen. Dies gilt auch für ein auf diese Bestimmungen gestütztes Profiling.</li>
+            <li><strong>Recht auf Datenübertragbarkeit (Art. 20 DSGVO):</strong> Sie haben das Recht, die Sie betreffenden Daten, die Sie uns bereitgestellt haben, in einem strukturierten, gängigen und maschinenlesbaren Format zu erhalten. Sie können Ihre gesamten Daten als JSON-Datei über die Kontoeinstellungen exportieren.</li>
+            <li><strong>Widerspruchsrecht (Art. 21 DSGVO):</strong> Sie haben das Recht, aus Gründen, die sich aus Ihrer besonderen Situation ergeben, jederzeit gegen die Verarbeitung der Sie betreffenden personenbezogenen Daten Widerspruch einzulegen. Sie können Ihre E-Mail-Benachrichtigungseinstellungen jederzeit in den Kontoeinstellungen anpassen oder Marketing-E-Mails per One-Click-Abmeldung abbestellen.</li>
             <li><strong>Widerrufsrecht bei Einwilligung (Art. 7 Abs. 3 DSGVO):</strong> Sie haben das Recht, erteilte Einwilligungen jederzeit mit Wirkung für die Zukunft zu widerrufen.</li>
             <li><strong>Beschwerderecht (Art. 77 DSGVO):</strong> Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbehörde über die Verarbeitung Ihrer personenbezogenen Daten zu beschweren.</li>
           </ul>
@@ -135,10 +135,11 @@ export default function DatenschutzPage() {
           <h3 className="text-lg font-medium mt-6 mb-3">6.2 Supabase (Datenbank und Authentifizierung)</h3>
           <p>
             Für die Datenspeicherung und Nutzerverwaltung nutzen wir Supabase Inc. (970 Toa Payoh North #07-04, Singapore 318992). 
+            Die Datenbank wird in der AWS-Region <strong>US-East-1 (Nord-Virginia, USA)</strong> gehostet. 
             Supabase speichert und verarbeitet sämtliche Nutzerdaten, Inserate, Anfragen und weitere plattformbezogene Daten 
             in einer PostgreSQL-Datenbank. Die Datenbank ist durch Row Level Security (RLS) geschützt, sodass Nutzer nur auf 
             ihre eigenen Daten zugreifen können. Supabase verarbeitet zudem Authentifizierungsdaten (E-Mail, Passwort-Hashes, 
-            Session-Tokens). Es werden Standardvertragsklauseln (SCC) als Schutzmaßnahmen für die Datenübermittlung eingesetzt.
+            Session-Tokens). Es werden Standardvertragsklauseln (SCC) als Schutzmaßnahmen für die Datenübermittlung in die USA eingesetzt.
           </p>
           <p className="mt-2">
             Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung) und Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an sicherer Datenspeicherung).
@@ -665,13 +666,22 @@ export default function DatenschutzPage() {
           <h3 className="text-lg font-medium mt-6 mb-3">15.2 Inserat-Aufrufe (View-Tracking)</h3>
           <p>
             Zur Bereitstellung von Statistiken für Verkäufer zählen wir die Aufrufe einzelner Inserate. 
-            Dies geschieht über einen anonymisierten Visitor-Hash, der <strong>keine Rückschlüsse</strong> auf 
-            Ihre Person zulässt. Es werden weder IP-Adressen noch andere personenbezogene Daten gespeichert. 
-            Die Zählung wird pro Besucher und Tag dedupliziert.
+            Dabei wird Ihre IP-Adresse mit einem täglich rotierenden Salt kryptografisch gehasht 
+            (SHA-256, auf 16 Zeichen gekürzt). Der resultierende Visitor-Hash lässt <strong>keine Rückschlüsse</strong> auf 
+            Ihre Person zu und kann nicht zurückgerechnet werden. Durch die tägliche Salt-Rotation sind 
+            Hashes nur für den aktuellen Tag gültig. Es werden weder IP-Adressen noch andere 
+            personenbezogene Daten dauerhaft gespeichert. Die Zählung wird pro Besucher und Tag dedupliziert.
           </p>
           <p className="mt-2">
-            Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Bereitstellung 
-            von Nutzungsstatistiken für Verkäufer).
+            Rechtsgrundlage: Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO (berechtigtes Interesse an der Bereitstellung 
+            von Nutzungsstatistiken für Verkäufer). Wir haben eine Interessenabwägung durchgeführt: 
+            Das Interesse der Verkäufer an Aufrufstatistiken überwiegt das Interesse der Besucher, 
+            da keinerlei personenbezogene Daten gespeichert werden und eine Identifizierung nicht möglich ist.
+          </p>
+          <p className="mt-2">
+            <strong>Widerspruch:</strong> Sie können der Erfassung jederzeit widersprechen, indem Sie 
+            JavaScript in Ihrem Browser deaktivieren oder einen Tracking-Blocker verwenden. 
+            In diesem Fall werden keine View-Daten erfasst.
           </p>
         </section>
 
@@ -725,6 +735,59 @@ export default function DatenschutzPage() {
           </p>
           <p className="mt-2">
             Weitere Informationen: <a href="https://upstash.com/trust/privacy.html" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Upstash Datenschutzerklärung</a>
+          </p>
+        </section>
+
+        {/* ==================== 17a. Google AdSense ==================== */}
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">17a. Google AdSense (Werbeanzeigen)</h2>
+          <p>
+            Wir nutzen Google AdSense, einen Werbedienst der Google Ireland Limited (&quot;Google&quot;), Gordon House, Barrow Street, Dublin 4, Irland.
+            Google AdSense wird <strong>ausschließlich nach Ihrer ausdrücklichen Einwilligung</strong> in Marketing-Cookies geladen (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;a DSGVO, §&nbsp;25 Abs.&nbsp;1 TDDDG).
+          </p>
+          <p className="mt-2">
+            Wenn Sie Marketing-Cookies in unserem Cookie-Banner akzeptieren, setzt Google AdSense Cookies, um Ihnen personalisierte 
+            Werbeanzeigen anzuzeigen. Google kann dabei Daten über Ihre Nutzung unserer Website und anderer Websites verarbeiten, 
+            um relevante Werbung auszuspielen. Die Verarbeitung erfolgt ggf. auch in den USA. Schutzmaßnahme: EU-US Data Privacy Framework.
+          </p>
+          <p className="mt-2">
+            Sie können Ihre Einwilligung jederzeit widerrufen, indem Sie die Marketing-Cookies in den Cookie-Einstellungen deaktivieren.
+          </p>
+          <p className="mt-2">
+            Weitere Informationen: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Datenschutzerklärung</a>
+          </p>
+        </section>
+
+        {/* ==================== 17b. Google Shopping Feed ==================== */}
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">17b. Google Shopping Feed (Produktdaten)</h2>
+          <p>
+            Wir stellen einen Produktdaten-Feed für das Google Merchant Center bereit. Dieser Feed enthält öffentlich verfügbare 
+            Inserat-Daten wie Maschinentitel, Preis, Zustand, Standort und Bilder-URLs. Es werden <strong>keine personenbezogenen Daten</strong> der 
+            Käufer oder Verkäufer im Feed übermittelt (keine E-Mail-Adressen, Telefonnummern oder Kontaktdaten).
+          </p>
+          <p className="mt-2">
+            Rechtsgrundlage: Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO (berechtigtes Interesse an der Reichweite und Sichtbarkeit der Plattform).
+          </p>
+          <p className="mt-2">
+            Weitere Informationen: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Datenschutzerklärung</a>
+          </p>
+        </section>
+
+        {/* ==================== 17c. Mapbox ==================== */}
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">17c. Mapbox (Kartendarstellung)</h2>
+          <p>
+            Zur Darstellung von Standorten auf Karten nutzen wir Mapbox, einen Dienst der Mapbox Inc., 740 15th Street NW, 
+            5th Floor, Washington, DC 20005, USA. Bei der Anzeige einer Karte werden Kartendaten von Mapbox-Servern geladen. 
+            Dabei kann Ihre IP-Adresse an Mapbox übermittelt werden.
+          </p>
+          <p className="mt-2">
+            Rechtsgrundlage: Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO (berechtigtes Interesse an der Darstellung von Maschinenstandorten). 
+            Die Datenübermittlung in die USA erfolgt auf Grundlage von Standardvertragsklauseln (SCC) gemäß Art.&nbsp;46 Abs.&nbsp;2 lit.&nbsp;c DSGVO.
+          </p>
+          <p className="mt-2">
+            Weitere Informationen: <a href="https://www.mapbox.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Mapbox Datenschutzerklärung</a>
           </p>
         </section>
 
@@ -809,7 +872,7 @@ export default function DatenschutzPage() {
               Schutzmaßnahme: EU-US Data Privacy Framework.
             </li>
             <li>
-              <strong>Supabase Inc.</strong> (Singapur) – Datenbank und Authentifizierung. 
+              <strong>Supabase Inc.</strong> (Singapur, Hosting in AWS US-East-1, USA) – Datenbank und Authentifizierung. 
               Schutzmaßnahme: Standardvertragsklauseln (SCC) gemäß Art. 46 Abs. 2 lit. c DSGVO.
             </li>
             <li>
@@ -832,6 +895,14 @@ export default function DatenschutzPage() {
               <strong>Microsoft Corporation</strong> (USA) – E-Mail-Integration (Outlook, nur bei aktiver Verknüpfung durch Verkäufer). 
               Schutzmaßnahme: EU-US Data Privacy Framework.
             </li>
+            <li>
+              <strong>Google Ireland Limited</strong> (Irland/USA) – Google AdSense (nur nach Einwilligung) und Google Shopping Feed. 
+              Schutzmaßnahme: EU-US Data Privacy Framework.
+            </li>
+            <li>
+              <strong>Mapbox Inc.</strong> (USA) – Kartendarstellung. 
+              Schutzmaßnahme: Standardvertragsklauseln (SCC) gemäß Art.&nbsp;46 Abs.&nbsp;2 lit.&nbsp;c DSGVO.
+            </li>
           </ul>
         </section>
 
@@ -849,7 +920,7 @@ export default function DatenschutzPage() {
             <li><strong>Anfragen:</strong> Bis zur Löschung durch den Verkäufer oder Kontolöschung. Soft-Delete mit anschließender endgültiger Löschung nach 30 Tagen.</li>
             <li><strong>CRM-Kontakte:</strong> Bis zur Löschung durch den Verkäufer oder Kontolöschung.</li>
             <li><strong>Rechnungen und Zahlungsdaten:</strong> 10 Jahre (steuerliche Aufbewahrungspflicht gemäß § 147 AO, § 257 HGB).</li>
-            <li><strong>Audit-Logs:</strong> 2 Jahre (berechtigtes Interesse an der Nachvollziehbarkeit).</li>
+            <li><strong>Audit-Logs:</strong> 2 Jahre (berechtigtes Interesse an der Nachvollziehbarkeit). IP-Adressen und User-Agent-Daten werden nach 90 Tagen automatisch anonymisiert.</li>
             <li><strong>E-Mail-Synchronisation:</strong> Bis zur Trennung der E-Mail-Verbindung durch den Verkäufer. Tokens und synchronisierte E-Mails werden sofort gelöscht.</li>
             <li><strong>Team-Einladungen:</strong> Ausstehende Einladungen verfallen nach dem eingestellten Ablaufdatum.</li>
             <li><strong>API-Schlüssel:</strong> Bis zur Widerrufung oder zum Ablaufdatum.</li>
@@ -876,6 +947,8 @@ export default function DatenschutzPage() {
             <li>Resend Inc. (E-Mail-Versand)</li>
             <li>Functional Software, Inc. / Sentry (Fehlerüberwachung)</li>
             <li>Upstash Inc. (Rate Limiting)</li>
+            <li>Google Ireland Limited (Werbeanzeigen – nur nach Einwilligung)</li>
+            <li>Mapbox Inc. (Kartendarstellung)</li>
           </ul>
         </section>
 

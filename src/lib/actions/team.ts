@@ -1,6 +1,6 @@
 'use server';
 
-import { createActionClient } from '@/lib/supabase/server';
+import { createActionClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { ActionResult } from './types';
 import { sendTeamInvitationEmail, sendTeamMemberJoinedEmail } from '@/lib/email/send';
@@ -190,8 +190,16 @@ export async function inviteTeamMember(params: {
       return { success: false, error: 'Keine Berechtigung' };
     }
     
-    if (!params.email || !params.email.includes('@')) {
+    // E-Mail-Format validieren (robuster als nur '@'-Check)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!params.email || !emailRegex.test(params.email.trim())) {
       return { success: false, error: 'Ungültige E-Mail-Adresse' };
+    }
+
+    // Rolle validieren
+    const validRoles = ['admin', 'editor', 'viewer'] as const;
+    if (!validRoles.includes(params.role)) {
+      return { success: false, error: 'Ungültige Rolle' };
     }
     
     const supabase = await createActionClient();
@@ -249,7 +257,7 @@ export async function inviteTeamMember(params: {
     });
     
     if (!emailResult.success) {
-      console.warn('[inviteTeamMember] Email failed:', emailResult.error);
+      console.warn('[inviteTeamMember] Email delivery failed');
       // Don't fail the invitation if email fails - the invite is still valid
     }
     
@@ -316,6 +324,12 @@ export async function cancelInvitation(invitationId: string): Promise<ActionResu
 
 export async function removeTeamMember(memberId: string): Promise<ActionResult<void>> {
   try {
+    // UUID-Validierung
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(memberId)) {
+      return { success: false, error: 'Ungueltige Mitglieds-ID' };
+    }
+
     const userAccount = await getCurrentUserAccount();
     if (!userAccount) {
       return { success: false, error: 'Nicht angemeldet' };
@@ -369,7 +383,9 @@ export async function getInvitationByToken(token: string): Promise<ActionResult<
   isAccepted: boolean;
 }>> {
   try {
-    const supabase = await createActionClient();
+    // Service-Role-Client verwenden, da RLS den Zugriff für nicht-authentifizierte
+    // oder nicht-autorisierte Benutzer blockiert. Das Token selbst dient als Sicherheitsmechanismus.
+    const supabase = createServiceRoleClient();
     
     const { data: invitation, error } = await supabase
       .from('team_invitations')
@@ -416,15 +432,18 @@ export async function getInvitationByToken(token: string): Promise<ActionResult<
 
 export async function acceptTeamInvitation(token: string): Promise<ActionResult<void>> {
   try {
+    // Auth-Client für Benutzer-Authentifizierung
     const supabase = await createActionClient();
+    // Service-Role-Client für DB-Operationen (umgeht RLS, da eingeladener Benutzer keinen Zugriff hat)
+    const adminClient = createServiceRoleClient();
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return { success: false, error: 'Bitte melden Sie sich an' };
     }
     
-    // Get the invitation
-    const { data: invitation, error: invError } = await supabase
+    // Get the invitation (mit Admin-Client, da RLS den Zugriff blockiert)
+    const { data: invitation, error: invError } = await adminClient
       .from('team_invitations')
       .select('*')
       .eq('token', token)
@@ -445,7 +464,7 @@ export async function acceptTeamInvitation(token: string): Promise<ActionResult<
     }
     
     // Check if user is already a team member
-    const { data: existingMember } = await supabase
+    const { data: existingMember } = await adminClient
       .from('team_members')
       .select('id')
       .eq('account_id', invitation.account_id)
@@ -454,7 +473,7 @@ export async function acceptTeamInvitation(token: string): Promise<ActionResult<
     
     if (existingMember) {
       // Mark invitation as accepted anyway
-      await supabase
+      await adminClient
         .from('team_invitations')
         .update({ accepted_at: new Date().toISOString() })
         .eq('id', invitation.id);
@@ -463,7 +482,7 @@ export async function acceptTeamInvitation(token: string): Promise<ActionResult<
     }
     
     // Add user as team member
-    const { error: memberError } = await supabase
+    const { error: memberError } = await adminClient
       .from('team_members')
       .insert({
         account_id: invitation.account_id,
@@ -479,13 +498,13 @@ export async function acceptTeamInvitation(token: string): Promise<ActionResult<
     }
     
     // Mark invitation as accepted
-    await supabase
+    await adminClient
       .from('team_invitations')
       .update({ accepted_at: new Date().toISOString() })
       .eq('id', invitation.id);
     
     // Owner per E-Mail benachrichtigen
-    const { data: accountWithOwner } = await supabase
+    const { data: accountWithOwner } = await adminClient
       .from('accounts')
       .select('owner_id, company_name, profiles!accounts_owner_id_fkey(email, full_name)')
       .eq('id', invitation.account_id)
@@ -495,7 +514,7 @@ export async function acceptTeamInvitation(token: string): Promise<ActionResult<
       const ownerProfile = accountWithOwner.profiles as { email: string; full_name: string | null } | null;
       
       // Neues Mitglied-Profil laden
-      const { data: memberProfile } = await supabase
+      const { data: memberProfile } = await adminClient
         .from('profiles')
         .select('email, full_name')
         .eq('id', user.id)
@@ -510,7 +529,7 @@ export async function acceptTeamInvitation(token: string): Promise<ActionResult<
           role: invitation.role || 'viewer',
           companyName: accountWithOwner.company_name,
         }).catch(err => {
-          console.error('[acceptTeamInvitation] Failed to send joined email:', err);
+          console.error('[acceptTeamInvitation] Failed to send joined email');
         });
       }
     }
@@ -532,6 +551,17 @@ export async function updateTeamMemberRole(
   role: 'admin' | 'editor' | 'viewer'
 ): Promise<ActionResult<void>> {
   try {
+    // Input-Validierung
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(memberId)) {
+      return { success: false, error: 'Ungueltige Mitglieds-ID' };
+    }
+
+    const validRoles = ['admin', 'editor', 'viewer'] as const;
+    if (!validRoles.includes(role)) {
+      return { success: false, error: 'Ungueltige Rolle' };
+    }
+
     const userAccount = await getCurrentUserAccount();
     if (!userAccount) {
       return { success: false, error: 'Nicht angemeldet' };

@@ -4,14 +4,17 @@ import { useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { User, Mail, Lock, Save, Loader2, ArrowRight, Package } from 'lucide-react';
+import { User, Mail, Lock, Save, Loader2, ArrowRight, Package, Download, Trash2, AlertTriangle, Shield } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/use-auth';
 import { updatePassword } from '@/lib/actions/auth';
+import { deleteAccount, exportUserData } from '@/lib/actions/account';
 
 export default function BuyerAccountPage() {
   const t = useTranslations('buyerDashboard.account');
@@ -23,6 +26,10 @@ export default function BuyerAccountPage() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const isSeller = !!account;
+  const [isExporting, setIsExporting] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handlePasswordChange = async () => {
     setPasswordError('');
@@ -122,6 +129,123 @@ export default function BuyerAccountPage() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Datenschutz & Daten (DSGVO) */}
+      <Separator />
+      <div>
+        <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+          <Shield className="h-5 w-5" />
+          Datenschutz & Daten
+        </h2>
+        
+        {/* Datenexport */}
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Download className="h-5 w-5" />
+              Datenexport (Art. 15 + Art. 20 DSGVO)
+            </CardTitle>
+            <CardDescription>
+              Laden Sie eine Kopie aller Ihrer personenbezogenen Daten im maschinenlesbaren JSON-Format herunter.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                setIsExporting(true);
+                try {
+                  const result = await exportUserData();
+                  if (result.success && result.data) {
+                    const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `cmm24-datenexport-${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    toast.success('Datenexport wurde heruntergeladen');
+                  } else {
+                    toast.error(result.error || 'Fehler beim Export');
+                  }
+                } finally {
+                  setIsExporting(false);
+                }
+              }}
+              disabled={isExporting}
+            >
+              {isExporting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+              Meine Daten herunterladen
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Account loeschen */}
+        <Card className="border-destructive/50">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Account löschen (Art. 17 DSGVO)
+            </CardTitle>
+            <CardDescription>
+              Löschen Sie Ihren Account und alle damit verbundenen Daten unwiderruflich.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!showDeleteConfirm ? (
+              <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Account endgültig löschen
+              </Button>
+            ) : (
+              <div className="space-y-4">
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Achtung:</strong> Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden unwiderruflich gelöscht.
+                  </AlertDescription>
+                </Alert>
+                <div className="space-y-2">
+                  <Label>Geben Sie <strong>LOESCHEN</strong> ein, um die Löschung zu bestätigen</Label>
+                  <Input
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder="LOESCHEN"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="destructive"
+                    onClick={async () => {
+                      setIsDeletingAccount(true);
+                      try {
+                        const result = await deleteAccount(deleteConfirmText);
+                        if (result.success) {
+                          toast.success('Account wurde gelöscht.');
+                          window.location.href = '/';
+                        } else {
+                          toast.error(result.error || 'Fehler bei der Löschung');
+                        }
+                      } finally {
+                        setIsDeletingAccount(false);
+                      }
+                    }}
+                    disabled={deleteConfirmText !== 'LOESCHEN' || isDeletingAccount}
+                  >
+                    {isDeletingAccount ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                    Unwiderruflich löschen
+                  </Button>
+                  <Button variant="outline" onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}>
+                    Abbrechen
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Verkaeufer werden */}
       {!isSeller && (

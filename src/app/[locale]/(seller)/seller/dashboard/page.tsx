@@ -144,7 +144,7 @@ export default async function SellerDashboardPage({ params }: { params: Promise<
   const firstName = profile.full_name?.split(' ')[0] || profile.email?.split('@')[0] || '';
 
   return (
-    <div className="p-6 md:p-8 space-y-8">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
       {/* Welcome */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -162,28 +162,28 @@ export default async function SellerDashboardPage({ params }: { params: Promise<
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         {statsCards.map((stat) => (
           <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-6 pb-1 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                 {stat.title}
               </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
+              <stat.icon className="h-4 w-4 text-muted-foreground hidden sm:block" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold">{stat.value}</span>
+                <span className="text-xl sm:text-2xl font-bold">{stat.value}</span>
                 {stat.trend && (
                   <Badge
                     variant="secondary"
-                    className={stat.trend.startsWith('+') ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}
+                    className={`text-[10px] sm:text-xs ${stat.trend.startsWith('+') ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}
                   >
                     {stat.trend}
                   </Badge>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 line-clamp-1">
                 {stat.description}
               </p>
             </CardContent>
@@ -198,15 +198,15 @@ export default async function SellerDashboardPage({ params }: { params: Promise<
         </CardContent>
       </Card> */}
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Inquiries */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 sm:p-6">
             <div>
-              <CardTitle>{t('latestInquiries')}</CardTitle>
-              <CardDescription>{t('latestInquiriesDesc')}</CardDescription>
+              <CardTitle className="text-base sm:text-lg">{t('latestInquiries')}</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">{t('latestInquiriesDesc')}</CardDescription>
             </div>
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="sm" asChild className="w-fit">
               <Link href="/seller/anfragen">{tc('showAll')}<ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </CardHeader>
@@ -246,12 +246,12 @@ export default async function SellerDashboardPage({ params }: { params: Promise<
 
         {/* My Listings */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 sm:p-6">
             <div>
-              <CardTitle>{t('myListingsTitle')}</CardTitle>
-              <CardDescription>{t('myListingsDesc')}</CardDescription>
+              <CardTitle className="text-base sm:text-lg">{t('myListingsTitle')}</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">{t('myListingsDesc')}</CardDescription>
             </div>
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="sm" asChild className="w-fit">
               <Link href="/seller/inserate">{tc('showAll')}<ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </CardHeader>

@@ -345,6 +345,16 @@ function MaschinenContent() {
         </div>
       </form>
 
+      {/* Mobile Inline Filters (eingeklappt, oberhalb der Listings) */}
+      <div className="lg:hidden mb-6">
+        <ListingFiltersSidebar
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          totalResults={total}
+          manufacturers={manufacturers}
+        />
+      </div>
+
       <div className="flex gap-8">
         {/* Sidebar Filters - only on desktop */}
         <div className="hidden lg:block">
@@ -361,16 +371,6 @@ function MaschinenContent() {
           {/* Toolbar */}
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              {/* Mobile Filter Button */}
-              <div className="lg:hidden">
-                <ListingFiltersSidebar
-                  filters={filters}
-                  onFiltersChange={handleFiltersChange}
-                  totalResults={total}
-                  manufacturers={manufacturers}
-                />
-              </div>
-
               {/* Sort Select */}
               <Select value={sortBy} onValueChange={handleSortChange}>
                 <SelectTrigger className="w-[200px]">

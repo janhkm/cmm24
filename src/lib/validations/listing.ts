@@ -23,6 +23,9 @@ export const listingBasicsSchema = z.object({
   condition: z.enum(['new', 'like_new', 'good', 'fair'], {
     message: 'Bitte wählen Sie einen Zustand',
   }),
+  machineType: z
+    .enum(['cmm', 'optical', 'other', 'portal', 'cantilever', 'horizontal_arm', 'gantry'])
+    .optional(),
 });
 
 export const listingTechnicalSchema = z.object({
@@ -53,6 +56,39 @@ export const listingTechnicalSchema = z.object({
   probeSystem: z
     .string()
     .max(100, 'Tastsystem darf maximal 100 Zeichen lang sein')
+    .optional(),
+  // Google Merchant Center Felder (optional)
+  weightKg: z
+    .number()
+    .min(1, 'Gewicht muss mindestens 1 kg sein')
+    .max(100000, 'Gewicht darf maximal 100.000 kg sein')
+    .optional(),
+  dimensionLengthMm: z
+    .number()
+    .min(1, 'Länge muss größer als 0 sein')
+    .max(50000, 'Länge darf maximal 50.000mm sein')
+    .optional(),
+  dimensionWidthMm: z
+    .number()
+    .min(1, 'Breite muss größer als 0 sein')
+    .max(50000, 'Breite darf maximal 50.000mm sein')
+    .optional(),
+  dimensionHeightMm: z
+    .number()
+    .min(1, 'Höhe muss größer als 0 sein')
+    .max(50000, 'Höhe darf maximal 50.000mm sein')
+    .optional(),
+  mpn: z
+    .string()
+    .max(70, 'MPN darf maximal 70 Zeichen lang sein')
+    .optional(),
+  gtin: z
+    .string()
+    .max(14, 'GTIN/EAN darf maximal 14 Zeichen lang sein')
+    .optional(),
+  serialNumber: z
+    .string()
+    .max(100, 'Seriennummer darf maximal 100 Zeichen lang sein')
     .optional(),
 });
 

@@ -80,9 +80,9 @@ export default function PasswortPage() {
   };
 
   return (
-    <div className="container-page py-8 max-w-xl">
+    <div className="px-4 sm:px-6 md:px-8 py-6 sm:py-8 max-w-xl">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <Link
           href="/seller/konto"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"

@@ -35,6 +35,33 @@ export async function getMessageTemplates(
       return { success: false, error: ErrorMessages.UNAUTHORIZED, code: 'UNAUTHORIZED' };
     }
 
+    // Account-Ownership pruefen: User muss Owner oder Teammitglied sein
+    const { data: account } = await supabase
+      .from('accounts')
+      .select('id, owner_id')
+      .eq('id', accountId)
+      .is('deleted_at', null)
+      .single();
+
+    if (!account) {
+      return { success: false, error: 'Account nicht gefunden', code: 'NOT_FOUND' };
+    }
+
+    // Pruefen ob User Owner ist oder Teammitglied des Accounts
+    if (account.owner_id !== user.id) {
+      const { data: teamMember } = await supabase
+        .from('team_members')
+        .select('id')
+        .eq('account_id', accountId)
+        .eq('profile_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (!teamMember) {
+        return { success: false, error: ErrorMessages.UNAUTHORIZED, code: 'UNAUTHORIZED' };
+      }
+    }
+
     const { data, error } = await supabase
       .from('message_templates')
       .select('*')
@@ -69,6 +96,32 @@ export async function createMessageTemplate(
 
     if (!user) {
       return { success: false, error: ErrorMessages.UNAUTHORIZED, code: 'UNAUTHORIZED' };
+    }
+
+    // Account-Ownership pruefen
+    const { data: account } = await supabase
+      .from('accounts')
+      .select('id, owner_id')
+      .eq('id', accountId)
+      .is('deleted_at', null)
+      .single();
+
+    if (!account) {
+      return { success: false, error: 'Account nicht gefunden', code: 'NOT_FOUND' };
+    }
+
+    if (account.owner_id !== user.id) {
+      const { data: teamMember } = await supabase
+        .from('team_members')
+        .select('id')
+        .eq('account_id', accountId)
+        .eq('profile_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (!teamMember) {
+        return { success: false, error: ErrorMessages.UNAUTHORIZED, code: 'UNAUTHORIZED' };
+      }
     }
 
     // Validieren
@@ -142,6 +195,38 @@ export async function updateMessageTemplate(
       return { success: false, error: ErrorMessages.UNAUTHORIZED, code: 'UNAUTHORIZED' };
     }
 
+    // Ownership-Pruefung: Template muss zu einem Account des Users gehoeren
+    const { data: template } = await supabase
+      .from('message_templates')
+      .select('id, account_id')
+      .eq('id', templateId)
+      .single();
+
+    if (!template) {
+      return { success: false, error: 'Vorlage nicht gefunden', code: 'NOT_FOUND' };
+    }
+
+    const { data: account } = await supabase
+      .from('accounts')
+      .select('id, owner_id')
+      .eq('id', template.account_id)
+      .single();
+
+    if (!account || account.owner_id !== user.id) {
+      // Auch Teammitglieder pruefen
+      const { data: teamMember } = await supabase
+        .from('team_members')
+        .select('id')
+        .eq('account_id', template.account_id)
+        .eq('profile_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (!teamMember) {
+        return { success: false, error: ErrorMessages.UNAUTHORIZED, code: 'UNAUTHORIZED' };
+      }
+    }
+
     const sanitizedTitle = sanitizeText(title);
     const sanitizedContent = sanitizeText(content);
 
@@ -189,6 +274,37 @@ export async function deleteMessageTemplate(
 
     if (!user) {
       return { success: false, error: ErrorMessages.UNAUTHORIZED, code: 'UNAUTHORIZED' };
+    }
+
+    // Ownership-Pruefung: Template muss zu einem Account des Users gehoeren
+    const { data: template } = await supabase
+      .from('message_templates')
+      .select('id, account_id')
+      .eq('id', templateId)
+      .single();
+
+    if (!template) {
+      return { success: false, error: 'Vorlage nicht gefunden', code: 'NOT_FOUND' };
+    }
+
+    const { data: account } = await supabase
+      .from('accounts')
+      .select('id, owner_id')
+      .eq('id', template.account_id)
+      .single();
+
+    if (!account || account.owner_id !== user.id) {
+      const { data: teamMember } = await supabase
+        .from('team_members')
+        .select('id')
+        .eq('account_id', template.account_id)
+        .eq('profile_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (!teamMember) {
+        return { success: false, error: ErrorMessages.UNAUTHORIZED, code: 'UNAUTHORIZED' };
+      }
     }
 
     const { error } = await supabase

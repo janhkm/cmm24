@@ -44,6 +44,7 @@ interface CreateListingData {
   condition: 'new' | 'like_new' | 'good' | 'fair';
   price: number | null;
   priceNegotiable: boolean;
+  machineType?: string;
   measuringRangeX?: number;
   measuringRangeY?: number;
   measuringRangeZ?: number;
@@ -51,6 +52,14 @@ interface CreateListingData {
   software?: string;
   controller?: string;
   probeSystem?: string;
+  // Google Merchant Center Felder
+  weightKg?: number;
+  dimensionLengthMm?: number;
+  dimensionWidthMm?: number;
+  dimensionHeightMm?: number;
+  mpn?: string;
+  gtin?: string;
+  serialNumber?: string;
   locationCountry: string;
   locationCity: string;
   locationPostalCode: string;
@@ -153,19 +162,18 @@ export async function createListing(data: CreateListingData): Promise<ActionResu
     return { success: false, error: 'Bitte melden Sie sich an' };
   }
   
-  // Check plan limits
-  const limitCheck = await canCreateListing();
-  if (!limitCheck.data?.canCreate) {
-    return { 
-      success: false, 
-      error: `Sie haben das Limit von ${limitCheck.data?.limit} Inseraten erreicht. Upgraden Sie Ihren Plan für mehr Inserate.` 
-    };
-  }
-  
   // Input sanitieren
   data.title = sanitizeText(data.title);
   data.description = sanitizeText(data.description);
   if (data.modelNameCustom) data.modelNameCustom = sanitizeText(data.modelNameCustom);
+  if (data.software) data.software = sanitizeText(data.software);
+  if (data.controller) data.controller = sanitizeText(data.controller);
+  if (data.probeSystem) data.probeSystem = sanitizeText(data.probeSystem);
+  if (data.mpn) data.mpn = sanitizeText(data.mpn);
+  if (data.gtin) data.gtin = sanitizeText(data.gtin);
+  if (data.serialNumber) data.serialNumber = sanitizeText(data.serialNumber);
+  data.locationCity = sanitizeText(data.locationCity);
+  if (data.locationPostalCode) data.locationPostalCode = sanitizeText(data.locationPostalCode);
   
   // Basis-Validierung
   if (data.title.length < 1) {
@@ -193,6 +201,7 @@ export async function createListing(data: CreateListingData): Promise<ActionResu
     condition: data.condition,
     price: data.price as any, // kann null sein (VB/Preis auf Anfrage)
     price_negotiable: data.priceNegotiable,
+    machine_type: data.machineType || null,
     measuring_range_x: data.measuringRangeX || null,
     measuring_range_y: data.measuringRangeY || null,
     measuring_range_z: data.measuringRangeZ || null,
@@ -200,6 +209,13 @@ export async function createListing(data: CreateListingData): Promise<ActionResu
     software: data.software || null,
     controller: data.controller || null,
     probe_system: data.probeSystem || null,
+    weight_kg: data.weightKg || null,
+    dimension_length_mm: data.dimensionLengthMm || null,
+    dimension_width_mm: data.dimensionWidthMm || null,
+    dimension_height_mm: data.dimensionHeightMm || null,
+    mpn: data.mpn || null,
+    gtin: data.gtin || null,
+    serial_number: data.serialNumber || null,
     location_country: data.locationCountry,
     location_city: data.locationCity,
     location_postal_code: data.locationPostalCode,
@@ -265,6 +281,19 @@ export async function updateListing(
     }
   }
   
+  // Text-Felder sanitieren
+  if (data.title !== undefined) data.title = sanitizeText(data.title);
+  if (data.description !== undefined) data.description = sanitizeText(data.description);
+  if (data.modelNameCustom !== undefined && data.modelNameCustom) data.modelNameCustom = sanitizeText(data.modelNameCustom);
+  if (data.software !== undefined && data.software) data.software = sanitizeText(data.software);
+  if (data.controller !== undefined && data.controller) data.controller = sanitizeText(data.controller);
+  if (data.probeSystem !== undefined && data.probeSystem) data.probeSystem = sanitizeText(data.probeSystem);
+  if (data.mpn !== undefined && data.mpn) data.mpn = sanitizeText(data.mpn);
+  if (data.gtin !== undefined && data.gtin) data.gtin = sanitizeText(data.gtin);
+  if (data.serialNumber !== undefined && data.serialNumber) data.serialNumber = sanitizeText(data.serialNumber);
+  if (data.locationCity !== undefined) data.locationCity = sanitizeText(data.locationCity);
+  if (data.locationPostalCode !== undefined && data.locationPostalCode) data.locationPostalCode = sanitizeText(data.locationPostalCode);
+
   const updateData: ListingUpdate = {};
   
   if (data.manufacturerId !== undefined) updateData.manufacturer_id = data.manufacturerId;
@@ -274,6 +303,7 @@ export async function updateListing(
   if (data.condition !== undefined) updateData.condition = data.condition;
   if (data.price !== undefined) updateData.price = data.price as any;
   if (data.priceNegotiable !== undefined) updateData.price_negotiable = data.priceNegotiable;
+  if (data.machineType !== undefined) updateData.machine_type = data.machineType || null;
   if (data.measuringRangeX !== undefined) updateData.measuring_range_x = data.measuringRangeX || null;
   if (data.measuringRangeY !== undefined) updateData.measuring_range_y = data.measuringRangeY || null;
   if (data.measuringRangeZ !== undefined) updateData.measuring_range_z = data.measuringRangeZ || null;
@@ -281,6 +311,13 @@ export async function updateListing(
   if (data.software !== undefined) updateData.software = data.software || null;
   if (data.controller !== undefined) updateData.controller = data.controller || null;
   if (data.probeSystem !== undefined) updateData.probe_system = data.probeSystem || null;
+  if (data.weightKg !== undefined) updateData.weight_kg = data.weightKg || null;
+  if (data.dimensionLengthMm !== undefined) updateData.dimension_length_mm = data.dimensionLengthMm || null;
+  if (data.dimensionWidthMm !== undefined) updateData.dimension_width_mm = data.dimensionWidthMm || null;
+  if (data.dimensionHeightMm !== undefined) updateData.dimension_height_mm = data.dimensionHeightMm || null;
+  if (data.mpn !== undefined) updateData.mpn = data.mpn || null;
+  if (data.gtin !== undefined) updateData.gtin = data.gtin || null;
+  if (data.serialNumber !== undefined) updateData.serial_number = data.serialNumber || null;
   if (data.locationCountry !== undefined) updateData.location_country = data.locationCountry;
   if (data.locationCity !== undefined) updateData.location_city = data.locationCity;
   if (data.locationPostalCode !== undefined) updateData.location_postal_code = data.locationPostalCode;
@@ -1438,15 +1475,6 @@ export async function duplicateListing(listingId: string): Promise<ActionResult<
     return { success: false, error: 'Bitte melden Sie sich an' };
   }
 
-  // Check plan limits
-  const limitCheck = await canCreateListing();
-  if (!limitCheck.data?.canCreate) {
-    return {
-      success: false,
-      error: `Sie haben das Limit von ${limitCheck.data?.limit} Inseraten erreicht. Upgraden Sie Ihren Plan fuer mehr Inserate.`,
-    };
-  }
-
   // Load original listing
   const { data: original } = await supabase
     .from('listings')
@@ -1483,6 +1511,7 @@ export async function duplicateListing(listingId: string): Promise<ActionResult<
       currency: original.currency,
       year_built: original.year_built,
       condition: original.condition,
+      machine_type: original.machine_type,
       measuring_range_x: original.measuring_range_x,
       measuring_range_y: original.measuring_range_y,
       measuring_range_z: original.measuring_range_z,
@@ -1490,6 +1519,13 @@ export async function duplicateListing(listingId: string): Promise<ActionResult<
       software: original.software,
       controller: original.controller,
       probe_system: original.probe_system,
+      weight_kg: original.weight_kg,
+      dimension_length_mm: original.dimension_length_mm,
+      dimension_width_mm: original.dimension_width_mm,
+      dimension_height_mm: original.dimension_height_mm,
+      mpn: original.mpn,
+      gtin: original.gtin,
+      serial_number: original.serial_number,
       location_country: original.location_country,
       location_city: original.location_city,
       location_postal_code: original.location_postal_code,

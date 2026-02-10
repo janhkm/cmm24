@@ -197,7 +197,7 @@ export default function TeamPage() {
 
   return (
     <FeatureGate feature="team_management" fallback={<TeamLockedContent />}>
-      <div className="p-6 md:p-8 space-y-6">
+      <div className="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -301,26 +301,27 @@ export default function TeamPage() {
                 {invitations.map((invitation) => (
                   <div
                     key={invitation.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                    className="flex items-center justify-between gap-2 p-3 rounded-lg bg-muted/50"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-10 w-10 shrink-0 rounded-full bg-muted flex items-center justify-center">
                         <Mail className="h-5 w-5 text-muted-foreground" />
                       </div>
-                      <div>
-                        <p className="font-medium">{invitation.email}</p>
-                        <p className="text-sm text-muted-foreground">
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate">{invitation.email}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           {t('invitedAs', { role: roleLabels[invitation.role]?.label || invitation.role })}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-amber-600">
+                    <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                      <Badge variant="outline" className="text-amber-600 text-xs hidden sm:inline-flex">
                         {t('pending')}
                       </Badge>
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8"
                         onClick={() => handleCancelInvitation(invitation.id)}
                       >
                         <X className="h-4 w-4" />
@@ -353,24 +354,24 @@ export default function TeamPage() {
                 return (
                   <div
                     key={member.id}
-                    className="flex items-center justify-between p-4 rounded-lg border"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-lg border"
                   >
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-12 w-12">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
                         <AvatarImage src={member.avatarUrl || undefined} />
                         <AvatarFallback>
                           {getInitials(member.fullName, member.email)}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <p className="font-semibold">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm sm:text-base truncate">
                           {member.fullName || member.email.split('@')[0]}
                         </p>
-                        <p className="text-sm text-muted-foreground">{member.email}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">{member.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Badge className={roleInfo.color}>
+                    <div className="flex items-center gap-2 sm:gap-3 ml-13 sm:ml-0">
+                      <Badge className={`${roleInfo.color} text-xs`}>
                         <RoleIcon className="mr-1 h-3 w-3" />
                         {roleInfo.label}
                       </Badge>

@@ -402,12 +402,12 @@ export default function InseratePage() {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-6">
+    <div className="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{t('myListings')}</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold">{t('myListings')}</h1>
+          <p className="text-sm text-muted-foreground">
             {t('manageListings')}
           </p>
         </div>
@@ -420,7 +420,7 @@ export default function InseratePage() {
             </Button>
           )}
           */}
-          <Button asChild>
+          <Button asChild size="sm" className="sm:size-default">
             <Link href="/seller/inserate/neu">
               <Plus className="mr-2 h-4 w-4" />
               {t('newListing')}
@@ -485,37 +485,37 @@ export default function InseratePage() {
       </div>
 
       {/* Stats Bar */}
-      <div className="grid gap-4 sm:grid-cols-5">
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
         <Card>
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold">
+          <CardContent className="p-3 sm:pt-4 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold">
               {listings.filter((l) => l.status === 'active').length}
             </div>
-            <p className="text-sm text-muted-foreground">{t('activeListings')}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">{t('activeListings')}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold">
+          <CardContent className="p-3 sm:pt-4 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold">
               {listings.filter((l) => l.status === 'draft').length}
             </div>
-            <p className="text-sm text-muted-foreground">{t('drafts')}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">{t('drafts')}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold">
+          <CardContent className="p-3 sm:pt-4 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold">
               {listings.filter((l) => l.status === 'pending_review').length}
             </div>
-            <p className="text-sm text-muted-foreground">{t('inReview')}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">{t('inReview')}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold">
+          <CardContent className="p-3 sm:pt-4 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold">
               {listings.filter((l) => l.status === 'sold').length}
             </div>
-            <p className="text-sm text-muted-foreground">{t('sold')}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">{t('sold')}</p>
           </CardContent>
         </Card>
         {/* AUSKOMMENTIERT: Featured/Hervorgehoben Stats-Card
@@ -629,165 +629,218 @@ export default function InseratePage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Listings Table */}
+      {/* Listings — Mobile Cards / Desktop Table */}
       {filteredListings.length > 0 ? (
-        <TooltipProvider>
-          <Card>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {hasBulkActions && (
-                      <TableHead className="w-[50px]">
-                        <Checkbox
-                          checked={selectedIds.length === filteredListings.length && filteredListings.length > 0}
-                          onCheckedChange={selectAll}
-                          aria-label={t('selectAllLabel')}
-                        />
-                      </TableHead>
-                    )}
-                    <TableHead className="w-[300px]">{t('listingColumn')}</TableHead>
-                    <TableHead>{t('statusColumn')}</TableHead>
-                    {/* AUSKOMMENTIERT: Featured-Spalte
-                    <TableHead className="text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Star className="h-4 w-4" />
-                        <span className="sr-only">{t('highlighted')}</span>
-                      </div>
-                    </TableHead>
-                    */}
-                    <TableHead>{t('priceColumn')}</TableHead>
-                    <TableHead>{t('viewsColumn')}</TableHead>
-                    <TableHead>{t('createdColumn')}</TableHead>
-                    <TableHead className="w-[70px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredListings.map((listing) => {
-                    const manufacturer = manufacturers.find((m) => m.id === listing.manufacturer_id);
-                    const primaryImage = listing.listing_media?.find((m) => m.is_primary) || listing.listing_media?.[0];
-                    
-                    return (
-                    <TableRow
-                      key={listing.id}
-                      className={cn(selectedIds.includes(listing.id) && 'bg-primary/5')}
-                    >
-                      {hasBulkActions && (
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedIds.includes(listing.id)}
-                            onCheckedChange={() => toggleSelect(listing.id)}
-                            aria-label={t('selectLabel', { title: listing.title })}
-                          />
-                        </TableCell>
-                      )}
-                      <TableCell>
-                        <Link
-                          href={`/seller/inserate/${listing.id}`}
-                          className="flex items-center gap-4 hover:opacity-80"
-                        >
-                          <div className="h-12 w-12 rounded-lg bg-muted overflow-hidden shrink-0">
-                            {primaryImage && (
-                              <Image
-                                src={primaryImage.url}
-                                alt={listing.title}
-                                width={48}
-                                height={48}
-                                className="h-full w-full object-cover"
-                              />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-medium truncate">{listing.title}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {manufacturer?.name || t('unknown')}
-                            </p>
-                          </div>
-                        </Link>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(listing.status || 'draft')}</TableCell>
-                      {/* AUSKOMMENTIERT: Featured-Zelle
-                      <TableCell className="text-center">
-                        {listing.featured ? (
-                          <Badge variant="outline" className="gap-1 border-amber-300 bg-amber-50 text-amber-700">
-                            <Star className="h-3 w-3 fill-current" />Featured
-                          </Badge>
-                        ) : (<span className="text-muted-foreground">–</span>)}
-                      </TableCell>
-                      */}
-                      <TableCell className="font-medium">
-                        {formatPrice(listing.price)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Eye className="h-4 w-4 text-muted-foreground" />
-                          {listing.views_count || 0}
+        <>
+          {/* Mobile Card-Ansicht */}
+          <div className="space-y-3 md:hidden">
+            {filteredListings.map((listing) => {
+              const manufacturer = manufacturers.find((m) => m.id === listing.manufacturer_id);
+              const primaryImage = listing.listing_media?.find((m) => m.is_primary) || listing.listing_media?.[0];
+
+              return (
+                <Card key={listing.id} className={cn(selectedIds.includes(listing.id) && 'ring-2 ring-primary')}>
+                  <CardContent className="p-3">
+                    <div className="flex gap-3">
+                      <Link href={`/seller/inserate/${listing.id}`} className="shrink-0">
+                        <div className="h-16 w-16 rounded-lg bg-muted overflow-hidden">
+                          {primaryImage ? (
+                            <Image
+                              src={primaryImage.url}
+                              alt={listing.title}
+                              width={64}
+                              height={64}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center">
+                              <Star className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                          )}
                         </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {listing.created_at ? formatDate(listing.created_at) : '-'}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link href={`/seller/inserate/${listing.id}`}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                {t('edit')}
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link
-                                href={`/maschinen/${listing.slug}`}
-                                target="_blank"
-                              >
-                                <ExternalLink className="mr-2 h-4 w-4" />
-                                {t('preview')}
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDuplicate(listing)}>
-                              <Copy className="mr-2 h-4 w-4" />
-                              {t('duplicate')}
-                            </DropdownMenuItem>
-                            {/* AUSKOMMENTIERT: Featured/Hervorheben Menueeintrag
-                            {hasFeaturedLimit !== 0 && (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => toggleFeatured(listing.id)}>
-                                  <Star className="mr-2 h-4 w-4" />
-                                  {listing.featured ? t('removeHighlight') : t('highlight')}
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                            */}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleArchive(listing)}>
-                              <Archive className="mr-2 h-4 w-4" />
-                              {t('archive')}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              className="text-destructive"
-                              onClick={() => handleDelete(listing)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              {t('deleteBulk')}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+                      </Link>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <Link href={`/seller/inserate/${listing.id}`} className="min-w-0">
+                            <p className="font-medium text-sm truncate">{listing.title}</p>
+                            <p className="text-xs text-muted-foreground">{manufacturer?.name || t('unknown')}</p>
+                          </Link>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/seller/inserate/${listing.id}`}>
+                                  <Edit className="mr-2 h-4 w-4" />{t('edit')}
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/maschinen/${listing.slug}`} target="_blank">
+                                  <ExternalLink className="mr-2 h-4 w-4" />{t('preview')}
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDuplicate(listing)}>
+                                <Copy className="mr-2 h-4 w-4" />{t('duplicate')}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleArchive(listing)}>
+                                <Archive className="mr-2 h-4 w-4" />{t('archive')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(listing)}>
+                                <Trash2 className="mr-2 h-4 w-4" />{t('deleteBulk')}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                        <div className="flex items-center gap-3 mt-2 flex-wrap">
+                          {getStatusBadge(listing.status || 'draft')}
+                          <span className="text-xs font-medium">{formatPrice(listing.price)}</span>
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Eye className="h-3 w-3" />{listing.views_count || 0}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table-Ansicht */}
+          <TooltipProvider>
+            <Card className="hidden md:block">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      {hasBulkActions && (
+                        <TableHead className="w-[50px]">
+                          <Checkbox
+                            checked={selectedIds.length === filteredListings.length && filteredListings.length > 0}
+                            onCheckedChange={selectAll}
+                            aria-label={t('selectAllLabel')}
+                          />
+                        </TableHead>
+                      )}
+                      <TableHead className="w-[300px]">{t('listingColumn')}</TableHead>
+                      <TableHead>{t('statusColumn')}</TableHead>
+                      <TableHead>{t('priceColumn')}</TableHead>
+                      <TableHead>{t('viewsColumn')}</TableHead>
+                      <TableHead>{t('createdColumn')}</TableHead>
+                      <TableHead className="w-[70px]"></TableHead>
                     </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
-        </TooltipProvider>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredListings.map((listing) => {
+                      const manufacturer = manufacturers.find((m) => m.id === listing.manufacturer_id);
+                      const primaryImage = listing.listing_media?.find((m) => m.is_primary) || listing.listing_media?.[0];
+                      
+                      return (
+                      <TableRow
+                        key={listing.id}
+                        className={cn(selectedIds.includes(listing.id) && 'bg-primary/5')}
+                      >
+                        {hasBulkActions && (
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedIds.includes(listing.id)}
+                              onCheckedChange={() => toggleSelect(listing.id)}
+                              aria-label={t('selectLabel', { title: listing.title })}
+                            />
+                          </TableCell>
+                        )}
+                        <TableCell>
+                          <Link
+                            href={`/seller/inserate/${listing.id}`}
+                            className="flex items-center gap-4 hover:opacity-80"
+                          >
+                            <div className="h-12 w-12 rounded-lg bg-muted overflow-hidden shrink-0">
+                              {primaryImage && (
+                                <Image
+                                  src={primaryImage.url}
+                                  alt={listing.title}
+                                  width={48}
+                                  height={48}
+                                  className="h-full w-full object-cover"
+                                />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{listing.title}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {manufacturer?.name || t('unknown')}
+                              </p>
+                            </div>
+                          </Link>
+                        </TableCell>
+                        <TableCell>{getStatusBadge(listing.status || 'draft')}</TableCell>
+                        <TableCell className="font-medium">
+                          {formatPrice(listing.price)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                            {listing.views_count || 0}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {listing.created_at ? formatDate(listing.created_at) : '-'}
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/seller/inserate/${listing.id}`}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  {t('edit')}
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link
+                                  href={`/maschinen/${listing.slug}`}
+                                  target="_blank"
+                                >
+                                  <ExternalLink className="mr-2 h-4 w-4" />
+                                  {t('preview')}
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDuplicate(listing)}>
+                                <Copy className="mr-2 h-4 w-4" />
+                                {t('duplicate')}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleArchive(listing)}>
+                                <Archive className="mr-2 h-4 w-4" />
+                                {t('archive')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="text-destructive"
+                                onClick={() => handleDelete(listing)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {t('deleteBulk')}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </Card>
+          </TooltipProvider>
+        </>
       ) : (
         <Card>
           <CardContent className="py-16 text-center">

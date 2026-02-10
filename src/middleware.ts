@@ -173,7 +173,7 @@ export async function middleware(request: NextRequest) {
   );
 
   // Auth-Seiten (Redirect wenn bereits eingeloggt)
-  const authPaths = ['/login'];
+  const authPaths = ['/login', '/registrieren', '/passwort-vergessen', '/passwort-reset'];
   const isAuthPath = authPaths.some((path) =>
     internalPathname.startsWith(path),
   );

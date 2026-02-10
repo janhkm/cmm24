@@ -46,6 +46,7 @@ export interface Listing {
   currency: string;
   yearBuilt: number;
   condition: ListingCondition;
+  // Technische Daten
   measuringRangeX?: number;
   measuringRangeY?: number;
   measuringRangeZ?: number;
@@ -53,6 +54,17 @@ export interface Listing {
   software?: string;
   controller?: string;
   probeSystem?: string;
+  // Google Merchant Center Felder
+  machineType?: string;
+  weightKg?: number;
+  dimensionLengthMm?: number;
+  dimensionWidthMm?: number;
+  dimensionHeightMm?: number;
+  mpn?: string;
+  gtin?: string;
+  serialNumber?: string;
+  googleProductCategory?: string;
+  // Standort
   locationCountry: string;
   locationCity: string;
   locationPostalCode?: string;
@@ -209,6 +221,7 @@ export interface ListingFormData {
   title: string;
   yearBuilt: number;
   condition: ListingCondition;
+  machineType?: string;
   price: number;
   priceNegotiable: boolean;
   
@@ -220,6 +233,14 @@ export interface ListingFormData {
   software?: string;
   controller?: string;
   probeSystem?: string;
+  // Google Merchant Center Felder
+  weightKg?: number;
+  dimensionLengthMm?: number;
+  dimensionWidthMm?: number;
+  dimensionHeightMm?: number;
+  mpn?: string;
+  gtin?: string;
+  serialNumber?: string;
   
   // Step 3: Location
   locationCountry: string;

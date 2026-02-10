@@ -219,6 +219,11 @@ export function SellerShell({
                 {ts('newListing')}
               </Link>
             </Button>
+            <Button size="icon" asChild className="sm:hidden h-9 w-9">
+              <Link href="/seller/inserate/neu">
+                <Plus className="h-4 w-4" />
+              </Link>
+            </Button>
             <NotificationBell />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -259,7 +264,7 @@ export function SellerShell({
             <div className="border-t p-4"><PlanWidget /></div>
           </div>
         </aside>
-        <main className="flex-1 min-h-[calc(100vh-4rem)]">{children}</main>
+        <main className="flex-1 min-h-[calc(100vh-4rem)] overflow-x-hidden">{children}</main>
       </div>
     </div>
   );

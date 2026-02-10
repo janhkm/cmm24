@@ -988,6 +988,8 @@
     "functionalDesc": "Enable advanced features such as language settings and comparison list.",
     "analytics": "Analytics cookies",
     "analyticsDesc": "Help us understand how visitors use the website (anonymized statistics).",
+    "marketing": "Marketing Cookies",
+    "marketingDesc": "Used for advertisements and personalized content (e.g. Google AdSense).",
     "saveSettings": "Save settings"
   },
 
@@ -1329,7 +1331,8 @@
       "security": "Security",
       "notifications": "Notifications",
       "templates": "Templates",
-      "premiumProfile": "Premium Profile"
+      "premiumProfile": "Premium Profile",
+      "privacy": "Privacy"
     },
     "cancel": "Cancel",
     "save": "Save",

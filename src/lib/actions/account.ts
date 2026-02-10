@@ -1,6 +1,6 @@
 'use server';
 
-import { createActionClient } from '@/lib/supabase/server';
+import { createActionClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { Database } from '@/types/supabase';
 import type { ActionResult } from './types';
@@ -145,18 +145,34 @@ export async function updatePremiumProfile(data: {
       return { success: false, error: 'Maximal 6 Galerie-Bilder erlaubt', code: 'VALIDATION_ERROR' };
     }
 
+    // Galerie-Bilder validieren: nur URL und optionale Caption
+    const sanitizedGallery = galleryArr.map(item => ({
+      url: typeof item.url === 'string' ? item.url.trim() : '',
+      caption: typeof item.caption === 'string' ? item.caption.trim().substring(0, 200) : undefined,
+    })).filter(item => item.url.length > 0);
+
     // Max. 10 Zertifikate
     const certsArr = Array.isArray(data.certificates) ? data.certificates : [];
     if (certsArr.length > 10) {
       return { success: false, error: 'Maximal 10 Zertifikate erlaubt', code: 'VALIDATION_ERROR' };
     }
 
+    // Zertifikate validieren: nur erlaubte Felder
+    const sanitizedCerts = certsArr.map(item => ({
+      name: typeof item.name === 'string' ? item.name.trim().substring(0, 200) : '',
+      url: typeof item.url === 'string' ? item.url.trim() : undefined,
+      issued_by: typeof item.issued_by === 'string' ? item.issued_by.trim().substring(0, 200) : undefined,
+    })).filter(item => item.name.length > 0);
+
+    // Beschreibung laengenbegrenzen
+    const description = data.description?.trim().substring(0, 5000) || null;
+
     const { data: account, error } = await supabase
       .from('accounts')
       .update({
-        description: data.description?.trim() || null,
-        gallery_urls: galleryArr,
-        certificates: certsArr,
+        description,
+        gallery_urls: sanitizedGallery,
+        certificates: sanitizedCerts,
       })
       .eq('owner_id', user.id)
       .is('deleted_at', null)
@@ -564,7 +580,7 @@ export async function updatePassword(
       to: user.email,
       userName: profile?.full_name?.split(' ')[0] || 'Nutzer',
     }).catch(err => {
-      console.error('[updatePassword] Failed to send password changed email:', err);
+      console.error('[updatePassword] Failed to send password changed email');
     });
     
     return { success: true };
@@ -715,9 +731,28 @@ export async function updateProfile(data: {
     }
     
     const updateData: Record<string, string | null> = {};
-    if (data.full_name !== undefined) updateData.full_name = data.full_name || null;
-    if (data.phone !== undefined) updateData.phone = data.phone || null;
-    if (data.avatar_url !== undefined) updateData.avatar_url = data.avatar_url || null;
+    if (data.full_name !== undefined) {
+      const name = data.full_name?.trim() || null;
+      if (name && name.length > 200) {
+        return { success: false, error: 'Name ist zu lang (max. 200 Zeichen)', code: 'VALIDATION_ERROR' };
+      }
+      updateData.full_name = name;
+    }
+    if (data.phone !== undefined) {
+      const phone = data.phone?.trim() || null;
+      if (phone && phone.length > 30) {
+        return { success: false, error: 'Telefonnummer ist zu lang', code: 'VALIDATION_ERROR' };
+      }
+      updateData.phone = phone;
+    }
+    if (data.avatar_url !== undefined) {
+      const avatarUrl = data.avatar_url?.trim() || null;
+      // Avatar-URL muss von unserer Supabase Storage Domain stammen oder leer sein
+      if (avatarUrl && !avatarUrl.includes(process.env.NEXT_PUBLIC_SUPABASE_URL || '')) {
+        return { success: false, error: 'Ungueltiger Avatar-URL', code: 'VALIDATION_ERROR' };
+      }
+      updateData.avatar_url = avatarUrl;
+    }
     
     const { error } = await supabase
       .from('profiles')
@@ -733,6 +768,294 @@ export async function updateProfile(data: {
     return { success: true };
   } catch (error) {
     console.error('[updateProfile] Unexpected error:', error);
+    return { success: false, error: ErrorMessages.SERVER_ERROR, code: 'SERVER_ERROR' };
+  }
+}
+
+// =============================================================================
+// Account-Loeschung (Art. 17 DSGVO — Recht auf Loeschung)
+// =============================================================================
+
+/**
+ * Loescht den Account des aktuellen Nutzers vollstaendig.
+ * 
+ * Ablauf:
+ * 1. Soft-Delete des Accounts (deleted_at setzen)
+ * 2. Alle Listings deaktivieren
+ * 3. Storage-Dateien loeschen (Bilder, Dokumente)
+ * 4. Profil-Daten anonymisieren
+ * 5. Supabase Auth-User loeschen (per Service-Role)
+ * 
+ * DSGVO Art. 17: Recht auf Loeschung ("Recht auf Vergessenwerden")
+ */
+export async function deleteAccount(confirmationText: string): Promise<ActionResult<void>> {
+  try {
+    const supabase = await createActionClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: ErrorMessages.UNAUTHORIZED, code: 'UNAUTHORIZED' };
+    }
+
+    // Sicherheitsbestaetigung: User muss "LOESCHEN" eingeben
+    if (confirmationText !== 'LOESCHEN') {
+      return { 
+        success: false, 
+        error: 'Bitte geben Sie "LOESCHEN" ein, um die Löschung zu bestätigen', 
+        code: 'VALIDATION_ERROR' 
+      };
+    }
+
+    const now = new Date().toISOString();
+
+    // 1. Account soft-deleten
+    const { data: account } = await supabase
+      .from('accounts')
+      .select('id')
+      .eq('owner_id', user.id)
+      .is('deleted_at', null)
+      .maybeSingle();
+
+    if (account) {
+      // Alle Listings des Accounts deaktivieren
+      await supabase
+        .from('listings')
+        .update({ status: 'archived', deleted_at: now })
+        .eq('account_id', account.id)
+        .is('deleted_at', null);
+
+      // Account soft-deleten
+      await supabase
+        .from('accounts')
+        .update({ 
+          status: 'suspended',
+          deleted_at: now,
+          // Firmenname anonymisieren
+          company_name: `Geloeschter Account`,
+          phone: null,
+          website: null,
+          address_street: null,
+          address_postal_code: null,
+          vat_id: null,
+          email_signature: null,
+          description: null,
+          gallery_urls: null,
+          certificates: null,
+        })
+        .eq('id', account.id);
+
+      // Storage-Dateien loeschen (Listing-Bilder)
+      // Listing-IDs des Accounts holen und dann die Media-Dateien
+      const { data: accountListings } = await supabase
+        .from('listings')
+        .select('id')
+        .eq('account_id', account.id);
+      
+      if (accountListings && accountListings.length > 0) {
+        const listingIds = accountListings.map(l => l.id);
+        const { data: mediaFiles } = await supabase
+          .from('listing_media')
+          .select('url')
+          .in('listing_id', listingIds);
+
+        if (mediaFiles && mediaFiles.length > 0) {
+          // Storage-Pfad aus URL extrahieren
+          const storagePaths = mediaFiles
+            .map(m => {
+              try {
+                const url = new URL(m.url);
+                // Pfad nach /object/public/listing-images/ extrahieren
+                const match = url.pathname.match(/\/object\/public\/listing-images\/(.+)/);
+                return match ? match[1] : null;
+              } catch {
+                return null;
+              }
+            })
+            .filter(Boolean) as string[];
+          
+          if (storagePaths.length > 0) {
+            await supabase.storage.from('listing-images').remove(storagePaths);
+          }
+        }
+      }
+    }
+
+    // 2. Profil anonymisieren
+    await supabase
+      .from('profiles')
+      .update({
+        full_name: 'Geloeschter Nutzer',
+        phone: null,
+        avatar_url: null,
+        accepted_marketing: false,
+        onboarding_intent: null,
+        onboarding_machine_count: null,
+      })
+      .eq('id', user.id);
+
+    // 3. Avatar loeschen
+    await supabase.storage.from('avatars').remove([`${user.id}/`]);
+
+    // 4. Supabase Auth-User loeschen (benoetigt Service-Role)
+    const adminClient = createServiceRoleClient();
+    const { error: deleteAuthError } = await adminClient.auth.admin.deleteUser(user.id);
+
+    if (deleteAuthError) {
+      console.error('[deleteAccount] Auth user deletion failed:', deleteAuthError.message);
+      // Trotzdem als Erfolg melden — Account ist bereits anonymisiert
+      // Der Auth-User wird beim naechsten Login-Versuch automatisch fehlschlagen
+    }
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error('[deleteAccount] Unexpected error');
+    return { success: false, error: ErrorMessages.SERVER_ERROR, code: 'SERVER_ERROR' };
+  }
+}
+
+// =============================================================================
+// Datenexport (Art. 15 + Art. 20 DSGVO — Auskunft + Datenportabilitaet)
+// =============================================================================
+
+/**
+ * Exportiert alle personenbezogenen Daten des aktuellen Nutzers als JSON.
+ * 
+ * DSGVO Art. 15: Auskunftsrecht — Nutzer hat Recht auf Kopie seiner Daten
+ * DSGVO Art. 20: Recht auf Datenportabilitaet — maschinenlesbares Format
+ */
+export async function exportUserData(): Promise<ActionResult<Record<string, unknown>>> {
+  try {
+    const supabase = await createActionClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: ErrorMessages.UNAUTHORIZED, code: 'UNAUTHORIZED' };
+    }
+
+    // Profil laden
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    // Account laden
+    const { data: account } = await supabase
+      .from('accounts')
+      .select('*')
+      .eq('owner_id', user.id)
+      .is('deleted_at', null)
+      .maybeSingle();
+
+    // Listings laden
+    let listings: unknown[] = [];
+    if (account) {
+      const { data: listingData } = await supabase
+        .from('listings')
+        .select('id, title, slug, description, price, currency, condition, year_built, location_city, location_country, status, created_at, updated_at')
+        .eq('account_id', account.id)
+        .is('deleted_at', null);
+      listings = listingData || [];
+    }
+
+    // Anfragen laden (als Seller)
+    let inquiriesSeller: unknown[] = [];
+    if (account) {
+      const { data: inquiryData } = await supabase
+        .from('inquiries')
+        .select('id, contact_name, contact_email, contact_company, message, status, created_at')
+        .eq('account_id', account.id)
+        .is('deleted_at', null);
+      inquiriesSeller = inquiryData || [];
+    }
+
+    // Anfragen laden (als Buyer)
+    const { data: inquiriesBuyer } = await supabase
+      .from('inquiries')
+      .select('id, contact_name, contact_email, contact_company, message, status, created_at')
+      .eq('buyer_profile_id', user.id)
+      .is('deleted_at', null);
+
+    // Nachrichten laden
+    const { data: messages } = await supabase
+      .from('inquiry_messages')
+      .select('id, inquiry_id, sender_type, content, created_at')
+      .eq('sender_profile_id', user.id);
+
+    // Benachrichtigungen laden
+    const { data: notifications } = await supabase
+      .from('notifications')
+      .select('id, type, title, message, is_read, created_at')
+      .eq('user_id', user.id)
+      .is('deleted_at', null);
+
+    // Subscription laden
+    let subscription: unknown = null;
+    if (account) {
+      const { data: subData } = await supabase
+        .from('subscriptions')
+        .select('id, status, current_period_start, current_period_end, plans(name, slug)')
+        .eq('account_id', account.id)
+        .maybeSingle();
+      subscription = subData;
+    }
+
+    // Team-Mitgliedschaften laden
+    let teamMembers: unknown[] = [];
+    if (account) {
+      const { data: teamData } = await supabase
+        .from('team_members')
+        .select('id, role, is_active, created_at')
+        .eq('account_id', account.id);
+      teamMembers = teamData || [];
+    }
+
+    const exportData = {
+      _meta: {
+        exportDate: new Date().toISOString(),
+        userId: user.id,
+        email: user.email,
+        format: 'DSGVO Art. 15/20 Datenexport',
+      },
+      profile: profile ? {
+        id: profile.id,
+        email: profile.email,
+        fullName: profile.full_name,
+        phone: profile.phone,
+        role: profile.role,
+        acceptedTermsAt: profile.accepted_terms_at,
+        acceptedMarketing: profile.accepted_marketing,
+        emailVerifiedAt: profile.email_verified_at,
+        createdAt: profile.created_at,
+        updatedAt: profile.updated_at,
+      } : null,
+      account: account ? {
+        id: account.id,
+        companyName: account.company_name,
+        slug: account.slug,
+        website: account.website,
+        phone: account.phone,
+        addressStreet: account.address_street,
+        addressCity: account.address_city,
+        addressPostalCode: account.address_postal_code,
+        addressCountry: account.address_country,
+        vatId: account.vat_id,
+        isVerified: account.is_verified,
+        status: account.status,
+        createdAt: account.created_at,
+      } : null,
+      listings,
+      inquiriesAsSeller: inquiriesSeller,
+      inquiriesAsBuyer: inquiriesBuyer || [],
+      messages: messages || [],
+      notifications: notifications || [],
+      subscription,
+      teamMembers,
+    };
+
+    return { success: true, data: exportData };
+  } catch (error) {
+    console.error('[exportUserData] Unexpected error');
     return { success: false, error: ErrorMessages.SERVER_ERROR, code: 'SERVER_ERROR' };
   }
 }

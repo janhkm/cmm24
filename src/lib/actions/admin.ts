@@ -102,6 +102,16 @@ export interface AdminStats {
 }
 
 // =============================================================================
+// Helper: UUID-Validierung
+// =============================================================================
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isValidUUID(value: string): boolean {
+  return UUID_REGEX.test(value);
+}
+
+// =============================================================================
 // Helper: Check if user is admin
 // =============================================================================
 
@@ -204,6 +214,10 @@ export async function getAdminAccounts(): Promise<ActionResult<AdminAccount[]>> 
  * Verify an account
  */
 export async function verifyAccount(accountId: string): Promise<ActionResult<void>> {
+  if (!isValidUUID(accountId)) {
+    return { success: false, error: 'Ungueltige Account-ID' };
+  }
+
   const admin = await requireAdmin();
   if (!admin) {
     return { success: false, error: 'Keine Berechtigung' };
@@ -237,7 +251,7 @@ export async function verifyAccount(accountId: string): Promise<ActionResult<voi
         userName: profile.full_name?.split(' ')[0] || 'Nutzer',
         companyName: accountData.company_name,
       }).catch(err => {
-        console.error('[verifyAccount] Failed to send verification email:', err);
+        console.error('[verifyAccount] Failed to send verification email');
       });
     }
   }
@@ -250,6 +264,10 @@ export async function verifyAccount(accountId: string): Promise<ActionResult<voi
  * Suspend an account
  */
 export async function suspendAccount(accountId: string, reason: string): Promise<ActionResult<void>> {
+  if (!isValidUUID(accountId)) {
+    return { success: false, error: 'Ungueltige Account-ID' };
+  }
+
   const admin = await requireAdmin();
   if (!admin) {
     return { success: false, error: 'Keine Berechtigung' };
@@ -257,6 +275,10 @@ export async function suspendAccount(accountId: string, reason: string): Promise
   
   if (!reason.trim()) {
     return { success: false, error: 'Bitte geben Sie einen Grund an' };
+  }
+
+  if (reason.length > 1000) {
+    return { success: false, error: 'Grund ist zu lang (max. 1000 Zeichen)' };
   }
   
   const supabase = await createActionClient();
@@ -300,7 +322,7 @@ export async function suspendAccount(accountId: string, reason: string): Promise
         companyName: accountData.company_name,
         reason: reason.trim(),
       }).catch(err => {
-        console.error('[suspendAccount] Failed to send suspension email:', err);
+        console.error('[suspendAccount] Failed to send suspension email');
       });
     }
   }
@@ -313,6 +335,10 @@ export async function suspendAccount(accountId: string, reason: string): Promise
  * Reactivate a suspended account
  */
 export async function reactivateAccount(accountId: string): Promise<ActionResult<void>> {
+  if (!isValidUUID(accountId)) {
+    return { success: false, error: 'Ungueltige Account-ID' };
+  }
+
   const admin = await requireAdmin();
   if (!admin) {
     return { success: false, error: 'Keine Berechtigung' };
@@ -422,6 +448,10 @@ export async function getAdminListings(status?: string): Promise<ActionResult<Ad
  * Approve a listing
  */
 export async function approveListing(listingId: string): Promise<ActionResult<void>> {
+  if (!isValidUUID(listingId)) {
+    return { success: false, error: 'Ungueltige Inserat-ID' };
+  }
+
   const admin = await requireAdmin();
   if (!admin) {
     return { success: false, error: 'Keine Berechtigung' };
@@ -481,7 +511,7 @@ export async function approveListing(listingId: string): Promise<ActionResult<vo
         listingImage: primaryImage,
         listingSlug: listing.slug,
       }).catch(err => {
-        console.error('Failed to send approval email:', err);
+        console.error('[approveListing] Failed to send approval email');
       });
     }
   }
@@ -494,6 +524,10 @@ export async function approveListing(listingId: string): Promise<ActionResult<vo
  * Reject a listing
  */
 export async function rejectListing(listingId: string, reason: string): Promise<ActionResult<void>> {
+  if (!isValidUUID(listingId)) {
+    return { success: false, error: 'Ungueltige Inserat-ID' };
+  }
+
   const admin = await requireAdmin();
   if (!admin) {
     return { success: false, error: 'Keine Berechtigung' };
@@ -501,6 +535,10 @@ export async function rejectListing(listingId: string, reason: string): Promise<
   
   if (!reason.trim()) {
     return { success: false, error: 'Bitte geben Sie einen Ablehnungsgrund an' };
+  }
+
+  if (reason.length > 2000) {
+    return { success: false, error: 'Ablehnungsgrund ist zu lang (max. 2000 Zeichen)' };
   }
   
   const supabase = await createActionClient();
@@ -575,7 +613,7 @@ export async function rejectListing(listingId: string, reason: string): Promise<
         rejectionReason: reason.trim(),
         listingId,
       }).catch(err => {
-        console.error('[rejectListing] Failed to send rejection email:', err);
+        console.error('[rejectListing] Failed to send rejection email');
       });
     }
   }
@@ -653,6 +691,19 @@ export async function createManufacturer(data: {
   if (!data.name.trim() || !data.slug.trim()) {
     return { success: false, error: 'Name und Slug sind erforderlich' };
   }
+
+  // Slug-Format validieren (nur Kleinbuchstaben, Zahlen, Bindestriche)
+  if (!/^[a-z0-9-]+$/.test(data.slug.trim().toLowerCase())) {
+    return { success: false, error: 'Slug darf nur Kleinbuchstaben, Zahlen und Bindestriche enthalten' };
+  }
+
+  if (data.name.length > 200) {
+    return { success: false, error: 'Name ist zu lang (max. 200 Zeichen)' };
+  }
+
+  if (data.description && data.description.length > 5000) {
+    return { success: false, error: 'Beschreibung ist zu lang (max. 5000 Zeichen)' };
+  }
   
   const supabase = await createActionClient();
   
@@ -706,9 +757,25 @@ export async function updateManufacturer(
     description?: string;
   }
 ): Promise<ActionResult<void>> {
+  if (!isValidUUID(id)) {
+    return { success: false, error: 'Ungueltige Hersteller-ID' };
+  }
+
   const admin = await requireAdmin();
   if (!admin) {
     return { success: false, error: 'Keine Berechtigung' };
+  }
+
+  if (data.slug && !/^[a-z0-9-]+$/.test(data.slug.trim().toLowerCase())) {
+    return { success: false, error: 'Slug darf nur Kleinbuchstaben, Zahlen und Bindestriche enthalten' };
+  }
+
+  if (data.name && data.name.length > 200) {
+    return { success: false, error: 'Name ist zu lang (max. 200 Zeichen)' };
+  }
+
+  if (data.description && data.description.length > 5000) {
+    return { success: false, error: 'Beschreibung ist zu lang (max. 5000 Zeichen)' };
   }
   
   const supabase = await createActionClient();
@@ -738,6 +805,10 @@ export async function updateManufacturer(
  * Delete a manufacturer (only if no listings)
  */
 export async function deleteManufacturer(id: string): Promise<ActionResult<void>> {
+  if (!isValidUUID(id)) {
+    return { success: false, error: 'Ungueltige Hersteller-ID' };
+  }
+
   const admin = await requireAdmin();
   if (!admin) {
     return { success: false, error: 'Keine Berechtigung' };

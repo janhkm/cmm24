@@ -20,6 +20,7 @@ type CookiePreferences = {
   necessary: boolean;
   functional: boolean;
   analytics: boolean;
+  marketing: boolean;
 };
 
 const COOKIE_CONSENT_KEY = 'cmm24-cookie-consent';
@@ -33,6 +34,7 @@ export function CookieConsent() {
     necessary: true,
     functional: false,
     analytics: false,
+    marketing: false,
   });
 
   useEffect(() => {
@@ -55,14 +57,16 @@ export function CookieConsent() {
     setPreferences(prefs);
     setShowBanner(false);
     setShowSettings(false);
+    // Custom Event fuer andere Komponenten (z.B. ConsentGatedAdSense)
+    window.dispatchEvent(new Event('cookie-consent-changed'));
   };
 
   const acceptAll = () => {
-    savePreferences({ necessary: true, functional: true, analytics: true });
+    savePreferences({ necessary: true, functional: true, analytics: true, marketing: true });
   };
 
   const acceptNecessary = () => {
-    savePreferences({ necessary: true, functional: false, analytics: false });
+    savePreferences({ necessary: true, functional: false, analytics: false, marketing: false });
   };
 
   const saveCustomPreferences = () => {
@@ -186,6 +190,25 @@ export function CookieConsent() {
                 checked={preferences.analytics}
                 onCheckedChange={(checked) =>
                   setPreferences((prev) => ({ ...prev, analytics: checked }))
+                }
+              />
+            </div>
+
+            {/* Marketing Cookies */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <Label htmlFor="marketing" className="text-base font-medium">
+                  {t('marketing')}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {t('marketingDesc')}
+                </p>
+              </div>
+              <Switch
+                id="marketing"
+                checked={preferences.marketing}
+                onCheckedChange={(checked) =>
+                  setPreferences((prev) => ({ ...prev, marketing: checked }))
                 }
               />
             </div>

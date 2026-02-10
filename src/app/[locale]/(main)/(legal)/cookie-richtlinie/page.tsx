@@ -126,6 +126,32 @@ export default function CookieRichtliniePage() {
           </a>
         </p>
 
+        <h3 className="text-lg font-semibold mt-6 mb-3">4. Marketing-Cookies</h3>
+        <p className="text-muted-foreground mb-4">
+          Marketing-Cookies werden für Werbeanzeigen und personalisierte Inhalte verwendet.
+          Diese Cookies werden <strong>nur nach Ihrer ausdrücklichen Einwilligung</strong> gesetzt.
+        </p>
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left py-2 pr-4 font-medium">Cookie</th>
+                <th className="text-left py-2 pr-4 font-medium">Zweck</th>
+                <th className="text-left py-2 pr-4 font-medium">Anbieter</th>
+                <th className="text-left py-2 font-medium">Dauer</th>
+              </tr>
+            </thead>
+            <tbody className="text-muted-foreground">
+              <tr className="border-b">
+                <td className="py-2 pr-4">Verschiedene AdSense-Cookies</td>
+                <td className="py-2 pr-4">Personalisierte Werbeanzeigen</td>
+                <td className="py-2 pr-4">Google Ireland Limited</td>
+                <td className="py-2">Bis zu 2 Jahre</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
         <h2 className="text-xl font-semibold mt-8 mb-4">Cookies von Drittanbietern</h2>
         <p className="text-muted-foreground mb-4">
           Wir nutzen folgende Drittanbieter-Dienste, die möglicherweise Cookies setzen:
@@ -141,6 +167,12 @@ export default function CookieRichtliniePage() {
             <strong>Mapbox</strong> – Für die Standortanzeige auf Karten.
             <a href="https://www.mapbox.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
               Mapbox Datenschutz
+            </a>
+          </li>
+          <li>
+            <strong>Google AdSense</strong> – Für Werbeanzeigen (nur nach Einwilligung).
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
+              Google Datenschutz
             </a>
           </li>
         </ul>

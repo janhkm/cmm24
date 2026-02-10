@@ -700,18 +700,18 @@ export default function InquiryDetailPage() {
   const StatusIcon = statusInfo.icon;
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+        <div className="flex items-center gap-3 min-w-0">
+          <Button variant="ghost" size="icon" asChild className="shrink-0">
             <Link href="/seller/anfragen">
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">{t('inquiryFrom', { name: inquiry.name })}</h1>
-            <p className="text-muted-foreground">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-2xl font-bold truncate">{t('inquiryFrom', { name: inquiry.name })}</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">
               {inquiry.company && `${inquiry.company} • `}
               {inquiry.listing?.title && `${inquiry.listing.title} • `}
               {inquiry.created_at && new Date(inquiry.created_at).toLocaleDateString(locale, {
@@ -724,16 +724,16 @@ export default function InquiryDetailPage() {
             </p>
           </div>
         </div>
-        <Badge className={statusInfo.color}>
+        <Badge className={`${statusInfo.color} shrink-0`}>
           <StatusIcon className="mr-1 h-3 w-3" />
           {statusInfo.label}
         </Badge>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Linke Seite: Nachrichten-Thread (Hauptbereich) */}
-        <div className="lg:col-span-2">
-          <div className="h-[calc(100vh-16rem)]">
+        <div className="lg:col-span-2 order-2 lg:order-1">
+          <div className="h-[60vh] lg:h-[calc(100vh-16rem)]">
             <MessageThread
               inquiryId={inquiryId}
               originalMessage={inquiry.message}
@@ -749,7 +749,7 @@ export default function InquiryDetailPage() {
         </div>
 
         {/* Rechte Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6 order-1 lg:order-2">
           {/* Kontaktdaten */}
           <Card>
             <CardHeader>

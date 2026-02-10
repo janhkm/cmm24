@@ -6,6 +6,7 @@ import type { ActionResult } from './types';
 import { ErrorMessages } from './types';
 import { sendInquiryMessageEmail } from '@/lib/email/send';
 import { sanitizeText } from '@/lib/validations/sanitize';
+import { checkRateLimit, getRateLimitMessage } from '@/lib/rate-limit';
 
 // =============================================================================
 // Typen
@@ -76,6 +77,32 @@ export async function getInquiryMessages(
 
     if (inquiryError || !inquiry) {
       return { success: false, error: ErrorMessages.INQUIRY_NOT_FOUND, code: 'NOT_FOUND' };
+    }
+
+    // Ownership-Pruefung: User muss Seller (Account-Owner/Teammitglied) oder Buyer sein
+    const isBuyer = inquiry.buyer_profile_id === user.id;
+    if (!isBuyer) {
+      const { data: account } = await supabase
+        .from('accounts')
+        .select('id, owner_id')
+        .eq('id', inquiry.account_id)
+        .single();
+
+      const isSeller = account?.owner_id === user.id;
+      if (!isSeller) {
+        // Auch Teammitglieder pruefen
+        const { data: teamMember } = await supabase
+          .from('team_members')
+          .select('id')
+          .eq('account_id', inquiry.account_id)
+          .eq('profile_id', user.id)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (!teamMember) {
+          return { success: false, error: ErrorMessages.FORBIDDEN, code: 'FORBIDDEN' };
+        }
+      }
     }
 
     // Nachrichten laden
@@ -173,6 +200,40 @@ export async function uploadMessageAttachment(
       return { success: false, error: ErrorMessages.UNAUTHORIZED, code: 'UNAUTHORIZED' };
     }
 
+    // Inquiry-Ownership pruefen: User muss an der Anfrage beteiligt sein
+    const { data: inquiry } = await supabase
+      .from('inquiries')
+      .select('id, account_id, buyer_profile_id')
+      .eq('id', inquiryId)
+      .single();
+
+    if (!inquiry) {
+      return { success: false, error: ErrorMessages.INQUIRY_NOT_FOUND, code: 'NOT_FOUND' };
+    }
+
+    const isBuyer = inquiry.buyer_profile_id === user.id;
+    if (!isBuyer) {
+      const { data: account } = await supabase
+        .from('accounts')
+        .select('owner_id')
+        .eq('id', inquiry.account_id)
+        .single();
+
+      if (account?.owner_id !== user.id) {
+        const { data: teamMember } = await supabase
+          .from('team_members')
+          .select('id')
+          .eq('account_id', inquiry.account_id)
+          .eq('profile_id', user.id)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (!teamMember) {
+          return { success: false, error: ErrorMessages.FORBIDDEN, code: 'FORBIDDEN' };
+        }
+      }
+    }
+
     const file = formData.get('file') as File;
     if (!file) {
       return { success: false, error: 'Keine Datei ausgewaehlt', code: 'VALIDATION_ERROR' };
@@ -247,6 +308,12 @@ export async function sendInquiryMessage(
   }
 ): Promise<ActionResult<InquiryMessage>> {
   try {
+    // Rate Limiting
+    const rateLimit = await checkRateLimit('message');
+    if (!rateLimit.success) {
+      return { success: false, error: getRateLimitMessage('message'), code: 'RATE_LIMITED' };
+    }
+
     const supabase = await createActionClient();
     const { data: { user } } = await supabase.auth.getUser();
 

@@ -29,10 +29,19 @@ export function corsHeaders(request: Request): Record<string, string> {
   }
 
   // Mutating Requests: nur erlaubte Origins
-  const isAllowed = !origin || ALLOWED_ORIGINS.includes(origin);
+  // Fehlender Origin-Header bei mutierenden Requests wird abgelehnt
+  if (!origin) {
+    return {
+      'Access-Control-Allow-Origin': '',
+      'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    };
+  }
+
+  const isAllowed = ALLOWED_ORIGINS.includes(origin);
 
   return {
-    'Access-Control-Allow-Origin': isAllowed ? (origin || '') : '',
+    'Access-Control-Allow-Origin': isAllowed ? origin : '',
     'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };

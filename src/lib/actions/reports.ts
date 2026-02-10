@@ -3,6 +3,7 @@
 import { createActionClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { ActionResult } from './types';
+import { checkRateLimit, getRateLimitMessage } from '@/lib/rate-limit';
 
 // ============================================
 // Types
@@ -169,7 +170,36 @@ export async function createReport(data: {
   reporterEmail: string;
   reason: string;
   description?: string;
+  acceptedPrivacy: boolean;
 }): Promise<ActionResult<void>> {
+  // Datenschutz-Einwilligung pruefen (DSGVO Art. 6 Abs. 1 lit. a)
+  if (!data.acceptedPrivacy) {
+    return { success: false, error: 'Bitte akzeptieren Sie die Datenschutzerklärung' };
+  }
+
+  // Rate Limiting
+  const rateLimit = await checkRateLimit('report');
+  if (!rateLimit.success) {
+    return { success: false, error: getRateLimitMessage('report') };
+  }
+
+  // E-Mail-Format validieren
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!data.reporterEmail || !emailRegex.test(data.reporterEmail)) {
+    return { success: false, error: 'Ungueltige E-Mail-Adresse' };
+  }
+
+  // Reason validieren
+  const validReasons = ['spam', 'fake', 'inappropriate', 'duplicate', 'other'];
+  if (!validReasons.includes(data.reason)) {
+    return { success: false, error: 'Ungueltiger Meldegrund' };
+  }
+
+  // Beschreibung laengenbeschraenkt
+  if (data.description && data.description.length > 2000) {
+    return { success: false, error: 'Beschreibung zu lang (max. 2000 Zeichen)' };
+  }
+
   const supabase = await createActionClient();
   
   // Pruefen ob Listing existiert

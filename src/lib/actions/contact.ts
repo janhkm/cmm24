@@ -2,6 +2,7 @@
 
 import { sendContactFormEmail, sendContactFormConfirmationEmail } from '@/lib/email/send';
 import type { ActionResult } from './types';
+import { checkRateLimit, getRateLimitMessage } from '@/lib/rate-limit';
 
 export interface ContactFormData {
   name: string;
@@ -10,12 +11,24 @@ export interface ContactFormData {
   company?: string;
   subject: string;
   message: string;
+  acceptedPrivacy: boolean;
 }
 
 /**
  * Submit contact form
  */
 export async function submitContactForm(data: ContactFormData): Promise<ActionResult<void>> {
+  // Rate Limiting
+  const rateLimit = await checkRateLimit('contact');
+  if (!rateLimit.success) {
+    return { success: false, error: getRateLimitMessage('contact') };
+  }
+
+  // Datenschutz-Einwilligung pruefen (DSGVO Art. 6 Abs. 1 lit. a)
+  if (!data.acceptedPrivacy) {
+    return { success: false, error: 'Bitte akzeptieren Sie die Datenschutzerklärung' };
+  }
+
   // Validate input
   if (!data.name || data.name.trim().length < 2) {
     return { success: false, error: 'Bitte geben Sie Ihren Namen ein' };
@@ -55,7 +68,7 @@ export async function submitContactForm(data: ContactFormData): Promise<ActionRe
       subject: data.subject.trim(),
       message: data.message.trim(),
     }).catch(err => {
-      console.error('[Contact Form] Confirmation email failed:', err);
+      console.error('[Contact Form] Confirmation email failed');
     });
     
     return { success: true, data: undefined };

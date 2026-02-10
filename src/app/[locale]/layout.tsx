@@ -8,6 +8,7 @@ import type { Locale } from '@/i18n/routing';
 import '../globals.css';
 import { ToasterProvider } from '@/components/shared/toaster-provider';
 import { CookieConsent } from '@/components/shared/cookie-consent';
+import { ConsentGatedAdSense } from '@/components/shared/consent-gated-adsense';
 import { BackToTop } from '@/components/shared/back-to-top';
 import { KeyboardShortcuts } from '@/components/shared/keyboard-shortcuts';
 import { SkipLink } from '@/components/shared/skip-link';
@@ -117,12 +118,9 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        <meta name="google-adsense-account" content="ca-pub-6413555007331039" />
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6413555007331039"
-          crossOrigin="anonymous"
-        />
+        {/* Google AdSense Meta-Tag (kein Tracking, nur Account-Verknuepfung) */}
+        <meta name="google-adsense-account" content="ca-pub-9852604593423676" />
+        {/* AdSense-Script wird erst nach Marketing-Consent geladen → ConsentGatedAdSense */}
       </head>
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} min-h-screen font-sans antialiased`}
@@ -139,6 +137,9 @@ export default async function LocaleLayout({
           
           {/* Cookie Consent Banner */}
           <CookieConsent />
+          
+          {/* Google AdSense — nur nach Marketing-Consent (DSGVO-konform) */}
+          <ConsentGatedAdSense publisherId="ca-pub-9852604593423676" />
           
           {/* Back to Top Button */}
           <BackToTop />
