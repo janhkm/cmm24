@@ -21,7 +21,6 @@ export function Footer() {
     marktplatz: [
       { name: tn('allMachines'), href: '/maschinen' as const },
       { name: tn('manufacturers'), href: '/hersteller' as const },
-      { name: tn('categories'), href: '/kategorien' as const },
       { name: tn('compare'), href: '/vergleich' as const },
       { name: tn('howItWorks'), href: '/so-funktionierts' as const },
       { name: t('forSellers'), href: '/verkaufen' as const },

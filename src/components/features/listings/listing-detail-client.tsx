@@ -232,11 +232,11 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
   };
 
   return (
-    <div className="min-h-screen pb-16">
+    <div className="min-h-screen pb-16 overflow-x-hidden">
       <div className="container-page py-6 lg:py-8">
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-8 lg:grid-cols-3 min-w-0">
           {/* ===== LINKE SPALTE: Galerie + Inhalt ===== */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-8 min-w-0">
 
             {/* Mobil: Titel + Preis ueber der Galerie */}
             <div className="lg:hidden">
@@ -381,7 +381,11 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
             <section id="technische-daten">
               <h2 className="text-lg font-semibold mb-4">{t('technicalData')}</h2>
               <div className="rounded-xl border overflow-hidden">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm table-fixed">
+                  <colgroup>
+                    <col className="w-2/5" />
+                    <col className="w-3/5" />
+                  </colgroup>
                   <tbody>
                     {technicalSpecs.map((spec, i) => (
                       <tr
@@ -391,10 +395,10 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
                           i % 2 === 0 ? 'bg-muted/40' : 'bg-background'
                         )}
                       >
-                        <td className="px-4 py-3 text-muted-foreground font-medium w-2/5">
+                        <td className="px-4 py-3 text-muted-foreground font-medium break-words">
                           {spec.label}
                         </td>
-                        <td className="px-4 py-3 font-medium">{spec.value}</td>
+                        <td className="px-4 py-3 font-medium break-words">{spec.value}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -403,11 +407,11 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
             </section>
 
             {/* Beschreibung */}
-            <section id="beschreibung">
+            <section id="beschreibung" className="min-w-0">
               <h2 className="text-lg font-semibold mb-4">{t('description')}</h2>
               <RichTextContent
                 content={listing.description}
-                className="prose-sm prose-p:leading-relaxed"
+                className="prose-sm prose-p:leading-relaxed break-words overflow-hidden"
               />
             </section>
 
@@ -419,20 +423,21 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
                   {documents.map((doc) => (
                     <div
                       key={doc.id}
-                      className="flex items-center justify-between rounded-xl border p-4 hover:bg-muted/30 transition-colors"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border p-4 hover:bg-muted/30 transition-colors"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 shrink-0">
                           <FileText className="h-5 w-5" />
                         </div>
-                        <div>
-                          <p className="font-medium text-sm">{doc.filename || 'Dokument.pdf'}</p>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{doc.filename || 'Dokument.pdf'}</p>
                           <p className="text-xs text-muted-foreground">PDF-Dokument</p>
                         </div>
                       </div>
                       <Button
                         variant="outline"
                         size="sm"
+                        className="shrink-0 self-start sm:self-center"
                         onClick={() => {
                           const link = document.createElement('a');
                           link.href = doc.url;
@@ -455,7 +460,7 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
           </div>
 
           {/* ===== RECHTE SPALTE: Sticky Sidebar ===== */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
             <div className="lg:sticky lg:top-20 space-y-6">
 
               {/* Preis-Karte */}
@@ -748,7 +753,7 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
                       {t('seller')}
                     </p>
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-start gap-4 min-w-0">
                       <Link href={`/unternehmen/${listing.seller.slug}` as any} className="shrink-0">
                         {listing.seller.logoUrl ? (
                           <Image
@@ -890,7 +895,7 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
             <h2 id="similar-heading" className="text-2xl font-bold mb-6">
               {t('similarMachines')}
             </h2>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               {similarListings.map((similar) => (
                 <ListingCard key={similar.id} listing={similar} showCompare={false} />
               ))}

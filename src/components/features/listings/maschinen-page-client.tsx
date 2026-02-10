@@ -153,6 +153,12 @@ function MaschinenContent() {
       filters.countries = landParam.split(',');
     }
 
+    const messMin = searchParams.get('mess_min');
+    if (messMin) filters.measuringRangeXMin = parseInt(messMin);
+
+    const messMax = searchParams.get('mess_max');
+    if (messMax) filters.measuringRangeXMax = parseInt(messMax);
+
     return filters;
   }, [searchParams]);
 
@@ -195,16 +201,18 @@ function MaschinenContent() {
           apiSortBy = 'newest';
       }
 
-      // Build filter options for API
+      // Build filter options for API — Multi-Select fuer Hersteller, Zustand, Land
       const result = await getPublicListings({
         search: filters.query,
-        manufacturerId: filters.manufacturers?.[0], // API currently supports single manufacturer
-        condition: filters.condition?.[0] as 'new' | 'like_new' | 'good' | 'fair' | undefined,
+        manufacturerIds: filters.manufacturers?.length ? filters.manufacturers : undefined,
+        conditions: filters.condition?.length ? filters.condition : undefined,
         priceMin: filters.priceMin ? filters.priceMin / 100 : undefined,
         priceMax: filters.priceMax ? filters.priceMax / 100 : undefined,
         yearMin: filters.yearMin,
         yearMax: filters.yearMax,
-        country: filters.countries?.[0],
+        measuringRangeXMin: filters.measuringRangeXMin,
+        measuringRangeXMax: filters.measuringRangeXMax,
+        countries: filters.countries?.length ? filters.countries : undefined,
         sortBy: apiSortBy,
         limit: itemsPerPage,
         offset: (currentPage - 1) * itemsPerPage,
@@ -239,6 +247,8 @@ function MaschinenContent() {
       if (newFilters.yearMin) params.set('jahr_min', String(newFilters.yearMin));
       if (newFilters.yearMax) params.set('jahr_max', String(newFilters.yearMax));
       if (newFilters.countries?.length) params.set('land', newFilters.countries.join(','));
+      if (newFilters.measuringRangeXMin) params.set('mess_min', String(newFilters.measuringRangeXMin));
+      if (newFilters.measuringRangeXMax) params.set('mess_max', String(newFilters.measuringRangeXMax));
       if (newSort !== 'relevance') params.set('sortierung', newSort);
 
       const queryString = params.toString();

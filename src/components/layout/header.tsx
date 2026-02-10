@@ -68,7 +68,6 @@ export function Header({ user }: HeaderProps) {
   const mobileNavigation = [
     { name: t('allMachines'), href: '/maschinen' as const },
     { name: t('manufacturers'), href: '/hersteller' as const },
-    { name: t('categories'), href: '/kategorien' as const },
     { name: t('guides'), href: '/ratgeber' as const },
   ];
 
@@ -227,7 +226,7 @@ export function Header({ user }: HeaderProps) {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80">
+              <SheetContent side="right" className="w-80 px-6">
                 <SheetHeader>
                   <SheetTitle className="text-left">{t('menu')}</SheetTitle>
                 </SheetHeader>

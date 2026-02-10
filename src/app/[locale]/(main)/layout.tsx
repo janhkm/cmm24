@@ -30,7 +30,7 @@ export default async function MainLayout({
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col">
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden">
       <Subheader />
       <Header user={userData} />
       <main id="main-content" className="flex-1" tabIndex={-1}>

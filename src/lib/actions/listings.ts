@@ -851,14 +851,19 @@ export interface PublicListing extends Listing {
 export interface PublicListingFilters {
   search?: string;
   manufacturerId?: string;
+  manufacturerIds?: string[];
   manufacturerSlug?: string;
   accountSlug?: string;
   condition?: 'new' | 'like_new' | 'good' | 'fair';
+  conditions?: string[];
   priceMin?: number;
   priceMax?: number;
   yearMin?: number;
   yearMax?: number;
+  measuringRangeXMin?: number;
+  measuringRangeXMax?: number;
   country?: string;
+  countries?: string[];
   featured?: boolean;
   status?: 'active' | 'sold';
   limit?: number;
@@ -899,18 +904,26 @@ export async function getPublicListings(options?: PublicListingFilters): Promise
     
     if (searchTerm.length > 0) {
       // RPC aufrufen fuer Full-Text-Search mit Ranking
+      // Hinweis: RPC erwartet Preise in Euro (konvertiert intern zu Cent)
       const rpcParams: Record<string, unknown> = {
         p_search_term: searchTerm,
         p_limit: options?.limit ?? 24,
         p_offset: options?.offset ?? 0,
       };
-      if (options?.manufacturerId) rpcParams.p_manufacturer_id = options.manufacturerId;
-      if (options?.condition) rpcParams.p_condition = options.condition;
-      if (options?.priceMin !== undefined) rpcParams.p_price_min = options.priceMin * 100;
-      if (options?.priceMax !== undefined) rpcParams.p_price_max = options.priceMax * 100;
+      // Hersteller: Einzeln oder erster aus Array
+      const mfId = options?.manufacturerId || options?.manufacturerIds?.[0];
+      if (mfId) rpcParams.p_manufacturer_id = mfId;
+      // Zustand: Einzeln oder erster aus Array
+      const cond = options?.condition || options?.conditions?.[0];
+      if (cond) rpcParams.p_condition = cond;
+      // Preise (in Euro, RPC multipliziert mit 100)
+      if (options?.priceMin !== undefined) rpcParams.p_price_min = options.priceMin;
+      if (options?.priceMax !== undefined) rpcParams.p_price_max = options.priceMax;
       if (options?.yearMin !== undefined) rpcParams.p_year_min = options.yearMin;
       if (options?.yearMax !== undefined) rpcParams.p_year_max = options.yearMax;
-      if (options?.country) rpcParams.p_country = options.country;
+      // Land: Einzeln oder erster aus Array
+      const ctry = options?.country || options?.countries?.[0];
+      if (ctry) rpcParams.p_country = ctry;
       if (options?.featured) rpcParams.p_featured = true;
       if (options?.sortBy === 'price_asc') rpcParams.p_sort_by = 'price_asc';
       else if (options?.sortBy === 'price_desc') rpcParams.p_sort_by = 'price_desc';
@@ -952,9 +965,40 @@ export async function getPublicListings(options?: PublicListingFilters): Promise
       
       // Sortierung aus RPC beibehalten
       const idOrder = new Map(ids.map((id, idx) => [id, idx]));
-      const sortedListings = (fullListings || []).sort(
+      let sortedListings = (fullListings || []).sort(
         (a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0)
       );
+
+      // Nachfiltern fuer Multi-Select-Filter die RPC nicht unterstuetzt
+      // Multi-Hersteller (RPC filtert nur den ersten, wir filtern hier alle)
+      if (options?.manufacturerIds && options.manufacturerIds.length > 1) {
+        sortedListings = sortedListings.filter(l => 
+          options.manufacturerIds!.includes(l.manufacturer_id)
+        );
+      }
+      // Multi-Zustand
+      if (options?.conditions && options.conditions.length > 1) {
+        sortedListings = sortedListings.filter(l => 
+          options.conditions!.includes(l.condition)
+        );
+      }
+      // Multi-Land
+      if (options?.countries && options.countries.length > 1) {
+        sortedListings = sortedListings.filter(l => 
+          options.countries!.includes(l.location_country)
+        );
+      }
+      // Messbereich X
+      if (options?.measuringRangeXMin !== undefined) {
+        sortedListings = sortedListings.filter(l => 
+          l.measuring_range_x != null && l.measuring_range_x >= options.measuringRangeXMin!
+        );
+      }
+      if (options?.measuringRangeXMax !== undefined) {
+        sortedListings = sortedListings.filter(l => 
+          l.measuring_range_x != null && l.measuring_range_x <= options.measuringRangeXMax!
+        );
+      }
       
       return {
         success: true,
@@ -965,14 +1009,16 @@ export async function getPublicListings(options?: PublicListingFilters): Promise
             manufacturer: listing.manufacturers as { id: string; name: string; slug: string } | null,
             account: listing.accounts as { id: string; company_name: string; slug: string; logo_url: string | null; is_verified: boolean; is_premium?: boolean } | null,
           })),
-          total: totalCount,
+          total: sortedListings.length,
         },
       };
     }
   }
   
-  // Manufacturer filter
-  if (options?.manufacturerId) {
+  // Manufacturer filter (Multi-Select oder Einzel)
+  if (options?.manufacturerIds && options.manufacturerIds.length > 0) {
+    query = query.in('manufacturer_id', options.manufacturerIds);
+  } else if (options?.manufacturerId) {
     query = query.eq('manufacturer_id', options.manufacturerId);
   }
   
@@ -1003,12 +1049,14 @@ export async function getPublicListings(options?: PublicListingFilters): Promise
     }
   }
   
-  // Condition filter
-  if (options?.condition) {
+  // Condition filter (Multi-Select oder Einzel)
+  if (options?.conditions && options.conditions.length > 0) {
+    query = query.in('condition', options.conditions as ('new' | 'like_new' | 'good' | 'fair')[]);
+  } else if (options?.condition) {
     query = query.eq('condition', options.condition);
   }
   
-  // Price range filter (prices are in cents)
+  // Price range filter (Preise in Euro, DB speichert in Cent)
   if (options?.priceMin !== undefined) {
     query = query.gte('price', options.priceMin * 100);
   }
@@ -1024,8 +1072,18 @@ export async function getPublicListings(options?: PublicListingFilters): Promise
     query = query.lte('year_built', options.yearMax);
   }
   
-  // Country filter
-  if (options?.country) {
+  // Measuring Range X filter
+  if (options?.measuringRangeXMin !== undefined) {
+    query = query.gte('measuring_range_x', options.measuringRangeXMin);
+  }
+  if (options?.measuringRangeXMax !== undefined) {
+    query = query.lte('measuring_range_x', options.measuringRangeXMax);
+  }
+  
+  // Country filter (Multi-Select oder Einzel)
+  if (options?.countries && options.countries.length > 0) {
+    query = query.in('location_country', options.countries);
+  } else if (options?.country) {
     query = query.eq('location_country', options.country);
   }
   

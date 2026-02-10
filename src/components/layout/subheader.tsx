@@ -25,7 +25,6 @@ export function Subheader() {
 
   const subNavigation = [
     { name: t('manufacturers'), href: '/hersteller' },
-    { name: t('categories'), href: '/kategorien' },
     { name: t('guides'), href: '/ratgeber' },
   ];
 

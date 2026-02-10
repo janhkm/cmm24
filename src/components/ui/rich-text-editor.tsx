@@ -325,7 +325,7 @@ export function RichTextContent({
   if (!isHtml) {
     // Plaintext: Zeilenumbrueche beibehalten
     return (
-      <div className={cn('prose prose-neutral dark:prose-invert max-w-none', className)}>
+      <div className={cn('prose prose-neutral dark:prose-invert max-w-none break-words', className)}>
         {content.split('\n').map((line, i) => (
           <p key={i}>{line || '\u00A0'}</p>
         ))}
@@ -344,11 +344,13 @@ export function RichTextContent({
       className={cn(
         'prose prose-neutral dark:prose-invert max-w-none',
         // Links stylen
-        'prose-a:text-primary prose-a:underline',
+        'prose-a:text-primary prose-a:underline prose-a:break-all',
         // Highlight stylen
         '[&_mark]:bg-yellow-200 [&_mark]:dark:bg-yellow-800',
         // Inline-Farben ueberschreiben: immer aktuelle Textfarbe verwenden
         '[&_span[style]]:!text-foreground',
+        // Lange Woerter/URLs umbrechen
+        'break-words',
         className,
       )}
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}

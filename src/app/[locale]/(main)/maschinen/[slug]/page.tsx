@@ -419,25 +419,25 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       {/* Breadcrumb Navigation */}
       <div className="border-b bg-muted/30">
         <div className="container-page py-3">
-          <nav aria-label="Breadcrumb">
-            <ol className="flex items-center gap-2 text-sm text-muted-foreground">
-              <li>
+          <nav aria-label="Breadcrumb" className="overflow-x-auto scrollbar-hide">
+            <ol className="flex items-center gap-2 text-sm text-muted-foreground whitespace-nowrap">
+              <li className="shrink-0">
                 <Link href="/" className="hover:text-foreground transition-colors">
                   {tBreadcrumb('home')}
                 </Link>
               </li>
-              <li aria-hidden="true">
+              <li aria-hidden="true" className="shrink-0">
                 <ChevronRight className="h-4 w-4" />
               </li>
-              <li>
+              <li className="shrink-0">
                 <Link href="/maschinen" className="hover:text-foreground transition-colors">
                   {tBreadcrumb('machines')}
                 </Link>
               </li>
-              <li aria-hidden="true">
+              <li aria-hidden="true" className="shrink-0">
                 <ChevronRight className="h-4 w-4" />
               </li>
-              <li>
+              <li className="shrink-0">
                 <Link
                   href={`/hersteller/${manufacturerSlug}`}
                   className="hover:text-foreground transition-colors"
@@ -445,11 +445,11 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   {manufacturerName}
                 </Link>
               </li>
-              <li aria-hidden="true">
+              <li aria-hidden="true" className="shrink-0">
                 <ChevronRight className="h-4 w-4" />
               </li>
-              <li>
-                <span className="text-foreground truncate max-w-[200px]" aria-current="page">
+              <li className="min-w-0">
+                <span className="text-foreground truncate block max-w-[200px] sm:max-w-none" aria-current="page">
                   {listing.title}
                 </span>
               </li>
