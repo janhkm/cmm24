@@ -6,4 +6,5 @@ export { ImageGallery } from './image-gallery';
 export { InquiryModal } from './inquiry-modal';
 export { ShareModal } from './share-modal';
 export { ListingDetailClient } from './listing-detail-client';
+export { ReportListingModal } from './report-listing-modal';
 export { MaschinenPageClient } from './maschinen-page-client';

@@ -233,7 +233,8 @@
     "minEur": "Min €",
     "maxEur": "Max €",
     "showResults": "{count} Ergebnisse anzeigen",
-    "yearFrom": "Bj. {from} - {to}"
+    "yearFrom": "Bj. {from} - {to}",
+    "applyFilter": "Jetzt filtern"
   },
 
   "listing": {
@@ -546,6 +547,7 @@
       "activeListings": "Aktive Inserate",
       "unlimitedInPlan": "unbegrenzt im {plan}-Plan",
       "ofLimitInPlan": "von {limit} im {plan}-Plan",
+      "currentlyActive": "aktuell veröffentlicht",
       "newInquiries": "Neue Anfragen",
       "last7Days": "in den letzten 7 Tagen",
       "totalViews": "Aufrufe gesamt",

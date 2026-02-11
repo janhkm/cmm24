@@ -526,7 +526,7 @@ export default function AnfragenPage() {
                             </div>
                             <div className="mt-3">
                               <Button size="sm" className="w-full" asChild>
-                                <Link href={`/dashboard/anfragen/${inq.id}`}>
+                                <Link href={`/seller/anfragen/${inq.id}`}>
                                   {t('details')}<ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
                               </Button>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { X } from 'lucide-react';
+import { X, Factory, Euro, Ruler, Shield, Calendar, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +15,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { categories, conditions, countries } from '@/data/constants';
 import type { ListingFilters } from '@/types';
@@ -54,6 +55,24 @@ export function ListingFiltersSidebar({
   const activeFiltersCount = Object.values(filters).filter(
     (v) => v !== undefined && (Array.isArray(v) ? v.length > 0 : true)
   ).length;
+
+  // Dirty-State: Pruefen ob lokale Slider/Input-Werte von den committed Filtern abweichen
+  const committedPrice: [number, number] = [
+    filters.priceMin ? filters.priceMin / 100 : 0,
+    filters.priceMax ? filters.priceMax / 100 : 200000,
+  ];
+  const committedYear: [number, number] = [
+    filters.yearMin || 2010,
+    filters.yearMax || new Date().getFullYear(),
+  ];
+  const committedMeasuring: [number, number] = [
+    filters.measuringRangeXMin || 0,
+    filters.measuringRangeXMax || 3000,
+  ];
+
+  const isPriceDirty = priceRange[0] !== committedPrice[0] || priceRange[1] !== committedPrice[1];
+  const isYearDirty = yearRange[0] !== committedYear[0] || yearRange[1] !== committedYear[1];
+  const isMeasuringDirty = measuringRangeX[0] !== committedMeasuring[0] || measuringRangeX[1] !== committedMeasuring[1];
 
   const handleManufacturerToggle = (manufacturerId: string) => {
     const current = filters.manufacturers || [];
@@ -132,279 +151,541 @@ export function ListingFiltersSidebar({
     }).format(price);
   };
 
-  const FilterContent = ({ defaultOpen = ['manufacturer', 'price'] }: { defaultOpen?: string[] }) => (
-    <>
-      <Accordion type="multiple" defaultValue={defaultOpen} className="w-full">
-        {/* Manufacturer Filter */}
-        <AccordionItem value="manufacturer">
-          <AccordionTrigger className="text-sm font-medium">
-            {t('manufacturer')}
-            {filters.manufacturers && filters.manufacturers.length > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {filters.manufacturers.length}
-              </Badge>
+  // ---- Sektionsheader im Home-Stil ----
+  const SectionHeader = ({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) => (
+    <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">
+      <Icon className="h-4 w-4" />
+      {children}
+    </h3>
+  );
+
+  // ---- Desktop Filter Content ----
+  const DesktopFilterContent = () => (
+    <div className="space-y-6">
+      {/* Hersteller */}
+      <div>
+        <SectionHeader icon={Factory}>{t('manufacturer')}</SectionHeader>
+        <Input
+          placeholder={t('searchManufacturer')}
+          className="mb-2"
+          value={manufacturerSearch}
+          onChange={(e) => setManufacturerSearch(e.target.value)}
+        />
+        <ScrollArea className="h-48">
+          <div className="space-y-1">
+            {manufacturers
+              .filter((m) => !manufacturerSearch || m.name.toLowerCase().includes(manufacturerSearch.toLowerCase()))
+              .map((manufacturer) => (
+              <div
+                key={manufacturer.id}
+                className="flex items-center space-x-2 rounded-md px-2.5 py-1.5 hover:bg-muted transition-colors"
+              >
+                <Checkbox
+                  id={`manufacturer-${manufacturer.id}`}
+                  checked={filters.manufacturers?.includes(manufacturer.id)}
+                  onCheckedChange={() => handleManufacturerToggle(manufacturer.id)}
+                />
+                <Label
+                  htmlFor={`manufacturer-${manufacturer.id}`}
+                  className="flex-1 cursor-pointer text-sm"
+                >
+                  {manufacturer.name}
+                </Label>
+                {manufacturer.listingCount !== undefined && (
+                  <span className="text-xs text-muted-foreground">
+                    ({manufacturer.listingCount})
+                  </span>
+                )}
+              </div>
+            ))}
+            {manufacturers.filter((m) => !manufacturerSearch || m.name.toLowerCase().includes(manufacturerSearch.toLowerCase())).length === 0 && (
+              <p className="text-xs text-muted-foreground py-2 px-2.5">{tc('noResults')}</p>
             )}
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-2">
+          </div>
+        </ScrollArea>
+      </div>
+
+      <Separator />
+
+      {/* Preis */}
+      <div>
+        <SectionHeader icon={Euro}>{t('price')}</SectionHeader>
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Label className="text-xs">{tc('min')}</Label>
               <Input
-                placeholder={t('searchManufacturer')}
-                className="mb-2"
-                value={manufacturerSearch}
-                onChange={(e) => setManufacturerSearch(e.target.value)}
+                type="number"
+                placeholder="0"
+                value={priceRange[0]}
+                onChange={(e) =>
+                  setPriceRange([Number(e.target.value), priceRange[1]])
+                }
               />
-              <ScrollArea className="h-48">
-                <div className="space-y-2 pr-4">
-                  {manufacturers
-                    .filter((m) => !manufacturerSearch || m.name.toLowerCase().includes(manufacturerSearch.toLowerCase()))
-                    .map((manufacturer) => (
-                    <div
-                      key={manufacturer.id}
-                      className="flex items-center space-x-2"
+            </div>
+            <div className="flex-1">
+              <Label className="text-xs">{tc('max')}</Label>
+              <Input
+                type="number"
+                placeholder="200.000"
+                value={priceRange[1]}
+                onChange={(e) =>
+                  setPriceRange([priceRange[0], Number(e.target.value)])
+                }
+              />
+            </div>
+          </div>
+          <Slider
+            value={priceRange}
+            onValueChange={handlePriceChange}
+            onValueCommit={handlePriceCommit}
+            max={200000}
+            step={5000}
+            className="mt-2"
+          />
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>{formatPrice(priceRange[0])}</span>
+            <span>{formatPrice(priceRange[1])}</span>
+          </div>
+          {isPriceDirty && (
+            <Button size="sm" className="w-full" onClick={handlePriceCommit}>
+              {t('applyFilter')}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Baujahr */}
+      <div>
+        <SectionHeader icon={Calendar}>{t('yearBuilt')}</SectionHeader>
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Label className="text-xs">{tc('from')}</Label>
+              <Input
+                type="number"
+                placeholder="2010"
+                value={yearRange[0]}
+                onChange={(e) =>
+                  setYearRange([Number(e.target.value), yearRange[1]])
+                }
+              />
+            </div>
+            <div className="flex-1">
+              <Label className="text-xs">{tc('to')}</Label>
+              <Input
+                type="number"
+                placeholder={String(new Date().getFullYear())}
+                value={yearRange[1]}
+                onChange={(e) =>
+                  setYearRange([yearRange[0], Number(e.target.value)])
+                }
+              />
+            </div>
+          </div>
+          <Slider
+            value={yearRange}
+            onValueChange={handleYearChange}
+            onValueCommit={handleYearCommit}
+            min={2000}
+            max={new Date().getFullYear()}
+            step={1}
+          />
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>{yearRange[0]}</span>
+            <span>{yearRange[1]}</span>
+          </div>
+          {isYearDirty && (
+            <Button size="sm" className="w-full" onClick={handleYearCommit}>
+              {t('applyFilter')}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Zustand */}
+      <div>
+        <SectionHeader icon={Shield}>{t('condition')}</SectionHeader>
+        <div className="space-y-1">
+          {conditions.map((condition) => (
+            <div
+              key={condition.value}
+              className="flex items-center space-x-2 rounded-md px-2.5 py-1.5 hover:bg-muted transition-colors"
+            >
+              <Checkbox
+                id={`condition-${condition.value}`}
+                checked={filters.condition?.includes(condition.value as any)}
+                onCheckedChange={() => handleConditionToggle(condition.value)}
+              />
+              <Label
+                htmlFor={`condition-${condition.value}`}
+                className="cursor-pointer text-sm"
+              >
+                {condition.label}
+              </Label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Messbereich */}
+      <div>
+        <SectionHeader icon={Ruler}>{t('measuringRange')}</SectionHeader>
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Label className="text-xs">{t('minMm')}</Label>
+              <Input
+                type="number"
+                placeholder="0"
+                value={measuringRangeX[0]}
+                onChange={(e) =>
+                  setMeasuringRangeX([Number(e.target.value), measuringRangeX[1]])
+                }
+              />
+            </div>
+            <div className="flex-1">
+              <Label className="text-xs">{t('maxMm')}</Label>
+              <Input
+                type="number"
+                placeholder="3000"
+                value={measuringRangeX[1]}
+                onChange={(e) =>
+                  setMeasuringRangeX([measuringRangeX[0], Number(e.target.value)])
+                }
+              />
+            </div>
+          </div>
+          <Slider
+            value={measuringRangeX}
+            onValueChange={handleMeasuringRangeChange}
+            onValueCommit={handleMeasuringRangeCommit}
+            max={3000}
+            step={100}
+          />
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>{measuringRangeX[0]} mm</span>
+            <span>{measuringRangeX[1]} mm</span>
+          </div>
+          {isMeasuringDirty && (
+            <Button size="sm" className="w-full" onClick={handleMeasuringRangeCommit}>
+              {t('applyFilter')}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Standort */}
+      <div>
+        <SectionHeader icon={MapPin}>{t('location')}</SectionHeader>
+        <ScrollArea className="h-48">
+          <div className="space-y-1">
+            {countries.map((country) => (
+              <div
+                key={country.code}
+                className="flex items-center space-x-2 rounded-md px-2.5 py-1.5 hover:bg-muted transition-colors"
+              >
+                <Checkbox
+                  id={`country-${country.code}`}
+                  checked={filters.countries?.includes(country.code)}
+                  onCheckedChange={() => handleCountryToggle(country.code)}
+                />
+                <Label
+                  htmlFor={`country-${country.code}`}
+                  className="cursor-pointer text-sm"
+                >
+                  {country.name}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
+    </div>
+  );
+
+  // ---- Mobile Accordion Filter Content (Home-Stil) ----
+  const MobileFilterContent = () => (
+    <Accordion type="multiple" className="w-full">
+      {/* Hersteller */}
+      <AccordionItem value="manufacturer">
+        <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="flex items-center gap-2"><Factory className="h-4 w-4" /> {t('manufacturer')}</span>
+        </AccordionTrigger>
+        <AccordionContent>
+          <div className="space-y-2">
+            <Input
+              placeholder={t('searchManufacturer')}
+              className="mb-2"
+              value={manufacturerSearch}
+              onChange={(e) => setManufacturerSearch(e.target.value)}
+            />
+            <ScrollArea className="h-48">
+              <div className="space-y-1">
+                {manufacturers
+                  .filter((m) => !manufacturerSearch || m.name.toLowerCase().includes(manufacturerSearch.toLowerCase()))
+                  .map((manufacturer) => (
+                  <div
+                    key={manufacturer.id}
+                    className="flex items-center space-x-2 rounded-md px-2.5 py-1.5 hover:bg-muted transition-colors"
+                  >
+                    <Checkbox
+                      id={`m-manufacturer-${manufacturer.id}`}
+                      checked={filters.manufacturers?.includes(manufacturer.id)}
+                      onCheckedChange={() => handleManufacturerToggle(manufacturer.id)}
+                    />
+                    <Label
+                      htmlFor={`m-manufacturer-${manufacturer.id}`}
+                      className="flex-1 cursor-pointer text-sm"
                     >
-                      <Checkbox
-                        id={`manufacturer-${manufacturer.id}`}
-                        checked={filters.manufacturers?.includes(manufacturer.id)}
-                        onCheckedChange={() => handleManufacturerToggle(manufacturer.id)}
-                      />
-                      <Label
-                        htmlFor={`manufacturer-${manufacturer.id}`}
-                        className="flex-1 cursor-pointer text-sm"
-                      >
-                        {manufacturer.name}
-                      </Label>
-                      {manufacturer.listingCount !== undefined && (
-                        <span className="text-xs text-muted-foreground">
-                          ({manufacturer.listingCount})
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                  {manufacturers.filter((m) => !manufacturerSearch || m.name.toLowerCase().includes(manufacturerSearch.toLowerCase())).length === 0 && (
-                    <p className="text-xs text-muted-foreground py-2">{tc('noResults')}</p>
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        {/* Price Filter */}
-        <AccordionItem value="price">
-          <AccordionTrigger className="text-sm font-medium">
-            {t('price')}
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Label className="text-xs">{tc('min')}</Label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={priceRange[0]}
-                    onChange={(e) =>
-                      setPriceRange([Number(e.target.value), priceRange[1]])
-                    }
-                    onBlur={handlePriceCommit}
-                  />
-                </div>
-                <div className="flex-1">
-                  <Label className="text-xs">{tc('max')}</Label>
-                  <Input
-                    type="number"
-                    placeholder="200.000"
-                    value={priceRange[1]}
-                    onChange={(e) =>
-                      setPriceRange([priceRange[0], Number(e.target.value)])
-                    }
-                    onBlur={handlePriceCommit}
-                  />
-                </div>
+                      {manufacturer.name}
+                    </Label>
+                    {manufacturer.listingCount !== undefined && (
+                      <span className="text-xs text-muted-foreground">
+                        ({manufacturer.listingCount})
+                      </span>
+                    )}
+                  </div>
+                ))}
+                {manufacturers.filter((m) => !manufacturerSearch || m.name.toLowerCase().includes(manufacturerSearch.toLowerCase())).length === 0 && (
+                  <p className="text-xs text-muted-foreground py-2 px-2.5">{tc('noResults')}</p>
+                )}
               </div>
-              <Slider
-                value={priceRange}
-                onValueChange={handlePriceChange}
-                onValueCommit={handlePriceCommit}
-                max={200000}
-                step={5000}
-                className="mt-2"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{formatPrice(priceRange[0])}</span>
-                <span>{formatPrice(priceRange[1])}</span>
+            </ScrollArea>
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* Preis */}
+      <AccordionItem value="price">
+        <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="flex items-center gap-2"><Euro className="h-4 w-4" /> {t('price')}</span>
+        </AccordionTrigger>
+        <AccordionContent>
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Label className="text-xs">{tc('min')}</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={priceRange[0]}
+                  onChange={(e) =>
+                    setPriceRange([Number(e.target.value), priceRange[1]])
+                  }
+                />
+              </div>
+              <div className="flex-1">
+                <Label className="text-xs">{tc('max')}</Label>
+                <Input
+                  type="number"
+                  placeholder="200.000"
+                  value={priceRange[1]}
+                  onChange={(e) =>
+                    setPriceRange([priceRange[0], Number(e.target.value)])
+                  }
+                />
               </div>
             </div>
-          </AccordionContent>
-        </AccordionItem>
+            <Slider
+              value={priceRange}
+              onValueChange={handlePriceChange}
+              onValueCommit={handlePriceCommit}
+              max={200000}
+              step={5000}
+              className="mt-2"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{formatPrice(priceRange[0])}</span>
+              <span>{formatPrice(priceRange[1])}</span>
+            </div>
+            {isPriceDirty && (
+              <Button size="sm" className="w-full" onClick={handlePriceCommit}>
+                {t('applyFilter')}
+              </Button>
+            )}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
 
-        {/* Year Filter */}
-        <AccordionItem value="year">
-          <AccordionTrigger className="text-sm font-medium">
-            {t('yearBuilt')}
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Label className="text-xs">{tc('from')}</Label>
-                  <Input
-                    type="number"
-                    placeholder="2010"
-                    value={yearRange[0]}
-                    onChange={(e) =>
-                      setYearRange([Number(e.target.value), yearRange[1]])
-                    }
-                    onBlur={handleYearCommit}
-                  />
-                </div>
-                <div className="flex-1">
-                  <Label className="text-xs">{tc('to')}</Label>
-                  <Input
-                    type="number"
-                    placeholder={String(new Date().getFullYear())}
-                    value={yearRange[1]}
-                    onChange={(e) =>
-                      setYearRange([yearRange[0], Number(e.target.value)])
-                    }
-                    onBlur={handleYearCommit}
-                  />
-                </div>
+      {/* Baujahr */}
+      <AccordionItem value="year">
+        <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {t('yearBuilt')}</span>
+        </AccordionTrigger>
+        <AccordionContent>
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Label className="text-xs">{tc('from')}</Label>
+                <Input
+                  type="number"
+                  placeholder="2010"
+                  value={yearRange[0]}
+                  onChange={(e) =>
+                    setYearRange([Number(e.target.value), yearRange[1]])
+                  }
+                />
               </div>
-              <Slider
-                value={yearRange}
-                onValueChange={handleYearChange}
-                onValueCommit={handleYearCommit}
-                min={2000}
-                max={new Date().getFullYear()}
-                step={1}
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{yearRange[0]}</span>
-                <span>{yearRange[1]}</span>
+              <div className="flex-1">
+                <Label className="text-xs">{tc('to')}</Label>
+                <Input
+                  type="number"
+                  placeholder={String(new Date().getFullYear())}
+                  value={yearRange[1]}
+                  onChange={(e) =>
+                    setYearRange([yearRange[0], Number(e.target.value)])
+                  }
+                />
               </div>
             </div>
-          </AccordionContent>
-        </AccordionItem>
+            <Slider
+              value={yearRange}
+              onValueChange={handleYearChange}
+              onValueCommit={handleYearCommit}
+              min={2000}
+              max={new Date().getFullYear()}
+              step={1}
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{yearRange[0]}</span>
+              <span>{yearRange[1]}</span>
+            </div>
+            {isYearDirty && (
+              <Button size="sm" className="w-full" onClick={handleYearCommit}>
+                {t('applyFilter')}
+              </Button>
+            )}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
 
-        {/* Condition Filter */}
-        <AccordionItem value="condition">
-          <AccordionTrigger className="text-sm font-medium">
-            {t('condition')}
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-2">
-              {conditions.map((condition) => (
+      {/* Zustand */}
+      <AccordionItem value="condition">
+        <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="flex items-center gap-2"><Shield className="h-4 w-4" /> {t('condition')}</span>
+        </AccordionTrigger>
+        <AccordionContent>
+          <div className="space-y-1">
+            {conditions.map((condition) => (
+              <div
+                key={condition.value}
+                className="flex items-center space-x-2 rounded-md px-2.5 py-1.5 hover:bg-muted transition-colors"
+              >
+                <Checkbox
+                  id={`m-condition-${condition.value}`}
+                  checked={filters.condition?.includes(condition.value as any)}
+                  onCheckedChange={() => handleConditionToggle(condition.value)}
+                />
+                <Label
+                  htmlFor={`m-condition-${condition.value}`}
+                  className="cursor-pointer text-sm"
+                >
+                  {condition.label}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* Messbereich */}
+      <AccordionItem value="measuringRange">
+        <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="flex items-center gap-2"><Ruler className="h-4 w-4" /> {t('measuringRange')}</span>
+        </AccordionTrigger>
+        <AccordionContent>
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Label className="text-xs">{t('minMm')}</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={measuringRangeX[0]}
+                  onChange={(e) =>
+                    setMeasuringRangeX([Number(e.target.value), measuringRangeX[1]])
+                  }
+                />
+              </div>
+              <div className="flex-1">
+                <Label className="text-xs">{t('maxMm')}</Label>
+                <Input
+                  type="number"
+                  placeholder="3000"
+                  value={measuringRangeX[1]}
+                  onChange={(e) =>
+                    setMeasuringRangeX([measuringRangeX[0], Number(e.target.value)])
+                  }
+                />
+              </div>
+            </div>
+            <Slider
+              value={measuringRangeX}
+              onValueChange={handleMeasuringRangeChange}
+              onValueCommit={handleMeasuringRangeCommit}
+              max={3000}
+              step={100}
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{measuringRangeX[0]} mm</span>
+              <span>{measuringRangeX[1]} mm</span>
+            </div>
+            {isMeasuringDirty && (
+              <Button size="sm" className="w-full" onClick={handleMeasuringRangeCommit}>
+                {t('applyFilter')}
+              </Button>
+            )}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* Standort */}
+      <AccordionItem value="location">
+        <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {t('location')}</span>
+        </AccordionTrigger>
+        <AccordionContent>
+          <ScrollArea className="h-48">
+            <div className="space-y-1">
+              {countries.map((country) => (
                 <div
-                  key={condition.value}
-                  className="flex items-center space-x-2"
+                  key={country.code}
+                  className="flex items-center space-x-2 rounded-md px-2.5 py-1.5 hover:bg-muted transition-colors"
                 >
                   <Checkbox
-                    id={`condition-${condition.value}`}
-                    checked={filters.condition?.includes(condition.value as any)}
-                    onCheckedChange={() => handleConditionToggle(condition.value)}
+                    id={`m-country-${country.code}`}
+                    checked={filters.countries?.includes(country.code)}
+                    onCheckedChange={() => handleCountryToggle(country.code)}
                   />
                   <Label
-                    htmlFor={`condition-${condition.value}`}
+                    htmlFor={`m-country-${country.code}`}
                     className="cursor-pointer text-sm"
                   >
-                    {condition.label}
+                    {country.name}
                   </Label>
                 </div>
               ))}
             </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        {/* Measuring Range Filter */}
-        <AccordionItem value="measuringRange">
-          <AccordionTrigger className="text-sm font-medium">
-            {t('measuringRange')}
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Label className="text-xs">{t('minMm')}</Label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={measuringRangeX[0]}
-                    onChange={(e) =>
-                      setMeasuringRangeX([Number(e.target.value), measuringRangeX[1]])
-                    }
-                    onBlur={handleMeasuringRangeCommit}
-                  />
-                </div>
-                <div className="flex-1">
-                  <Label className="text-xs">{t('maxMm')}</Label>
-                  <Input
-                    type="number"
-                    placeholder="3000"
-                    value={measuringRangeX[1]}
-                    onChange={(e) =>
-                      setMeasuringRangeX([measuringRangeX[0], Number(e.target.value)])
-                    }
-                    onBlur={handleMeasuringRangeCommit}
-                  />
-                </div>
-              </div>
-              <Slider
-                value={measuringRangeX}
-                onValueChange={handleMeasuringRangeChange}
-                onValueCommit={handleMeasuringRangeCommit}
-                max={3000}
-                step={100}
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{measuringRangeX[0]} mm</span>
-                <span>{measuringRangeX[1]} mm</span>
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        {/* Location Filter */}
-        <AccordionItem value="location">
-          <AccordionTrigger className="text-sm font-medium">
-            {t('location')}
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-2">
-              <ScrollArea className="h-48">
-                <div className="space-y-2 pr-4">
-                  {countries.map((country) => (
-                    <div
-                      key={country.code}
-                      className="flex items-center space-x-2"
-                    >
-                      <Checkbox
-                        id={`country-${country.code}`}
-                        checked={filters.countries?.includes(country.code)}
-                        onCheckedChange={() => handleCountryToggle(country.code)}
-                      />
-                      <Label
-                        htmlFor={`country-${country.code}`}
-                        className="cursor-pointer text-sm"
-                      >
-                        {country.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-    </>
+          </ScrollArea>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* Desktop Sidebar — gleicher Stil wie Home-Seite */}
       <aside className="hidden lg:block w-72 shrink-0">
-        <div className="sticky top-20 rounded-lg border bg-card p-4">
+        <div className="sticky top-20">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold">{t('title')}</h2>
             {activeFiltersCount > 0 && (
@@ -418,28 +699,26 @@ export function ListingFiltersSidebar({
               </Button>
             )}
           </div>
-          <FilterContent />
+          <DesktopFilterContent />
         </div>
       </aside>
 
-      {/* Mobile Inline Filter (eingeklappt) */}
-      <div className="lg:hidden w-full px-4">
-        <div className="rounded-lg border bg-card p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold">{t('title')}</h2>
-            {activeFiltersCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearFilters}
-                className="h-auto py-1 px-2 text-xs"
-              >
-                {t('reset')}
-              </Button>
-            )}
-          </div>
-          <FilterContent defaultOpen={[]} />
+      {/* Mobile Inline Filter (eingeklappt, Accordion im Home-Stil) */}
+      <div className="lg:hidden w-full">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-sm font-semibold">{t('title')}</h2>
+          {activeFiltersCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="h-auto py-1 px-2 text-xs"
+            >
+              {t('reset')}
+            </Button>
+          )}
         </div>
+        <MobileFilterContent />
       </div>
     </>
   );

@@ -15,6 +15,7 @@ import nb from '../messages/nb.json';
 import da from '../messages/da.json';
 import pt from '../messages/pt.json';
 import ro from '../messages/ro.json';
+import tr from '../messages/tr.json';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const messages: Record<string, any> = {
@@ -30,6 +31,7 @@ const messages: Record<string, any> = {
   da,
   pt,
   ro,
+  tr,
 };
 
 export default getRequestConfig(async ({ requestLocale }) => {

@@ -1,47 +1,43 @@
-import { Link } from '@/i18n/navigation';
-import { getTranslations } from 'next-intl/server';
+import { Header, Subheader, Footer } from '@/components/layout';
+import { createClient } from '@/lib/supabase/server';
 
 export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const tCommon = await getTranslations('common');
-  const tFooter = await getTranslations('footer');
+  // User-Daten serverseitig laden fuer den Header
+  let userData: { id: string; email: string; fullName: string | null; avatarUrl: string | null } | null = null;
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, avatar_url')
+        .eq('id', user.id)
+        .single();
+      userData = {
+        id: user.id,
+        email: user.email || '',
+        fullName: profile?.full_name || null,
+        avatarUrl: profile?.avatar_url || null,
+      };
+    }
+  } catch {
+    // Nicht eingeloggt - kein Problem
+  }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Simple Header for Auth Pages */}
-      <header className="border-b">
-        <div className="container-page py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <span className="text-lg font-bold text-primary-foreground">C</span>
-            </div>
-            <span className="text-xl font-bold">CMM24</span>
-          </Link>
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden">
+      <Subheader />
+      <Header user={userData} />
+      <main id="main-content" className="flex-1" tabIndex={-1}>
+        <div className="flex items-center justify-center py-12 px-4">
+          <div className="w-full max-w-4xl">{children}</div>
         </div>
-      </header>
-
-      {/* Auth Content */}
-      <main id="main-content" className="flex-1 flex items-center justify-center py-12 px-4">
-        <div className="w-full max-w-4xl">{children}</div>
       </main>
-
-      {/* Simple Footer */}
-      <footer className="border-t py-4">
-        <div className="container-page text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} CMM24. {tCommon('allRightsReserved')}</p>
-          <div className="mt-2 flex justify-center gap-4">
-            <Link href="/impressum" className="hover:text-foreground">
-              {tFooter('impressum')}
-            </Link>
-            <Link href="/datenschutz" className="hover:text-foreground">
-              {tFooter('privacy')}
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

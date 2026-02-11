@@ -27,6 +27,7 @@ export function SearchCommand({ manufacturers = [], recentListings = [] }: Searc
   const tm = useTranslations('machines');
   const locale = useLocale();
   const [open, setOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
   const router = useRouter();
 
   // Handle keyboard shortcut
@@ -41,6 +42,22 @@ export function SearchCommand({ manufacturers = [], recentListings = [] }: Searc
     document.addEventListener('keydown', down);
     return () => document.removeEventListener('keydown', down);
   }, []);
+
+  // Suchbegriff zurücksetzen wenn Dialog geschlossen wird
+  useEffect(() => {
+    if (!open) {
+      setSearchValue('');
+    }
+  }, [open]);
+
+  // Freitext-Suche: Navigiert zu /maschinen?q={suchbegriff}
+  const handleSearch = useCallback(() => {
+    const query = searchValue.trim();
+    if (query) {
+      setOpen(false);
+      router.push(`/maschinen?q=${encodeURIComponent(query)}`);
+    }
+  }, [searchValue, router]);
 
   const runCommand = useCallback((command: () => void) => {
     setOpen(false);
@@ -70,73 +87,111 @@ export function SearchCommand({ manufacturers = [], recentListings = [] }: Searc
       </button>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder={t('fullPlaceholder')} />
+        <CommandInput
+          placeholder={t('fullPlaceholder')}
+          value={searchValue}
+          onValueChange={setSearchValue}
+        />
         <CommandList>
-          <CommandEmpty>{t('noResults')}</CommandEmpty>
-
-          {/* Quick Actions */}
-          <CommandGroup heading={t('quickAccess')}>
-            <CommandItem
-              onSelect={() => runCommand(() => router.push('/maschinen'))}
+          <CommandEmpty>
+            <button
+              onClick={handleSearch}
+              className="flex w-full items-center justify-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Search className="mr-2 h-4 w-4" />
-              {t('browseAll')}
-              <ArrowRight className="ml-auto h-4 w-4" />
-            </CommandItem>
-            <CommandItem
-              onSelect={() => runCommand(() => router.push('/verkaufen'))}
-            >
-              <FileText className="mr-2 h-4 w-4" />
-              {t('sellMachine')}
-            </CommandItem>
-          </CommandGroup>
+              <Search className="h-4 w-4" />
+              {searchValue.trim()
+                ? t('searchFor', { query: searchValue.trim() })
+                : t('noResults')}
+            </button>
+          </CommandEmpty>
 
-          <CommandSeparator />
+          {/* Freitext-Suche als erste Option */}
+          {searchValue.trim() && (
+            <CommandGroup heading={t('quickAccess')}>
+              <CommandItem
+                onSelect={handleSearch}
+                className="font-medium"
+              >
+                <Search className="mr-2 h-4 w-4" />
+                {t('searchFor', { query: searchValue.trim() })}
+                <ArrowRight className="ml-auto h-4 w-4" />
+              </CommandItem>
+            </CommandGroup>
+          )}
+
+          {/* Quick Actions - nur anzeigen wenn kein Suchbegriff */}
+          {!searchValue.trim() && (
+            <>
+              <CommandGroup heading={t('quickAccess')}>
+                <CommandItem
+                  onSelect={() => runCommand(() => router.push('/maschinen'))}
+                >
+                  <Search className="mr-2 h-4 w-4" />
+                  {t('browseAll')}
+                  <ArrowRight className="ml-auto h-4 w-4" />
+                </CommandItem>
+                <CommandItem
+                  onSelect={() => runCommand(() => router.push('/verkaufen'))}
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  {t('sellMachine')}
+                </CommandItem>
+              </CommandGroup>
+
+              <CommandSeparator />
+            </>
+          )}
 
           {/* Manufacturers */}
-          <CommandGroup heading={tn('manufacturers')}>
-            {manufacturers.slice(0, 6).map((manufacturer) => (
-              <CommandItem
-                key={manufacturer.id}
-                onSelect={() =>
-                  runCommand(() =>
-                    router.push(`/hersteller/${manufacturer.slug}`)
-                  )
-                }
-              >
-                <Users className="mr-2 h-4 w-4" />
-                {manufacturer.name}
-                <span className="ml-auto text-xs text-muted-foreground">
-                  {manufacturer.listingCount} {tm('listings')}
-                </span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-
-          <CommandSeparator />
+          {manufacturers.length > 0 && (
+            <>
+              <CommandGroup heading={tn('manufacturers')}>
+                {manufacturers.slice(0, 6).map((manufacturer) => (
+                  <CommandItem
+                    key={manufacturer.id}
+                    onSelect={() =>
+                      runCommand(() =>
+                        router.push(`/hersteller/${manufacturer.slug}`)
+                      )
+                    }
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    {manufacturer.name}
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      {manufacturer.listingCount} {tm('listings')}
+                    </span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandSeparator />
+            </>
+          )}
 
           {/* Recent Listings */}
-          <CommandGroup heading={t('currentListings')}>
-            {recentListings
-              .slice(0, 5)
-              .map((listing) => (
-                <CommandItem
-                  key={listing.id}
-                  onSelect={() =>
-                    runCommand(() => router.push(`/maschinen/${listing.slug}`))
-                  }
-                >
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-medium">{listing.title}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {listing.manufacturer.name} · {formatPrice(listing.price)}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
-          </CommandGroup>
-
-          <CommandSeparator />
+          {recentListings.length > 0 && (
+            <>
+              <CommandGroup heading={t('currentListings')}>
+                {recentListings
+                  .slice(0, 5)
+                  .map((listing) => (
+                    <CommandItem
+                      key={listing.id}
+                      onSelect={() =>
+                        runCommand(() => router.push(`/maschinen/${listing.slug}`))
+                      }
+                    >
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-medium">{listing.title}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {listing.manufacturer.name} · {formatPrice(listing.price)}
+                        </span>
+                      </div>
+                    </CommandItem>
+                  ))}
+              </CommandGroup>
+              <CommandSeparator />
+            </>
+          )}
 
           {/* Articles */}
           <CommandGroup heading={tn('guides')}>

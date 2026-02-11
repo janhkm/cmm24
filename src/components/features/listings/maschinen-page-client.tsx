@@ -367,14 +367,12 @@ function MaschinenContent() {
 
       <div className="flex gap-8">
         {/* Sidebar Filters - only on desktop */}
-        <div className="hidden lg:block">
-          <ListingFiltersSidebar
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            totalResults={total}
-            manufacturers={manufacturers}
-          />
-        </div>
+        <ListingFiltersSidebar
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          totalResults={total}
+          manufacturers={manufacturers}
+        />
 
         {/* Main Content */}
         <div className="flex-1 min-w-0">

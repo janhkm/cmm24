@@ -1,0 +1,582 @@
+{
+  "$schema": "ratgeber-queue-schema",
+  "version": "1.0.0",
+  "description": "Redaktionelle Queue fuer Ratgeber-Artikel rund um gebrauchte Messmaschinen auf CMM24",
+  "lastUpdated": "2026-02-10",
+  "queue": [
+    {
+      "id": "rq-001",
+      "title": "Gebrauchte Messmaschine kaufen: 10 Fehler, die Sie vermeiden sollten",
+      "slug": "gebrauchte-messmaschine-kaufen-fehler-vermeiden",
+      "category": "kaufratgeber",
+      "priority": "hoch",
+      "status": "entwurf",
+      "targetPublishDate": "2026-03-01",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Beim Kauf einer gebrauchten Koordinatenmessmaschine lauern typische Fallstricke. Wir zeigen die 10 häufigsten Fehler und wie Sie sie vermeiden.",
+      "outline": [
+        "Einleitung: Warum der Gebrauchtkauf attraktiv ist",
+        "Fehler 1: Kein aktuelles Kalibrierzertifikat verlangen",
+        "Fehler 2: Software-Lizenzen nicht prüfen (Calypso, PC-DMIS)",
+        "Fehler 3: Transport und Aufstellung unterschätzen",
+        "Fehler 4: Wartungshistorie ignorieren",
+        "Fehler 5: Keinen Probelauf vor Ort durchführen",
+        "Fehler 6: Falschen Messbereich wählen",
+        "Fehler 7: Umgebungsbedingungen nicht berücksichtigen",
+        "Fehler 8: Retrofit-Kosten nicht einkalkulieren",
+        "Fehler 9: Ohne Rückgaberecht kaufen",
+        "Fehler 10: Keinen Service-Vertrag abschließen",
+        "Checkliste zum Download",
+        "Fazit und Empfehlung"
+      ],
+      "seoKeywords": [
+        "gebrauchte Messmaschine kaufen",
+        "gebrauchte KMG kaufen",
+        "Koordinatenmessmaschine gebraucht",
+        "CMM gebraucht Fehler",
+        "Messmaschine Gebrauchtkauf Tipps"
+      ],
+      "estimatedReadingTime": 10,
+      "tags": ["Kaufratgeber", "Gebrauchtmaschinen", "Checkliste", "Tipps"],
+      "relatedArticles": ["koordinatenmessmaschine-kaufen-ratgeber"],
+      "notes": "Kann mit herunterladbarer PDF-Checkliste ergaenzt werden"
+    },
+    {
+      "id": "rq-002",
+      "title": "Was kostet eine gebrauchte Koordinatenmessmaschine? Preisübersicht 2026",
+      "slug": "gebrauchte-koordinatenmessmaschine-preise-2026",
+      "category": "markt",
+      "priority": "hoch",
+      "status": "geplant",
+      "targetPublishDate": "2026-03-15",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Aktuelle Marktpreise für gebrauchte Koordinatenmessmaschinen von Zeiss, Hexagon, Wenzel und Mitutoyo. Mit Preistabellen und Wertminderungskurven.",
+      "outline": [
+        "Einleitung: Der Gebrauchtmarkt für CMMs",
+        "Preisfaktoren: Was bestimmt den Wert einer gebrauchten CMM?",
+        "Preisübersicht nach Hersteller (Zeiss, Hexagon, Wenzel, Mitutoyo)",
+        "Preisübersicht nach Maschinentyp (Portal, Ausleger, Horizontal-Arm)",
+        "Wertminderungskurve: Wie schnell verliert eine CMM an Wert?",
+        "Gebraucht vs. Neu: Wann lohnt sich was?",
+        "Nebenkosten: Transport, Aufstellung, Kalibrierung",
+        "Finanzierungsmöglichkeiten für gebrauchte Maschinen",
+        "Fazit: So finden Sie das beste Preis-Leistungs-Verhältnis"
+      ],
+      "seoKeywords": [
+        "gebrauchte Koordinatenmessmaschine Preis",
+        "CMM gebraucht Kosten",
+        "Messmaschine Preis gebraucht",
+        "Zeiss Contura gebraucht Preis",
+        "Hexagon Global gebraucht Kosten"
+      ],
+      "estimatedReadingTime": 12,
+      "tags": ["Marktübersicht", "Preise", "Gebrauchtmaschinen", "Investition"],
+      "relatedArticles": ["koordinatenmessmaschine-kaufen-ratgeber", "zeiss-vs-hexagon-vergleich"],
+      "notes": "Datenbasiert mit echten CMM24-Plattformdaten, quartalsweise aktualisieren"
+    },
+    {
+      "id": "rq-003",
+      "title": "Gebrauchte Zeiss Contura kaufen: Modellübersicht & Kaufberatung",
+      "slug": "gebrauchte-zeiss-contura-kaufberatung",
+      "category": "kaufratgeber",
+      "priority": "hoch",
+      "status": "geplant",
+      "targetPublishDate": "2026-03-22",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Die Zeiss Contura ist die beliebteste Portal-Messmaschine auf dem Gebrauchtmarkt. Alle Generationen, Ausstattungsvarianten und Preise im Überblick.",
+      "outline": [
+        "Einleitung: Warum die Zeiss Contura so beliebt ist",
+        "Modellhistorie: Contura G2, G3, G4 – die Unterschiede",
+        "Messtechnische Spezifikationen im Vergleich",
+        "Sensorsysteme: VAST Gold, VAST XXT, RDS",
+        "Software: Calypso-Versionen und Kompatibilität",
+        "Typische Gebrauchtpreise nach Generation und Zustand",
+        "Worauf beim Gebrauchtkauf einer Contura achten?",
+        "Retrofit-Möglichkeiten: Upgrade auf aktuelle Steuerung",
+        "Alternativen zur Contura auf dem Gebrauchtmarkt",
+        "Fazit und Empfehlung"
+      ],
+      "seoKeywords": [
+        "Zeiss Contura gebraucht",
+        "Zeiss Contura kaufen",
+        "Contura G2 G3 Unterschied",
+        "Zeiss Contura Preis gebraucht",
+        "Zeiss KMG gebraucht"
+      ],
+      "estimatedReadingTime": 10,
+      "tags": ["Zeiss", "Contura", "Kaufberatung", "Portal-Messmaschine"],
+      "relatedArticles": ["zeiss-vs-hexagon-vergleich", "koordinatenmessmaschine-kaufen-ratgeber"],
+      "notes": "Hohe Suchvolumen-Keywords, sehr relevant fuer SEO"
+    },
+    {
+      "id": "rq-004",
+      "title": "Gebrauchte Hexagon Global kaufen: Alles über die Global-Serie",
+      "slug": "gebrauchte-hexagon-global-kaufberatung",
+      "category": "kaufratgeber",
+      "priority": "mittel",
+      "status": "geplant",
+      "targetPublishDate": "2026-04-05",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Die Hexagon Global-Serie bietet exzellente Messtechnik zum fairen Preis. Alle Modelle, Generationen und Gebrauchtpreise im Detail.",
+      "outline": [
+        "Einleitung: Die Hexagon Global-Serie im Überblick",
+        "Modellvarianten: Global S, Global Classic, Global Advantage",
+        "Technische Spezifikationen und Messbereiche",
+        "PC-DMIS: Software-Versionen und Lizenzmodelle",
+        "Sensorsysteme: HP-S-X1, HP-S-X5 und Scanning-Köpfe",
+        "Gebrauchtpreise nach Modell und Baujahr",
+        "Kaufberatung: Worauf achten bei einer gebrauchten Global?",
+        "Global vs. Contura: Der direkte Vergleich",
+        "Fazit"
+      ],
+      "seoKeywords": [
+        "Hexagon Global gebraucht",
+        "Hexagon Global kaufen",
+        "Hexagon KMG gebraucht",
+        "Global S gebraucht Preis",
+        "PC-DMIS Lizenz gebraucht"
+      ],
+      "estimatedReadingTime": 9,
+      "tags": ["Hexagon", "Global", "Kaufberatung", "Portal-Messmaschine"],
+      "relatedArticles": ["zeiss-vs-hexagon-vergleich", "gebrauchte-zeiss-contura-kaufberatung"],
+      "notes": "Gegenstueck zum Zeiss-Contura-Artikel fuer ausgewogene Herstellerabdeckung"
+    },
+    {
+      "id": "rq-005",
+      "title": "Kalibrierung gebrauchter Messmaschinen: Was Sie wissen müssen",
+      "slug": "kalibrierung-gebrauchte-messmaschinen",
+      "category": "technik",
+      "priority": "hoch",
+      "status": "geplant",
+      "targetPublishDate": "2026-04-12",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Eine aktuelle Kalibrierung ist entscheidend beim Kauf einer gebrauchten Messmaschine. Alles über Normen, Kosten und Anbieter.",
+      "outline": [
+        "Einleitung: Warum Kalibrierung bei Gebrauchtmaschinen besonders wichtig ist",
+        "ISO 10360: Die Norm für CMM-Kalibrierung erklärt",
+        "Kalibrierung vs. Verifizierung vs. Justierung – die Unterschiede",
+        "Wann muss eine gebrauchte CMM neu kalibriert werden?",
+        "Kosten der Kalibrierung nach Maschinentyp",
+        "Kalibrierdienstleister in der DACH-Region",
+        "Kalibrierzertifikat lesen und verstehen",
+        "Rekalibrierungsintervalle: Empfehlungen nach Einsatzbereich",
+        "Fazit: Kalibrierung als Wertgarantie"
+      ],
+      "seoKeywords": [
+        "Messmaschine Kalibrierung",
+        "CMM Kalibrierung Kosten",
+        "ISO 10360 Messmaschine",
+        "gebrauchte CMM kalibrieren",
+        "Kalibrierzertifikat KMG"
+      ],
+      "estimatedReadingTime": 8,
+      "tags": ["Kalibrierung", "ISO 10360", "Technik", "Qualitätssicherung"],
+      "relatedArticles": ["cmm-genauigkeit-mpee-erklaert"],
+      "notes": "Sehr technisch, aber essenziell fuer Vertrauen bei Gebrauchtkauf"
+    },
+    {
+      "id": "rq-006",
+      "title": "Transport und Aufstellung einer gebrauchten Messmaschine",
+      "slug": "transport-aufstellung-gebrauchte-messmaschine",
+      "category": "kaufratgeber",
+      "priority": "mittel",
+      "status": "geplant",
+      "targetPublishDate": "2026-04-26",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Der Transport einer Koordinatenmessmaschine erfordert Spezialwissen. Erfahren Sie alles über Planung, Kosten und häufige Fehler bei Umzug und Neuaufstellung.",
+      "outline": [
+        "Einleitung: Warum der Transport einer CMM kein gewöhnlicher Maschinentransport ist",
+        "Vorbereitung: Maschine transportfähig machen",
+        "Spezialtransportunternehmen vs. Standardspeditionen",
+        "Luftfederung, Klimatisierung und Vibrationsdämpfung",
+        "Kostenübersicht: National und international",
+        "Aufstellungsort vorbereiten: Fundament, Klima, Erschütterungsfreiheit",
+        "Installation und Ersteinrichtung am neuen Standort",
+        "Rekalibrierung nach Transport",
+        "Versicherung und Haftung beim Transport",
+        "Checkliste: Transport einer gebrauchten Messmaschine",
+        "Fazit"
+      ],
+      "seoKeywords": [
+        "Messmaschine Transport",
+        "KMG transportieren",
+        "Koordinatenmessmaschine Aufstellung",
+        "CMM Transport Kosten",
+        "Messmaschine umziehen"
+      ],
+      "estimatedReadingTime": 9,
+      "tags": ["Transport", "Aufstellung", "Logistik", "Kaufratgeber"],
+      "relatedArticles": ["gebrauchte-messmaschine-kaufen-fehler-vermeiden"],
+      "notes": "Praxisnah mit realen Kostenschaetzungen und Checkliste"
+    },
+    {
+      "id": "rq-007",
+      "title": "Retrofit einer gebrauchten Messmaschine: Lohnt sich die Modernisierung?",
+      "slug": "retrofit-gebrauchte-messmaschine-modernisierung",
+      "category": "technik",
+      "priority": "mittel",
+      "status": "geplant",
+      "targetPublishDate": "2026-05-10",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Alte Mechanik, neue Steuerung: Ein Retrofit kann eine gebrauchte Messmaschine auf den neuesten Stand bringen. Wann lohnt es sich und was kostet es?",
+      "outline": [
+        "Einleitung: Was ist ein CMM-Retrofit?",
+        "Typische Retrofit-Maßnahmen (Steuerung, Software, Sensoren)",
+        "Retrofit vs. Neukauf: Kostenvergleich",
+        "Welche Maschinen eignen sich für ein Retrofit?",
+        "Retrofit-Anbieter im DACH-Raum",
+        "Fallbeispiel: Zeiss Contura G2 Retrofit auf Calypso 2024",
+        "Fallbeispiel: Wenzel LH 87 mit neuer Renishaw-Steuerung",
+        "ROI-Berechnung: Ab wann rechnet sich ein Retrofit?",
+        "Risiken und Grenzen eines Retrofits",
+        "Fazit und Entscheidungshilfe"
+      ],
+      "seoKeywords": [
+        "Messmaschine Retrofit",
+        "CMM Modernisierung",
+        "KMG Retrofit Kosten",
+        "Zeiss Retrofit",
+        "Messmaschine Steuerung erneuern"
+      ],
+      "estimatedReadingTime": 11,
+      "tags": ["Retrofit", "Modernisierung", "Technik", "Investition"],
+      "relatedArticles": ["gebrauchte-koordinatenmessmaschine-preise-2026"],
+      "notes": "Sehr interessant fuer Kaeufer aelterer Maschinen, Fallbeispiele einbauen"
+    },
+    {
+      "id": "rq-008",
+      "title": "Wenzel vs. Mitutoyo: Gebrauchte Messmaschinen im Vergleich",
+      "slug": "wenzel-vs-mitutoyo-gebrauchte-messmaschinen",
+      "category": "vergleich",
+      "priority": "mittel",
+      "status": "geplant",
+      "targetPublishDate": "2026-05-24",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Wenzel und Mitutoyo bieten hochwertige Messmaschinen im mittleren Preissegment. Wie schlagen sie sich auf dem Gebrauchtmarkt?",
+      "outline": [
+        "Einleitung: Alternativen zu Zeiss und Hexagon",
+        "Wenzel-Unternehmensportrait und Produktpalette",
+        "Mitutoyo-Unternehmensportrait und Produktpalette",
+        "Hardware-Vergleich: Bauweise, Materialien, Genauigkeit",
+        "Software-Vergleich: Metrosoft vs. MCOSMOS",
+        "Gebrauchtmarkt-Verfügbarkeit und Preise",
+        "Service und Ersatzteilversorgung",
+        "Für wen eignet sich welcher Hersteller?",
+        "Fazit: Preis-Leistungs-Sieger"
+      ],
+      "seoKeywords": [
+        "Wenzel Messmaschine gebraucht",
+        "Mitutoyo CMM gebraucht",
+        "Wenzel vs Mitutoyo",
+        "Messmaschine mittleres Preissegment",
+        "KMG Wenzel gebraucht"
+      ],
+      "estimatedReadingTime": 8,
+      "tags": ["Vergleich", "Wenzel", "Mitutoyo", "Gebrauchtmaschinen"],
+      "relatedArticles": ["zeiss-vs-hexagon-vergleich", "gebrauchte-koordinatenmessmaschine-preise-2026"],
+      "notes": "Ergaenzt den Zeiss-vs-Hexagon-Vergleich fuer das mittlere Segment"
+    },
+    {
+      "id": "rq-009",
+      "title": "Messmaschinen-Software: Lizenzmodelle bei Gebrauchtkauf verstehen",
+      "slug": "messmaschinen-software-lizenzen-gebrauchtkauf",
+      "category": "technik",
+      "priority": "hoch",
+      "status": "geplant",
+      "targetPublishDate": "2026-06-07",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Calypso, PC-DMIS, MCOSMOS – die Software einer Messmaschine ist genauso wichtig wie die Hardware. Was passiert mit der Lizenz beim Gebrauchtkauf?",
+      "outline": [
+        "Einleitung: Warum die Software-Lizenz kritisch ist",
+        "Überblick: Die wichtigsten CMM-Software-Pakete",
+        "Calypso (Zeiss): Lizenzmodell und Übertragbarkeit",
+        "PC-DMIS (Hexagon): Lizenztypen und Gebrauchtkauf",
+        "Metrosoft (Wenzel) und MCOSMOS (Mitutoyo)",
+        "Dongle vs. Floating-Lizenz vs. Subscription",
+        "Was tun, wenn die Lizenz nicht übertragbar ist?",
+        "Kosten für Neu-Lizenzierung nach Gebrauchtkauf",
+        "Open-Source-Alternativen: Gibt es welche?",
+        "Fazit: Software-Lizenz als Deal-Breaker"
+      ],
+      "seoKeywords": [
+        "Messmaschine Software Lizenz",
+        "Calypso Lizenz gebraucht",
+        "PC-DMIS Lizenz übertragen",
+        "CMM Software Kosten",
+        "Messsoftware Gebrauchtkauf"
+      ],
+      "estimatedReadingTime": 9,
+      "tags": ["Software", "Lizenzen", "Calypso", "PC-DMIS", "Technik"],
+      "relatedArticles": ["gebrauchte-messmaschine-kaufen-fehler-vermeiden"],
+      "notes": "Haeufig unterschaetztes Thema, hoher Mehrwert fuer Kaeufer"
+    },
+    {
+      "id": "rq-010",
+      "title": "Portal- vs. Ausleger- vs. Horizontal-Arm: Welcher CMM-Typ passt zu mir?",
+      "slug": "cmm-typen-vergleich-portal-ausleger-horizontal",
+      "category": "kaufratgeber",
+      "priority": "mittel",
+      "status": "geplant",
+      "targetPublishDate": "2026-06-21",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Nicht jede Messmaschine passt zu jeder Anwendung. Wir vergleichen die drei häufigsten Bauformen und helfen bei der Entscheidung.",
+      "outline": [
+        "Einleitung: Die Bauform bestimmt die Anwendung",
+        "Portal-Messmaschinen: Aufbau, Vor- und Nachteile",
+        "Ausleger-Messmaschinen: Aufbau, Vor- und Nachteile",
+        "Horizontal-Arm-Messmaschinen: Aufbau, Vor- und Nachteile",
+        "Gantry-Messmaschinen: Für Sonderfälle",
+        "Optische Messsysteme als Alternative",
+        "Vergleichstabelle: Genauigkeit, Messbereich, Platzbedarf, Preis",
+        "Entscheidungsmatrix: Welche Bauform für welche Branche?",
+        "Verfügbarkeit auf dem Gebrauchtmarkt",
+        "Fazit und Empfehlung"
+      ],
+      "seoKeywords": [
+        "Messmaschine Typen Vergleich",
+        "Portal Messmaschine vs Ausleger",
+        "CMM Bauform Unterschied",
+        "welche Koordinatenmessmaschine kaufen",
+        "Messmaschine Auswahl"
+      ],
+      "estimatedReadingTime": 10,
+      "tags": ["Kaufratgeber", "Maschinentypen", "Vergleich", "Entscheidungshilfe"],
+      "relatedArticles": ["koordinatenmessmaschine-kaufen-ratgeber"],
+      "notes": "Verlinkt auf die einzelnen Kategorie-Seiten der Plattform"
+    },
+    {
+      "id": "rq-011",
+      "title": "Gebrauchte Messmaschine verkaufen: So erzielen Sie den besten Preis",
+      "slug": "gebrauchte-messmaschine-verkaufen-tipps",
+      "category": "markt",
+      "priority": "mittel",
+      "status": "geplant",
+      "targetPublishDate": "2026-07-05",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Sie möchten Ihre gebrauchte Koordinatenmessmaschine verkaufen? Mit diesen Tipps maximieren Sie den Verkaufspreis und finden schnell einen Käufer.",
+      "outline": [
+        "Einleitung: Warum der Gebrauchtverkauf sinnvoll ist",
+        "Vorbereitung: Maschine verkaufsfähig machen",
+        "Aktuelle Kalibrierung als Verkaufsargument",
+        "Professionelle Fotos und Maschinenakte erstellen",
+        "Preisfindung: Wie viel ist meine Maschine noch wert?",
+        "Die richtige Plattform: CMM24 vs. Alternativen",
+        "Inserat erstellen: Was Käufer wissen wollen",
+        "Verhandlung und Abwicklung",
+        "Transport und Übergabe organisieren",
+        "Steuerliche Aspekte beim Maschinenverkauf",
+        "Fazit"
+      ],
+      "seoKeywords": [
+        "Messmaschine verkaufen",
+        "KMG verkaufen",
+        "Koordinatenmessmaschine Verkauf",
+        "CMM gebraucht verkaufen",
+        "Messmaschine Wert ermitteln"
+      ],
+      "estimatedReadingTime": 8,
+      "tags": ["Verkaufen", "Markt", "Preisfindung", "Tipps"],
+      "relatedArticles": ["gebrauchte-koordinatenmessmaschine-preise-2026"],
+      "notes": "Wichtig fuer Seller-Akquise, CTA auf Inserat-Erstellung"
+    },
+    {
+      "id": "rq-012",
+      "title": "Messraum einrichten: Optimale Bedingungen für Ihre CMM",
+      "slug": "messraum-einrichten-optimale-bedingungen-cmm",
+      "category": "technik",
+      "priority": "niedrig",
+      "status": "idee",
+      "targetPublishDate": "2026-07-19",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Temperatur, Luftfeuchtigkeit, Schwingungen – der Messraum hat enormen Einfluss auf die Messgenauigkeit. So richten Sie ihn optimal ein.",
+      "outline": [
+        "Einleitung: Der Messraum als Erfolgsfaktor",
+        "Temperaturanforderungen: 20°C ± 1K und wie man das erreicht",
+        "Luftfeuchtigkeit und Luftreinheit",
+        "Schwingungsdämpfung: Fundament und passive/aktive Systeme",
+        "Beleuchtung und elektromagnetische Störungen",
+        "Platzbedarf und Zugänglichkeit",
+        "Fertigungsnahe Messung: Geht das auch ohne Messraum?",
+        "Kosten für einen normenkonformen Messraum",
+        "Fazit"
+      ],
+      "seoKeywords": [
+        "Messraum einrichten",
+        "CMM Messraum Anforderungen",
+        "Temperatur Messraum",
+        "Koordinatenmessmaschine Aufstellbedingungen",
+        "Schwingungsdämpfung Messmaschine"
+      ],
+      "estimatedReadingTime": 7,
+      "tags": ["Messraum", "Technik", "Umgebungsbedingungen", "Aufstellung"],
+      "relatedArticles": ["transport-aufstellung-gebrauchte-messmaschine"],
+      "notes": "Ergaenzt den Transport-Artikel, relevant fuer Erstkaeufer"
+    },
+    {
+      "id": "rq-013",
+      "title": "Leasing vs. Kauf einer gebrauchten Messmaschine: Was lohnt sich mehr?",
+      "slug": "leasing-vs-kauf-gebrauchte-messmaschine",
+      "category": "markt",
+      "priority": "niedrig",
+      "status": "idee",
+      "targetPublishDate": "2026-08-02",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Leasing, Mietkauf oder Direktkauf? Wir vergleichen die Finanzierungsoptionen für gebrauchte Koordinatenmessmaschinen.",
+      "outline": [
+        "Einleitung: Finanzierung als Entscheidungsfaktor",
+        "Direktkauf: Vor- und Nachteile",
+        "Leasing: Modelle und Anbieter für Gebrauchtmaschinen",
+        "Mietkauf: Die Kombination aus beidem",
+        "Steuerliche Unterschiede (AfA, Betriebsausgaben)",
+        "Rechenbeispiel: 3 Szenarien im Vergleich",
+        "Besonderheiten bei gebrauchten Maschinen (Restwert, Laufzeit)",
+        "Fazit: Welches Modell für welches Unternehmen?"
+      ],
+      "seoKeywords": [
+        "Messmaschine Leasing",
+        "CMM finanzieren",
+        "Koordinatenmessmaschine Mietkauf",
+        "gebrauchte Maschine Leasing",
+        "KMG Finanzierung"
+      ],
+      "estimatedReadingTime": 7,
+      "tags": ["Finanzierung", "Leasing", "Markt", "Investition"],
+      "relatedArticles": ["gebrauchte-koordinatenmessmaschine-preise-2026"],
+      "notes": "Interessant fuer KMU, die Liquiditaet schonen wollen"
+    },
+    {
+      "id": "rq-014",
+      "title": "Wartungsvertrag für gebrauchte Messmaschinen: Brauche ich einen?",
+      "slug": "wartungsvertrag-gebrauchte-messmaschinen",
+      "category": "kaufratgeber",
+      "priority": "niedrig",
+      "status": "idee",
+      "targetPublishDate": "2026-08-16",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Ein Wartungsvertrag kann eine gebrauchte Messmaschine langfristig absichern. Was kostet er, was deckt er ab und wann lohnt er sich?",
+      "outline": [
+        "Einleitung: Warum Wartung bei Gebrauchtmaschinen besonders wichtig ist",
+        "Was deckt ein typischer Wartungsvertrag ab?",
+        "Wartungsvertrag-Anbieter: Hersteller vs. unabhängige Dienstleister",
+        "Kosten: Was kostet ein Wartungsvertrag pro Jahr?",
+        "Full-Service vs. Basiswartung: Die Unterschiede",
+        "Eigenwartung: Was kann ich selbst machen?",
+        "Wann sich ein Wartungsvertrag rechnet (und wann nicht)",
+        "Fazit"
+      ],
+      "seoKeywords": [
+        "Messmaschine Wartungsvertrag",
+        "CMM Wartung Kosten",
+        "Koordinatenmessmaschine Service",
+        "KMG Wartung",
+        "Messmaschine Instandhaltung"
+      ],
+      "estimatedReadingTime": 6,
+      "tags": ["Wartung", "Service", "Kaufratgeber", "Kosten"],
+      "relatedArticles": ["gebrauchte-messmaschine-kaufen-fehler-vermeiden", "kalibrierung-gebrauchte-messmaschinen"],
+      "notes": "Vertrauensbildend, zeigt Expertise und Serioesitaet"
+    },
+    {
+      "id": "rq-015",
+      "title": "Multisensor-Messmaschinen gebraucht: Taktil, optisch und CT kombiniert",
+      "slug": "multisensor-messmaschinen-gebraucht",
+      "category": "technik",
+      "priority": "niedrig",
+      "status": "idee",
+      "targetPublishDate": "2026-09-06",
+      "author": {
+        "name": "Jan Hemkemeier",
+        "role": "Gründer CMM24"
+      },
+      "excerpt": "Multisensor-Messmaschinen vereinen taktile, optische und CT-Messtechnik. Lohnt sich der Kauf einer gebrauchten Multisensor-CMM?",
+      "outline": [
+        "Einleitung: Was sind Multisensor-Messmaschinen?",
+        "Taktile Messtechnik: Einzelpunkt und Scanning",
+        "Optische Messtechnik: Kamera, Laser, Weißlicht",
+        "CT-Messtechnik: Röntgen für die Volumenvermessung",
+        "Vorteile der Multisensor-Technik",
+        "Gebrauchte Multisensor-CMMs: Verfügbarkeit und Preise",
+        "Herausforderungen beim Gebrauchtkauf (Sensoralterung, Kalibrierung)",
+        "Hersteller und Modelle auf dem Gebrauchtmarkt",
+        "Fazit: Für wen lohnt sich Multisensor?"
+      ],
+      "seoKeywords": [
+        "Multisensor Messmaschine gebraucht",
+        "CMM taktil optisch",
+        "Multisensor CMM kaufen",
+        "optische Messmaschine gebraucht",
+        "CT Messmaschine"
+      ],
+      "estimatedReadingTime": 8,
+      "tags": ["Multisensor", "Technik", "Optisch", "CT", "Gebrauchtmaschinen"],
+      "relatedArticles": ["cmm-genauigkeit-mpee-erklaert", "cmm-typen-vergleich-portal-ausleger-horizontal"],
+      "notes": "Zukunftsthema, zeigt technische Tiefe"
+    }
+  ],
+  "metadata": {
+    "totalArticles": 15,
+    "statusCounts": {
+      "entwurf": 1,
+      "geplant": 10,
+      "idee": 4
+    },
+    "categoryCounts": {
+      "kaufratgeber": 5,
+      "technik": 4,
+      "markt": 3,
+      "vergleich": 3
+    },
+    "priorityCounts": {
+      "hoch": 5,
+      "mittel": 5,
+      "niedrig": 5
+    },
+    "publishingSchedule": {
+      "startDate": "2026-03-01",
+      "endDate": "2026-09-06",
+      "frequency": "alle 2 Wochen"
+    }
+  }
+}

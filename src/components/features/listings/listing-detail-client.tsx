@@ -51,6 +51,7 @@ import { createInquiry } from '@/lib/actions/inquiries';
 import { getCurrentUser } from '@/lib/actions/auth';
 import { useRouter } from '@/i18n/navigation';
 import { RichTextContent } from '@/components/ui/rich-text-editor';
+import { ReportListingModal } from '@/components/features/listings/report-listing-modal';
 
 interface ListingDetailClientProps {
   listing: Listing;
@@ -741,6 +742,11 @@ export function ListingDetailClient({ listing, similarListings }: ListingDetailC
                       >
                         <Heart className="h-4 w-4" />
                       </Button>
+                    </div>
+
+                    {/* Inserat melden */}
+                    <div className="flex justify-center pt-1">
+                      <ReportListingModal listingId={listing.id} listingTitle={listing.title} />
                     </div>
                   </div>
                 </CardContent>

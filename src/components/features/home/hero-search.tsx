@@ -270,7 +270,9 @@ export function HeroSearch({ featuredManufacturers, recentListings = [] }: HeroS
       {/* Popular Manufacturers */}
       <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
         <span className="text-sm text-muted-foreground">{t('popularManufacturers')}</span>
-        {featuredManufacturers.slice(0, 4).map((manufacturer) => (
+        {featuredManufacturers
+          .filter((m) => ['mitutoyo', 'hexagon'].includes(m.slug.toLowerCase()))
+          .map((manufacturer) => (
           <Button key={manufacturer.id} variant="outline" size="sm" asChild>
             <Link href={`/hersteller/${manufacturer.slug}`}>
               {manufacturer.name}

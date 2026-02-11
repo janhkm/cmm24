@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import {
@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -44,86 +44,48 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getAdminReports, reviewReport, type AdminReport } from '@/lib/actions/reports';
 
-// Mock reports data
-interface Report {
-  id: string;
-  type: 'listing' | 'inquiry' | 'account';
-  reason: string;
-  description: string;
-  reportedItemId: string;
-  reportedItemTitle: string;
-  reporterEmail: string;
-  status: 'pending' | 'resolved' | 'dismissed';
-  createdAt: string;
-  resolvedAt?: string;
-  adminNote?: string;
-}
-
-const initialReports: Report[] = [
-  {
-    id: '1',
-    type: 'listing',
-    reason: 'Verdächtiger Preis',
-    description: 'Der Preis erscheint unrealistisch niedrig für diese Maschine.',
-    reportedItemId: '1',
-    reportedItemTitle: 'Zeiss Contura 10/12/6',
-    reporterEmail: 'max@example.com',
-    status: 'pending',
-    createdAt: '2026-01-22T14:30:00Z',
-  },
-  {
-    id: '2',
-    type: 'listing',
-    reason: 'Falsche Angaben',
-    description: 'Die Bilder zeigen eine andere Maschine als beschrieben.',
-    reportedItemId: '2',
-    reportedItemTitle: 'Hexagon Global S 9.15.9',
-    reporterEmail: 'anna@example.com',
-    status: 'pending',
-    createdAt: '2026-01-21T10:15:00Z',
-  },
-  {
-    id: '3',
-    type: 'inquiry',
-    reason: 'Spam',
-    description: 'Wiederholte Spam-Anfragen vom gleichen Absender.',
-    reportedItemId: 'inq-1',
-    reportedItemTitle: 'Anfrage von spam@example.com',
-    reporterEmail: 'seller@cmm-trade.de',
-    status: 'resolved',
-    createdAt: '2026-01-20T09:00:00Z',
-    resolvedAt: '2026-01-20T11:30:00Z',
-    adminNote: 'E-Mail-Adresse zur Blacklist hinzugefügt.',
-  },
-  {
-    id: '4',
-    type: 'listing',
-    reason: 'Duplikat',
-    description: 'Dieses Inserat wurde bereits von einem anderen Verkäufer eingestellt.',
-    reportedItemId: '3',
-    reportedItemTitle: 'Wenzel LH 87',
-    reporterEmail: 'peter@example.com',
-    status: 'dismissed',
-    createdAt: '2026-01-19T16:45:00Z',
-    resolvedAt: '2026-01-19T18:00:00Z',
-    adminNote: 'Kein Duplikat - unterschiedliche Seriennummern.',
-  },
-];
+// Reason -> Badge-Farbe
+const reasonColors: Record<string, string> = {
+  spam: 'bg-purple-100 text-purple-800',
+  fake: 'bg-red-100 text-red-800',
+  inappropriate: 'bg-amber-100 text-amber-800',
+  duplicate: 'bg-blue-100 text-blue-800',
+  other: 'bg-gray-100 text-gray-800',
+};
 
 const reasonLabels: Record<string, string> = {
-  'Verdächtiger Preis': 'bg-amber-100 text-amber-800',
-  'Falsche Angaben': 'bg-red-100 text-red-800',
-  'Spam': 'bg-purple-100 text-purple-800',
-  'Duplikat': 'bg-blue-100 text-blue-800',
+  spam: 'Spam',
+  fake: 'Falsche Angaben',
+  inappropriate: 'Unangemessen',
+  duplicate: 'Duplikat',
+  other: 'Sonstiges',
 };
 
 export default function ReportsPage() {
-  const [reports, setReports] = useState<Report[]>(initialReports);
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [reports, setReports] = useState<AdminReport[]>([]);
+  const [isLoadingReports, setIsLoadingReports] = useState(true);
+  const [selectedReport, setSelectedReport] = useState<AdminReport | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [adminNote, setAdminNote] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Reports aus der Datenbank laden
+  useEffect(() => {
+    loadReports();
+  }, []);
+
+  const loadReports = async () => {
+    setIsLoadingReports(true);
+    const result = await getAdminReports();
+    if (result.success && result.data) {
+      setReports(result.data);
+    } else {
+      toast.error(result.error || 'Fehler beim Laden der Reports');
+    }
+    setIsLoadingReports(false);
+  };
 
   const pendingReports = reports.filter((r) => r.status === 'pending');
   const resolvedReports = reports.filter((r) => r.status === 'resolved');
@@ -151,9 +113,9 @@ export default function ReportsPage() {
     return `vor ${diffDays} Tag${diffDays > 1 ? 'en' : ''}`;
   };
 
-  const openDialog = (report: Report) => {
+  const openDialog = (report: AdminReport) => {
     setSelectedReport(report);
-    setAdminNote(report.adminNote || '');
+    setAdminNote(report.admin_notes || '');
     setIsDialogOpen(true);
   };
 
@@ -162,21 +124,26 @@ export default function ReportsPage() {
 
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setReports((prev) =>
-        prev.map((r) =>
-          r.id === selectedReport.id
-            ? {
-                ...r,
-                status: 'resolved' as const,
-                resolvedAt: new Date().toISOString(),
-                adminNote,
-              }
-            : r
-        )
-      );
-      toast.success('Report als erledigt markiert');
-      setIsDialogOpen(false);
+      const result = await reviewReport(selectedReport.id, 'resolved', adminNote);
+      if (result.success) {
+        // Report-Liste aktualisieren
+        setReports((prev) =>
+          prev.map((r) =>
+            r.id === selectedReport.id
+              ? {
+                  ...r,
+                  status: 'resolved',
+                  reviewed_at: new Date().toISOString(),
+                  admin_notes: adminNote || null,
+                }
+              : r
+          )
+        );
+        toast.success('Report als erledigt markiert');
+        setIsDialogOpen(false);
+      } else {
+        toast.error(result.error || 'Fehler beim Speichern');
+      }
     } catch {
       toast.error('Fehler beim Speichern');
     } finally {
@@ -189,21 +156,25 @@ export default function ReportsPage() {
 
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setReports((prev) =>
-        prev.map((r) =>
-          r.id === selectedReport.id
-            ? {
-                ...r,
-                status: 'dismissed' as const,
-                resolvedAt: new Date().toISOString(),
-                adminNote,
-              }
-            : r
-        )
-      );
-      toast.success('Report abgewiesen');
-      setIsDialogOpen(false);
+      const result = await reviewReport(selectedReport.id, 'dismissed', adminNote);
+      if (result.success) {
+        setReports((prev) =>
+          prev.map((r) =>
+            r.id === selectedReport.id
+              ? {
+                  ...r,
+                  status: 'dismissed',
+                  reviewed_at: new Date().toISOString(),
+                  admin_notes: adminNote || null,
+                }
+              : r
+          )
+        );
+        toast.success('Report abgewiesen');
+        setIsDialogOpen(false);
+      } else {
+        toast.error(result.error || 'Fehler beim Speichern');
+      }
     } catch {
       toast.error('Fehler beim Speichern');
     } finally {
@@ -211,42 +182,38 @@ export default function ReportsPage() {
     }
   };
 
-  const ReportRow = ({ report }: { report: Report }) => (
+  const ReportRow = ({ report }: { report: AdminReport }) => (
     <TableRow>
       <TableCell>
         <div className="flex items-center gap-3">
-          <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-            report.type === 'listing' ? 'bg-blue-100' : 
-            report.type === 'inquiry' ? 'bg-purple-100' : 'bg-gray-100'
-          }`}>
-            {report.type === 'listing' ? (
-              <FileText className="h-5 w-5 text-blue-600" />
-            ) : report.type === 'inquiry' ? (
-              <MessageSquare className="h-5 w-5 text-purple-600" />
-            ) : (
-              <Flag className="h-5 w-5 text-gray-600" />
-            )}
+          <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-blue-100">
+            <FileText className="h-5 w-5 text-blue-600" />
           </div>
           <div>
-            <p className="font-medium">{report.reportedItemTitle}</p>
+            <p className="font-medium">{report.listing_title}</p>
             <p className="text-sm text-muted-foreground">
-              Gemeldet von: {report.reporterEmail}
+              Gemeldet von: {report.reporter_email}
             </p>
+            {report.seller_name && report.seller_name !== 'Unbekannt' && (
+              <p className="text-xs text-muted-foreground">
+                Verkäufer: {report.seller_name}
+              </p>
+            )}
           </div>
         </div>
       </TableCell>
       <TableCell>
-        <Badge className={reasonLabels[report.reason] || 'bg-gray-100 text-gray-800'}>
-          {report.reason}
+        <Badge className={reasonColors[report.reason] || 'bg-gray-100 text-gray-800'}>
+          {reasonLabels[report.reason] || report.reason}
         </Badge>
       </TableCell>
       <TableCell>
-        <p className="text-sm max-w-xs truncate">{report.description}</p>
+        <p className="text-sm max-w-xs truncate">{report.description || '—'}</p>
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <Clock className="h-4 w-4" />
-          {getTimeAgo(report.createdAt)}
+          {getTimeAgo(report.created_at)}
         </div>
       </TableCell>
       <TableCell>
@@ -261,11 +228,11 @@ export default function ReportsPage() {
               <Eye className="h-4 w-4 mr-2" />
               Details ansehen
             </DropdownMenuItem>
-            {report.type === 'listing' && (
+            {report.listing_slug && (
               <DropdownMenuItem asChild>
-                <Link href={`/admin/moderation/${report.reportedItemId}`}>
+                <Link href={`/maschinen/${report.listing_slug}`} target="_blank">
                   <FileText className="h-4 w-4 mr-2" />
-                  Inserat prüfen
+                  Inserat ansehen
                 </Link>
               </DropdownMenuItem>
             )}
@@ -274,23 +241,10 @@ export default function ReportsPage() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-green-600"
-                  onClick={() => {
-                    setSelectedReport(report);
-                    handleResolve();
-                  }}
+                  onClick={() => openDialog(report)}
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
-                  Als erledigt markieren
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-muted-foreground"
-                  onClick={() => {
-                    setSelectedReport(report);
-                    handleDismiss();
-                  }}
-                >
-                  <XCircle className="h-4 w-4 mr-2" />
-                  Abweisen
+                  Bearbeiten
                 </DropdownMenuItem>
               </>
             )}
@@ -299,6 +253,15 @@ export default function ReportsPage() {
       </TableCell>
     </TableRow>
   );
+
+  // Lade-Zustand
+  if (isLoadingReports) {
+    return (
+      <div className="p-6 md:p-8 flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 md:p-8 space-y-6">
@@ -374,7 +337,7 @@ export default function ReportsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Gemeldetes Element</TableHead>
+                    <TableHead>Gemeldetes Inserat</TableHead>
                     <TableHead>Grund</TableHead>
                     <TableHead>Beschreibung</TableHead>
                     <TableHead>Gemeldet</TableHead>
@@ -406,7 +369,7 @@ export default function ReportsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Gemeldetes Element</TableHead>
+                  <TableHead>Gemeldetes Inserat</TableHead>
                   <TableHead>Grund</TableHead>
                   <TableHead>Beschreibung</TableHead>
                   <TableHead>Gemeldet</TableHead>
@@ -434,7 +397,7 @@ export default function ReportsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Gemeldetes Element</TableHead>
+                  <TableHead>Gemeldetes Inserat</TableHead>
                   <TableHead>Grund</TableHead>
                   <TableHead>Beschreibung</TableHead>
                   <TableHead>Gemeldet</TableHead>
@@ -464,31 +427,47 @@ export default function ReportsPage() {
           <DialogHeader>
             <DialogTitle>Report Details</DialogTitle>
             <DialogDescription>
-              Gemeldet am {selectedReport && formatDate(selectedReport.createdAt)}
+              Gemeldet am {selectedReport && formatDate(selectedReport.created_at)}
             </DialogDescription>
           </DialogHeader>
           {selectedReport && (
             <div className="space-y-4 py-4">
               <div>
-                <Label className="text-muted-foreground">Gemeldetes Element</Label>
-                <p className="font-medium">{selectedReport.reportedItemTitle}</p>
+                <Label className="text-muted-foreground">Gemeldetes Inserat</Label>
+                <p className="font-medium">{selectedReport.listing_title}</p>
+                {selectedReport.seller_name && selectedReport.seller_name !== 'Unbekannt' && (
+                  <p className="text-sm text-muted-foreground">Verkäufer: {selectedReport.seller_name}</p>
+                )}
               </div>
               <div>
                 <Label className="text-muted-foreground">Grund</Label>
                 <p>
-                  <Badge className={reasonLabels[selectedReport.reason] || 'bg-gray-100'}>
-                    {selectedReport.reason}
+                  <Badge className={reasonColors[selectedReport.reason] || 'bg-gray-100'}>
+                    {reasonLabels[selectedReport.reason] || selectedReport.reason}
                   </Badge>
                 </p>
               </div>
-              <div>
-                <Label className="text-muted-foreground">Beschreibung</Label>
-                <p className="text-sm">{selectedReport.description}</p>
-              </div>
+              {selectedReport.description && (
+                <div>
+                  <Label className="text-muted-foreground">Beschreibung</Label>
+                  <p className="text-sm">{selectedReport.description}</p>
+                </div>
+              )}
               <div>
                 <Label className="text-muted-foreground">Gemeldet von</Label>
-                <p className="text-sm">{selectedReport.reporterEmail}</p>
+                <p className="text-sm">{selectedReport.reporter_email}</p>
               </div>
+              {selectedReport.listing_slug && (
+                <div>
+                  <Link
+                    href={`/maschinen/${selectedReport.listing_slug}`}
+                    target="_blank"
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Inserat ansehen →
+                  </Link>
+                </div>
+              )}
               {selectedReport.status === 'pending' && (
                 <div>
                   <Label htmlFor="adminNote">Admin-Notiz</Label>
@@ -502,10 +481,10 @@ export default function ReportsPage() {
                   />
                 </div>
               )}
-              {selectedReport.adminNote && selectedReport.status !== 'pending' && (
+              {selectedReport.admin_notes && selectedReport.status !== 'pending' && (
                 <div>
                   <Label className="text-muted-foreground">Admin-Notiz</Label>
-                  <p className="text-sm">{selectedReport.adminNote}</p>
+                  <p className="text-sm">{selectedReport.admin_notes}</p>
                 </div>
               )}
             </div>

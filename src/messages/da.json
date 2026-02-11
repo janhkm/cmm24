@@ -534,6 +534,7 @@
       "activeListings": "Aktive annoncer",
       "unlimitedInPlan": "ubegrænset i {plan}-planen",
       "ofLimitInPlan": "af {limit} i {plan}-planen",
+      "currentlyActive": "i øjeblikket offentliggjort",
       "newInquiries": "Nye forespørgsler",
       "last7Days": "i de sidste 7 dage",
       "totalViews": "Visninger i alt",

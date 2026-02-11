@@ -534,6 +534,7 @@
       "activeListings": "Aktivni oglasi",
       "unlimitedInPlan": "neograničeno u {plan} planu",
       "ofLimitInPlan": "od {limit} u {plan} planu",
+      "currentlyActive": "trenutno objavljeno",
       "newInquiries": "Novi upiti",
       "last7Days": "u poslednjih 7 dana",
       "totalViews": "Ukupno pregleda",

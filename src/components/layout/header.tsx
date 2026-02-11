@@ -259,14 +259,26 @@ export function Header({ user }: HeaderProps) {
                 </SheetHeader>
                 <div className="mt-6 flex flex-col gap-4">
                   {/* Mobile Search */}
-                  <div className="relative">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.currentTarget);
+                      const query = (formData.get('q') as string)?.trim();
+                      if (query) {
+                        setMobileMenuOpen(false);
+                        router.push(`/maschinen?q=${encodeURIComponent(query)}`);
+                      }
+                    }}
+                    className="relative"
+                  >
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       type="search"
+                      name="q"
                       placeholder={th('searchPlaceholder')}
                       className="w-full pl-10"
                     />
-                  </div>
+                  </form>
 
                   {/* Mobile Navigation */}
                   <nav className="flex flex-col gap-2">
@@ -378,15 +390,27 @@ export function Header({ user }: HeaderProps) {
         {/* Mobile Search Bar (expandable) */}
         {searchOpen && (
           <div className="border-t py-3 lg:hidden">
-            <div className="relative">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const query = (formData.get('q') as string)?.trim();
+                if (query) {
+                  setSearchOpen(false);
+                  router.push(`/maschinen?q=${encodeURIComponent(query)}`);
+                }
+              }}
+              className="relative"
+            >
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="search"
+                name="q"
                 placeholder={th('searchPlaceholderFull')}
                 className="w-full pl-10"
                 autoFocus
               />
-            </div>
+            </form>
           </div>
         )}
       </div>

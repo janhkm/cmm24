@@ -305,7 +305,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   // Parallele Datenabfrage
   const [listingsResult, manufacturersResult, companiesResult] = await Promise.all([
-    getPublicListings({ limit: 20, sortBy: 'newest' }),
+    getPublicListings({ limit: 10, sortBy: 'newest' }),
     getManufacturers(),
     getPublicCompanies(12),
   ]);

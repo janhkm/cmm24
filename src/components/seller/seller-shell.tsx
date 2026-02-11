@@ -41,6 +41,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { signOut } from '@/lib/actions/auth';
 import { NotificationBell } from '@/components/notifications';
+import { ThemeToggle } from '@/components/shared/theme-toggle';
 
 // Plan requirements for features
 type PlanSlug = 'free' | 'starter' | 'business';
@@ -298,6 +299,7 @@ export function SellerShell({
               </DropdownMenuContent>
             </DropdownMenu>
 
+            <ThemeToggle />
             <NotificationBell />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

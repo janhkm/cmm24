@@ -14,7 +14,7 @@ export const locales = [
   'da', // Daenisch
   'pt', // Portugiesisch
   'ro', // Rumaenisch
-  // 'tr', // Tuerkisch – spaeter hinzufuegen
+  'tr', // Tuerkisch
   // 'bg', // Bulgarisch – spaeter hinzufuegen
 ] as const;
 
@@ -34,6 +34,7 @@ export const localeNames: Record<Locale, string> = {
   da: 'Dansk',
   pt: 'Português',
   ro: 'Română',
+  tr: 'Türkçe',
 };
 
 // Locale-Flaggen (ISO 3166-1 Laendercodes fuer Flaggen-Emojis)
@@ -50,6 +51,7 @@ export const localeFlags: Record<Locale, string> = {
   da: '🇩🇰',
   pt: '🇵🇹',
   ro: '🇷🇴',
+  tr: '🇹🇷',
 };
 
 // OpenGraph Locale-Mapping
@@ -66,6 +68,7 @@ export const ogLocales: Record<Locale, string> = {
   da: 'da_DK',
   pt: 'pt_PT',
   ro: 'ro_RO',
+  tr: 'tr_TR',
 };
 
 // Hilfsfunktion: Lokalisierte Pfade fuer alle Sprachen erzeugen
@@ -103,6 +106,7 @@ export const routing = defineRouting({
       da: '/maskiner',
       pt: '/maquinas',
       ro: '/masini',
+      tr: '/makineler',
     }),
     '/maschinen/[slug]': localizedPath({
       de: '/maschinen/[slug]',
@@ -117,6 +121,7 @@ export const routing = defineRouting({
       da: '/maskiner/[slug]',
       pt: '/maquinas/[slug]',
       ro: '/masini/[slug]',
+      tr: '/makineler/[slug]',
     }),
 
     // --- Hersteller ---
@@ -133,6 +138,7 @@ export const routing = defineRouting({
       da: '/producenter',
       pt: '/fabricantes',
       ro: '/producatori',
+      tr: '/ureticiler',
     }),
     '/hersteller/[slug]': localizedPath({
       de: '/hersteller/[slug]',
@@ -147,6 +153,7 @@ export const routing = defineRouting({
       da: '/producenter/[slug]',
       pt: '/fabricantes/[slug]',
       ro: '/producatori/[slug]',
+      tr: '/ureticiler/[slug]',
     }),
 
     // --- Kategorien ---
@@ -163,6 +170,7 @@ export const routing = defineRouting({
       da: '/kategorier',
       pt: '/categorias',
       ro: '/categorii',
+      tr: '/kategoriler',
     }),
     '/kategorien/[slug]': localizedPath({
       de: '/kategorien/[slug]',
@@ -177,6 +185,7 @@ export const routing = defineRouting({
       da: '/kategorier/[slug]',
       pt: '/categorias/[slug]',
       ro: '/categorii/[slug]',
+      tr: '/kategoriler/[slug]',
     }),
 
     // --- Ratgeber ---
@@ -193,6 +202,7 @@ export const routing = defineRouting({
       da: '/guider',
       pt: '/guias',
       ro: '/ghiduri',
+      tr: '/rehber',
     }),
     '/ratgeber/[slug]': localizedPath({
       de: '/ratgeber/[slug]',
@@ -207,6 +217,7 @@ export const routing = defineRouting({
       da: '/guider/[slug]',
       pt: '/guias/[slug]',
       ro: '/ghiduri/[slug]',
+      tr: '/rehber/[slug]',
     }),
 
     // --- Glossar ---
@@ -223,6 +234,7 @@ export const routing = defineRouting({
       da: '/ordliste',
       pt: '/glossario',
       ro: '/glosar',
+      tr: '/sozluk',
     }),
     '/glossar/[slug]': localizedPath({
       de: '/glossar/[slug]',
@@ -237,6 +249,7 @@ export const routing = defineRouting({
       da: '/ordliste/[slug]',
       pt: '/glossario/[slug]',
       ro: '/glosar/[slug]',
+      tr: '/sozluk/[slug]',
     }),
 
     // --- Vergleich ---
@@ -253,6 +266,7 @@ export const routing = defineRouting({
       da: '/sammenlign',
       pt: '/comparar',
       ro: '/comparatie',
+      tr: '/karsilastir',
     }),
 
     // --- Oeffentliche Seiten ---
@@ -269,6 +283,7 @@ export const routing = defineRouting({
       da: '/kontakt',
       pt: '/contacto',
       ro: '/contact',
+      tr: '/iletisim',
     }),
     '/ueber-uns': localizedPath({
       de: '/ueber-uns',
@@ -283,6 +298,7 @@ export const routing = defineRouting({
       da: '/om-os',
       pt: '/sobre-nos',
       ro: '/despre-noi',
+      tr: '/hakkimizda',
     }),
     '/verkaufen': localizedPath({
       de: '/verkaufen',
@@ -297,6 +313,7 @@ export const routing = defineRouting({
       da: '/saelg',
       pt: '/vender',
       ro: '/vinde',
+      tr: '/sat',
     }),
     '/so-funktionierts': localizedPath({
       de: '/so-funktionierts',
@@ -311,6 +328,7 @@ export const routing = defineRouting({
       da: '/saadan-fungerer-det',
       pt: '/como-funciona',
       ro: '/cum-functioneaza',
+      tr: '/nasil-calisir',
     }),
     '/faq': '/faq', // Universell
 
@@ -328,6 +346,7 @@ export const routing = defineRouting({
       da: '/vilkaar',
       pt: '/termos',
       ro: '/termeni',
+      tr: '/kosullar',
     }),
     '/datenschutz': localizedPath({
       de: '/datenschutz',
@@ -342,6 +361,7 @@ export const routing = defineRouting({
       da: '/databeskyttelse',
       pt: '/privacidade',
       ro: '/confidentialitate',
+      tr: '/gizlilik',
     }),
     '/impressum': localizedPath({
       de: '/impressum',
@@ -356,6 +376,7 @@ export const routing = defineRouting({
       da: '/juridisk-information',
       pt: '/aviso-legal',
       ro: '/informatii-legale',
+      tr: '/yasal-bilgi',
     }),
     '/cookie-richtlinie': localizedPath({
       de: '/cookie-richtlinie',
@@ -370,6 +391,7 @@ export const routing = defineRouting({
       da: '/cookiepolitik',
       pt: '/politica-cookies',
       ro: '/politica-cookie',
+      tr: '/cerez-politikasi',
     }),
     '/widerrufsbelehrung': localizedPath({
       de: '/widerrufsbelehrung',
@@ -384,6 +406,7 @@ export const routing = defineRouting({
       da: '/fortrydelsesret',
       pt: '/politica-cancelamento',
       ro: '/politica-anulare',
+      tr: '/cayma-hakki',
     }),
 
     // --- Auth ---
@@ -401,6 +424,7 @@ export const routing = defineRouting({
       da: '/registrer',
       pt: '/registar',
       ro: '/inregistrare',
+      tr: '/kayit',
     }),
     '/registrieren/erfolg': localizedPath({
       de: '/registrieren/erfolg',
@@ -415,6 +439,7 @@ export const routing = defineRouting({
       da: '/registrer/succes',
       pt: '/registar/sucesso',
       ro: '/inregistrare/succes',
+      tr: '/kayit/basarili',
     }),
     '/email-bestaetigen': localizedPath({
       de: '/email-bestaetigen',
@@ -429,6 +454,7 @@ export const routing = defineRouting({
       da: '/bekraeft-email',
       pt: '/verificar-email',
       ro: '/confirma-email',
+      tr: '/e-posta-dogrula',
     }),
     '/passwort-vergessen': localizedPath({
       de: '/passwort-vergessen',
@@ -443,6 +469,7 @@ export const routing = defineRouting({
       da: '/glemt-adgangskode',
       pt: '/esqueceu-senha',
       ro: '/parola-uitata',
+      tr: '/sifremi-unuttum',
     }),
     '/passwort-reset': localizedPath({
       de: '/passwort-reset',
@@ -457,6 +484,7 @@ export const routing = defineRouting({
       da: '/nulstil-adgangskode',
       pt: '/redefinir-senha',
       ro: '/reseteaza-parola',
+      tr: '/sifre-sifirla',
     }),
     '/einladung/[token]': localizedPath({
       de: '/einladung/[token]',
@@ -471,6 +499,7 @@ export const routing = defineRouting({
       da: '/invitation/[token]',
       pt: '/convite/[token]',
       ro: '/invitatie/[token]',
+      tr: '/davet/[token]',
     }),
 
     // --- Buyer Dashboard ---
@@ -488,6 +517,7 @@ export const routing = defineRouting({
       da: '/dashboard/foresporgsel',
       pt: '/dashboard/consultas',
       ro: '/dashboard/cereri',
+      tr: '/dashboard/talepler',
     }),
     '/dashboard/konto': localizedPath({
       de: '/dashboard/konto',
@@ -502,6 +532,7 @@ export const routing = defineRouting({
       da: '/dashboard/konto',
       pt: '/dashboard/conta',
       ro: '/dashboard/cont',
+      tr: '/dashboard/hesap',
     }),
 
     // --- Seller Dashboard (nicht SEO-kritisch, trotzdem uebersetzt fuer UX) ---
@@ -519,6 +550,7 @@ export const routing = defineRouting({
       da: '/seller/annoncer',
       pt: '/seller/anuncios',
       ro: '/seller/anunturi',
+      tr: '/seller/ilanlar',
     }),
     '/seller/inserate/neu': localizedPath({
       de: '/seller/inserate/neu',
@@ -533,6 +565,7 @@ export const routing = defineRouting({
       da: '/seller/annoncer/ny',
       pt: '/seller/anuncios/novo',
       ro: '/seller/anunturi/nou',
+      tr: '/seller/ilanlar/yeni',
     }),
     '/seller/inserate/[id]': localizedPath({
       de: '/seller/inserate/[id]',
@@ -547,6 +580,7 @@ export const routing = defineRouting({
       da: '/seller/annoncer/[id]',
       pt: '/seller/anuncios/[id]',
       ro: '/seller/anunturi/[id]',
+      tr: '/seller/ilanlar/[id]',
     }),
     '/seller/inserate/[id]/vorschau': localizedPath({
       de: '/seller/inserate/[id]/vorschau',
@@ -561,6 +595,7 @@ export const routing = defineRouting({
       da: '/seller/annoncer/[id]/forhaandsvisning',
       pt: '/seller/anuncios/[id]/pre-visualizacao',
       ro: '/seller/anunturi/[id]/previzualizare',
+      tr: '/seller/ilanlar/[id]/onizleme',
     }),
     '/seller/anfragen': localizedPath({
       de: '/seller/anfragen',
@@ -575,6 +610,7 @@ export const routing = defineRouting({
       da: '/seller/forespoorgsler',
       pt: '/seller/consultas',
       ro: '/seller/solicitari',
+      tr: '/seller/talepler',
     }),
     '/seller/anfragen/[id]': localizedPath({
       de: '/seller/anfragen/[id]',
@@ -589,6 +625,7 @@ export const routing = defineRouting({
       da: '/seller/forespoorgsler/[id]',
       pt: '/seller/consultas/[id]',
       ro: '/seller/solicitari/[id]',
+      tr: '/seller/talepler/[id]',
     }),
     '/seller/anfragen/liste': localizedPath({
       de: '/seller/anfragen/liste',
@@ -603,6 +640,7 @@ export const routing = defineRouting({
       da: '/seller/forespoorgsler/liste',
       pt: '/seller/consultas/lista',
       ro: '/seller/solicitari/lista',
+      tr: '/seller/talepler/liste',
     }),
     '/seller/anfragen/pipeline': '/seller/anfragen/pipeline', // Universell (Fachbegriff)
     '/seller/konto': localizedPath({
@@ -618,6 +656,7 @@ export const routing = defineRouting({
       da: '/seller/konto',
       pt: '/seller/conta',
       ro: '/seller/cont',
+      tr: '/seller/hesap',
     }),
     '/seller/konto/firma': localizedPath({
       de: '/seller/konto/firma',
@@ -632,6 +671,7 @@ export const routing = defineRouting({
       da: '/seller/konto/virksomhed',
       pt: '/seller/conta/empresa',
       ro: '/seller/cont/firma',
+      tr: '/seller/hesap/sirket',
     }),
     '/seller/konto/passwort': localizedPath({
       de: '/seller/konto/passwort',
@@ -646,6 +686,7 @@ export const routing = defineRouting({
       da: '/seller/konto/adgangskode',
       pt: '/seller/conta/senha',
       ro: '/seller/cont/parola',
+      tr: '/seller/hesap/sifre',
     }),
     '/seller/rechnungen': localizedPath({
       de: '/seller/rechnungen',
@@ -660,6 +701,7 @@ export const routing = defineRouting({
       da: '/seller/fakturaer',
       pt: '/seller/faturas',
       ro: '/seller/facturi',
+      tr: '/seller/faturalar',
     }),
     '/seller/statistiken': localizedPath({
       de: '/seller/statistiken',
@@ -674,6 +716,7 @@ export const routing = defineRouting({
       da: '/seller/statistik',
       pt: '/seller/estatisticas',
       ro: '/seller/statistici',
+      tr: '/seller/istatistikler',
     }),
     '/seller/team': '/seller/team', // Universell
     '/seller/abo': localizedPath({
@@ -689,6 +732,7 @@ export const routing = defineRouting({
       da: '/seller/abonnement',
       pt: '/seller/assinatura',
       ro: '/seller/abonament',
+      tr: '/seller/abonelik',
     }),
     '/seller/abo/upgrade': localizedPath({
       de: '/seller/abo/upgrade',
@@ -703,6 +747,7 @@ export const routing = defineRouting({
       da: '/seller/abonnement/upgrade',
       pt: '/seller/assinatura/upgrade',
       ro: '/seller/abonament/upgrade',
+      tr: '/seller/abonelik/upgrade',
     }),
     '/seller/emails': '/seller/emails', // Universell
     '/seller/api': '/seller/api', // Universell
@@ -719,6 +764,7 @@ export const routing = defineRouting({
       da: '/seller/kontakter',
       pt: '/seller/contactos',
       ro: '/seller/contacte',
+      tr: '/seller/kisiler',
     }),
     '/seller/kontakte/[id]': localizedPath({
       de: '/seller/kontakte/[id]',
@@ -733,6 +779,7 @@ export const routing = defineRouting({
       da: '/seller/kontakter/[id]',
       pt: '/seller/contactos/[id]',
       ro: '/seller/contacte/[id]',
+      tr: '/seller/kisiler/[id]',
     }),
     '/seller/registrieren': localizedPath({
       de: '/seller/registrieren',
@@ -747,6 +794,7 @@ export const routing = defineRouting({
       da: '/seller/registrer',
       pt: '/seller/registar',
       ro: '/seller/inregistrare',
+      tr: '/seller/kayit',
     }),
   },
 });

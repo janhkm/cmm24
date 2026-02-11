@@ -353,9 +353,7 @@ export default function CommunicationPage() {
                   const status = statusConfig[inq.status] || statusConfig.new;
                   const unreadCount = inq.unread_messages_seller || 0;
                   const isSent = inq._type === 'sent';
-                  const detailHref = isSent
-                    ? `/dashboard/anfragen/${inq.id}`
-                    : `/seller/anfragen/${inq.id}`;
+                  const detailHref = `/seller/anfragen/${inq.id}`;
 
                   return (
                     <Link

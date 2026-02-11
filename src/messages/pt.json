@@ -534,6 +534,7 @@
       "activeListings": "Anúncios ativos",
       "unlimitedInPlan": "ilimitado no plano {plan}",
       "ofLimitInPlan": "de {limit} no plano {plan}",
+      "currentlyActive": "atualmente publicados",
       "newInquiries": "Novos pedidos",
       "last7Days": "nos últimos 7 dias",
       "totalViews": "Visualizações totais",

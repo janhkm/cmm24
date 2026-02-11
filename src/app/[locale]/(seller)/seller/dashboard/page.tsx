@@ -67,7 +67,7 @@ export default async function SellerDashboardPage({ params }: { params: Promise<
       style: 'currency',
       currency: 'EUR',
       minimumFractionDigits: 0,
-    }).format(price);
+    }).format(price / 100);
   };
 
   const getStatusLabel = (status: string | null) => {
@@ -108,9 +108,7 @@ export default async function SellerDashboardPage({ params }: { params: Promise<
     {
       title: t('activeListings'),
       value: `${listingsUsed}`,
-      description: listingLimit === -1
-        ? t('unlimitedInPlan', { plan: plan?.name || 'Free' })
-        : t('ofLimitInPlan', { limit: listingLimit, plan: plan?.name || 'Free' }),
+      description: t('currentlyActive'),
       icon: FileText,
       trend: null as string | null,
     },

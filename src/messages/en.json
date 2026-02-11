@@ -535,6 +535,7 @@
       "activeListings": "Active listings",
       "unlimitedInPlan": "unlimited in {plan} plan",
       "ofLimitInPlan": "of {limit} in {plan} plan",
+      "currentlyActive": "currently published",
       "newInquiries": "New inquiries",
       "last7Days": "in the last 7 days",
       "totalViews": "Total views",
